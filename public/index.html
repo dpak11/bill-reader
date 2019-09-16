@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Image process</title>
+    <style>
+        p{
+            text-align: center
+        }
+        p>img{
+            max-width:90%;
+            min-width: 200px;
+            height: auto
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>HTML5 Video &amp; Audio Input</h1>
+        <h2>Capturing Media with HTML</h2>
+    </header>
+    <main>
+        <form action="#" id="myform" enctype="multipart/form-data">
+            <label for="capture">Capture Media</label>
+            <input type="file" id="capture" accept="image/*" capture />
+            <br />
+           <!--  <input type="submit" value="Process" /> -->
+        </form>
+        <p><img src="" id="img" alt="from phone" /></p>
+    </main>
+   
+    <!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
+    <!-- <script src='tesseract.min.js'></script>-->
+    <script src='readImage.js'></script>
+</body>
+
+</html>
