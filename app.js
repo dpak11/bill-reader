@@ -28,15 +28,15 @@ app.get("/", (req, res) => {
 app.post("/processimage", (req, res) => {
     console.log("Image processing...");
     console.log(req.body.myimg);
-    res.json({ status: "test without image success" });
+   // res.json({ status: "test without image success" });
 
-   /* scanBill(req.body.myimg).then(function(data) {
+    scanBill(req.body.myimg).then(function(data) {
         //console.log(data);
         res.json({ status: data });
     }).catch(function(err) {
         //console.log(err);
         res.json({ status: err });
-    });*/
+    });
 
 });
 
