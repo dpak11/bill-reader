@@ -22,7 +22,8 @@ input.addEventListener('change', () => {
                 .then(function(json) {
                     console.log(json.status);
                 }).catch(function(s) {
-                    console.log("fetch API failed.."+s);
+                    console.log("fetch API failed..");
+                    console.log(s)
 
                 });
 
