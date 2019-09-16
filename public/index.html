@@ -16,22 +16,25 @@
             min-width: 200px;
             height: auto
         }
+        #previewimg{display: none}
     </style>
 </head>
 
 <body>
     <header>
-        <h1>HTML5 Bill Reader</h1>
+        <h1>Bill Reader</h1>
         <h2>Capturing Bill Data</h2>
     </header>
     <main>
         <form action="#" id="myform" enctype="multipart/form-data">
-            <label for="capture">Capture Photo</label>
-            <input type="file" id="capture" accept="image/*" capture />
+            <label for="captureImg">Capture Photo</label>
+            <input type="file" id="captureImg" accept="image/*" capture />
             <br />
+            <label for="fileImg">Upload Image</label>
+            <input type="file" id="fileImg" accept="image/*" />
            <!--  <input type="submit" value="Process" /> -->
         </form>
-        <p><img src="" id="img" alt="from phone" /></p>
+        <p><img src="" id="previewimg" alt="preview" /></p>
     </main>
    
     <!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script>

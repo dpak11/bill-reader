@@ -1,21 +1,29 @@
-let form = document.getElementById('myform');
-let input = document.getElementById('capture');
+let captureImg = document.getElementById('captureImg');
+let fileImg = document.getElementById('fileImg');
+let staticfile = window.location.href.indexOf("?file=") > 0 ? window.location.href.split("file=")[1] : "";
 
 
+captureImg.addEventListener('change', () => {
+    imageProcess(captureImg.files[0]);
 
-input.addEventListener('change', () => {
-    let staticfile = window.location.href.indexOf("?file=") > 0 ? window.location.href.split("file=")[1] : "";
+});
 
-    if (input.files[0].type.indexOf("image/") > -1) {
-        let img = document.getElementById('img');   
+fileImg.addEventListener('change', () => {
+    imageProcess(fileImg.files[0]);
+
+});
+
+
+function imageProcess(imgfile) {
+    if (imgfile.type.indexOf("image/") > -1) {
+        let img = document.getElementById('previewimg');
 
         let fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent) {
-            let srcData = fileLoadedEvent.target.result; // <--- data: base64
-            //let srcData = "public/fuel.png";
+            let srcData = fileLoadedEvent.target.result; // <--- data: base64            
             console.log("Init processing....\n" + srcData);
-            //let newImage = document.createElement('img');
             img.src = srcData;
+            document.getElementById("previewimg").style.display="block";
 
             fetch("../processimage/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ myimg: srcData }) })
                 .then(data => data.json())
@@ -27,27 +35,24 @@ input.addEventListener('change', () => {
 
                 });
 
-            //document.getElementById("imgTest").innerHTML = newImage.outerHTML;
-            //alert("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
-            //console.log("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
         }
 
         if (staticfile != "") {
             fetch(staticfile).then(resp => resp.blob())
-            .then(blob => {
-                console.log("IMG:"+staticfile);
-                fileReader.readAsDataURL(blob);
-            })
-        }else{
-            console.log("IMG:"+input.files[0]);
-            fileReader.readAsDataURL(input.files[0]);
+                .then(blob => {
+                    console.log("IMG:" + staticfile);
+                    fileReader.readAsDataURL(blob);
+                })
+        } else {
+            console.log("IMG:" + imgfile);
+            fileReader.readAsDataURL(imgfile);
         }
-        
 
-    } else if (input.files[0].type.indexOf("audio/") > -1) {
+
+    } else if (imgfile.type.indexOf("audio/") > -1) {
         alert("Expecting an Image file")
-    } else if (input.files[0].type.indexOf("video/") > -1) {
+    } else if (imgfile.type.indexOf("video/") > -1) {
         alert("Expecting an Image file")
     }
 
-});
+}
