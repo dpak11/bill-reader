@@ -6,11 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Image process</title>
+    <title>Login</title>
     <link rel="stylesheet" href="resets.css">
-    <link rel="stylesheet" href="spinner.css">
-    <link rel="stylesheet" href="styles.css">
-   
+    <link rel="stylesheet" href="styles-login.css">
 </head>
 
 <body>
@@ -19,64 +17,52 @@
             <img src="logo.png" alt="Logo">
         </header>
         <div class="content-box">
-            <section class="side-nav">
-                <p>Bills</p>
-                <p>Expenses</p>
-                <p>Settings</p>
-            </section>
-            <section class="main">
-                <!--  <form action="#" id="myform" enctype="multipart/form-data"> -->
-                <section>
-                    <div style="margin-right: 10px">
-                        <input class="input-image" type="file" id="captureImg" accept="image/*" capture />
-                        <label for="captureImg">Capture Photo</label>
-                    </div>
-                    <div>
-                        <input class="input-image" type="file" id="fileImg" accept="image/*" />
-                        <label for="fileImg">Upload Image</label>
-                    </div>
-                </section>
-                <!--  <input type="submit" value="Process" /> -->
-                <!-- </form> -->
-                <section id="billTable" class="hide">
-                    <div class="table-head">Edit Bill Details</div>
-                    <input type="text" placeholder="Merchant" id="merchant_field">
-                    <input type="text" placeholder="Date" id="date_field">                    
-                    <input type="text" placeholder="Amount" id="amount_field">
-                    <input type="text" placeholder="Description" id="descr_field">
-                    <select name="billtype" id="billtype">
-                        <option value="transport">Transportation</option>
-                        <option value="fuel">Fuel</option>
-                        <option value="food">Restaurant/Food</option>
-                        <option value="lodging">Lodging</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="other">Other Expenses</option>
-                    </select>
-                    <div>
-                        <span id="savebill">Save</span>
-                        <span id="exitbill">Cancel</span>
-                    </div>
-                </section>
-                <section class="prev-block">
-                    <p class="previewimg hide"><img src="" alt="preview" /></p>
-                    <div class="lds-roller hide">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                </section>
-            </section>
+            <div class="loginbox">
+                <p>
+                    <input type="text" id="email" placeholder="Enter Your Email">
+                </p>
+                <p>
+                    <input type="password" class="hidden" id="pswd" placeholder="Enter Your Password">
+                </p>
+                <p>
+                    <input type="password" class="hidden" id="confirm" placeholder="Confirm Password">
+                </p>
+                <p>
+                    <input type="text" class="hidden" id="act_code" placeholder="Enter Activation Code">
+                </p>
+                <p class="btn-box">
+                    <span class="btn" id="register">Register</span>
+                    <span class="btn" id="login">Login</span>
+                    <span class="btn hidden" id="submit">Submit</span>
+                </p>
+            </div>
         </div>
     </div>
-    <!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
-    <!-- <script src='tesseract.min.js'></script>-->
-    <script src='readImage.js'></script>
+    <script>
+        const loginBtn = document.getElementById("login");
+        const registerBtn = document.getElementById("register");
+        const submitBtn = document.getElementById("submit");
+
+        loginBtn.addEventListener("click",function(){
+            document.getElementById("pswd").classList.remove("hidden");
+             document.getElementById("email").classList.add("hidden");
+            registerBtn.classList.add("hidden");
+            loginBtn.classList.add("hidden");
+            submitBtn.classList.remove("hidden");
+        });
+        registerBtn.addEventListener("click",function(){
+            document.getElementById("pswd").classList.remove("hidden");
+            document.getElementById("confirm").classList.remove("hidden");
+            document.getElementById("act_code").classList.remove("hidden");
+            document.getElementById("email").classList.add("hidden");
+            submitBtn.classList.remove("hidden");
+            registerBtn.classList.add("hidden");
+
+            loginBtn.classList.add("hidden");
+        });
+    </script>
+    <script src="crypts.js"></script>
 </body>
+
 
 </html>

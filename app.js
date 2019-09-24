@@ -3,7 +3,7 @@
 const express = require("express");
 const app = express();
 const bodyParser = require('body-parser');
-//const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const Tesseract = require("tesseract.js");
 const { TesseractWorker } = Tesseract;
@@ -11,14 +11,42 @@ const { TesseractWorker } = Tesseract;
 
 const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
-
+const KEYS_DATA = require("./keys");
 
 app.use(express.static(__dirname + "/public"));
-app.use(bodyParser.json({ limit: '5mb' })); // support json encoded bodies
+app.use(bodyParser.json({ limit: '2mb' })); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
+let mongoURL = KEYS_DATA.mongodb;
+let ReceiptUsers = mongoose.model("ReceiptUsers", new mongoose.Schema({
+    userid: String,
+    username: String,
+    usertype: String,
+    userpass: String,
+    email: String
+}));
+/*mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
+    console.log("MongoDB connected");
 
+    ReceiptUsers.create({
+        userid: "saddad321",
+        username: "gopi",
+        usertype: "admin",
+        userpass: "password",
+        email: "gopi@yahoo.com"
+    }, function(err,data) {
+        if(err){
+            console.log(err)
+        }else{
+            console.log("Added collection");
+            console.log(data)
+        }
+    })
+}).catch(function(err) {
+    console.log("MongoDB error");
+    console.log(err)
+});*/
 
 
 
@@ -26,8 +54,8 @@ let transporter = nodemailer.createTransport({
     service: 'gmail',
     secure: false,
     auth: {
-        user: "app.readerbills@gmail.com",
-        pass: ""
+        user: KEYS_DATA.email,
+        pass: KEYS_DATA.mailerPswd
     }
 });
 
@@ -35,8 +63,8 @@ let transporter = nodemailer.createTransport({
 function sendActivationMail(code) {
 
     let mailOptions = {
-        from: "app.readerbills@gmail.com",
-        to: "xxx@yyy.com",
+        from: KEYS_DATA.email,
+        to: "",
         subject: "Your Activation Code:",
         html: `<h2>Hello!</h2>
         <p>Thank You for your interest in trying out Bill Reader</p>
@@ -57,6 +85,10 @@ function sendActivationMail(code) {
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/index.html");
+
+});
+app.get("/home", (req, res) => {
+    res.sendFile(__dirname + "/public/home.html");
 
 });
 
@@ -88,7 +120,7 @@ function generateEmailConstantKey(email){
     console.log(str);
     return Buffer.from(str).toString('base64')
 }
-console.log(generateEmailConstantKey("gopinath@gmail.com"));
+//console.log(generateEmailConstantKey("abc123456@gmail.com"));
 
 
 function scanBill(img) {
@@ -197,8 +229,6 @@ function sanitiser(str, isNumber) {
 //console.log(Buffer.from("am9zZXBoQHlhaG9vLmNvbQ==","base64").toString('ascii'));
 
 
-// pattern = new RegExp(char,"g")
-// ("this is some text").replace(pattern,"0")
 
 http.listen(port, () => {
     console.log(`Server running at port ` + port);

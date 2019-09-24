@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Image process</title>
+    <link rel="stylesheet" href="resets.css">
+    <link rel="stylesheet" href="spinner.css">
+    <link rel="stylesheet" href="styles-home.css">
+   
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="logo.png" alt="Logo">
+        </header>
+        <div class="content-box">
+            <section class="side-nav">
+                <p>Bills</p>
+                <p>Expenses</p>
+                <p>Settings</p>
+            </section>
+            <section class="main">
+                <!--  <form action="#" id="myform" enctype="multipart/form-data"> -->
+                <section>
+                    <div style="margin-right: 10px">
+                        <input class="input-image" type="file" id="captureImg" accept="image/*" capture />
+                        <label for="captureImg">Capture Photo</label>
+                    </div>
+                    <div>
+                        <input class="input-image" type="file" id="fileImg" accept="image/*" />
+                        <label for="fileImg">Upload Image</label>
+                    </div>
+                </section>
+                <!--  <input type="submit" value="Process" /> -->
+                <!-- </form> -->
+                <section id="billTable" class="hide">
+                    <div class="table-head">Edit Bill Details</div>
+                    <input type="text" placeholder="Merchant" id="merchant_field">
+                    <input type="text" placeholder="Date" id="date_field">                    
+                    <input type="text" placeholder="Amount" id="amount_field">
+                    <input type="text" placeholder="Description" id="descr_field">
+                    <select name="billtype" id="billtype">
+                        <option value="transport">Transportation</option>
+                        <option value="fuel">Fuel</option>
+                        <option value="food">Restaurant/Food</option>
+                        <option value="lodging">Lodging</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="other">Other Expenses</option>
+                    </select>
+                    <div>
+                        <span id="savebill">Save</span>
+                        <span id="exitbill">Cancel</span>
+                    </div>
+                </section>
+                <section class="prev-block">
+                    <p class="previewimg hide"><img src="" alt="preview" /></p>
+                    <div class="lds-roller hide">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </div>    
+    <script src='readImage.js'></script>
+    <script src="crypts.js"></script>
+</body>
+
+</html>

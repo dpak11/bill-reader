@@ -1,0 +1,234 @@
+html,
+body {
+    width: 100%;
+}
+
+body,
+.container {
+    min-height: 100vh
+}
+
+header {
+    height: 100px;
+    width: 100%;
+    display: block;
+    background: #49274A;
+}
+
+.hide {
+    display: none
+}
+
+img {
+    width: 260px;
+    height: auto;
+    margin: 12px 0 0 30px;
+}
+
+.content-box {
+    display: flex;
+    font-size: 1em;
+    font-family: arial;
+    min-height: 86vh;
+}
+
+section.side-nav {
+    width: 15%;
+    min-width: 100px;
+    background: #94618E;
+}
+
+section.side-nav p {
+    padding: 50px 0;
+    border-bottom: solid 1px #baaaaa;
+    margin: 0;
+    cursor: pointer;
+}
+
+.nav-selected {
+    background: #f6f6f6;
+    color: #111212;
+}
+
+section.side-nav p:hover {
+    background: #8a94b0;
+    color: #fff
+}
+
+section.main {
+    display: flex;
+    /*! justify-content: center; */
+    width: 85%;
+    background: #CEDFE5;
+    /*  align-items: center; */
+    flex-wrap: wrap;
+    padding: 20px
+}
+
+.main section:nth-child(1) {
+    border-style: dashed;
+    border-width: 1px;
+    padding: 10px;
+    width: 100%;
+    height: 105px;
+    border-color: #49274a;
+    display: flex;
+    justify-content: center;
+}
+
+
+.prev-block {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+}
+
+#billTable {
+    border-style: solid;
+    border-width: 1px;
+    padding: 15px;
+    width: 45%;
+    border-color: #a08ea2;
+    display: flex;
+    flex-direction: column;
+    height: 350px;
+    align-items: center;
+    box-shadow: 1px 1px 8px 1px #372f2f;
+    background: #d5bad1;
+    margin-top: 20px
+}
+
+#billTable input {
+    margin-bottom: 10px;
+    padding: 10px;
+    width: 65%;
+    background: #C2E5F2;
+    box-shadow: inset 2px 2px 6px #908a8a;
+}
+
+#billTable.hide {
+    display: none
+}
+
+.table-head {
+    align-self: flex-start;
+    padding: 5px 10px;
+    margin-bottom: 15px;
+    background: #ba94b4;
+    color: aliceblue;
+    letter-spacing: 1px;
+    font-size: large;
+
+}
+
+#billtype {
+    height: 42px;
+    padding: 10px;
+    width: 71%;
+    background: #C2E5F2;
+    box-shadow: inset 2px 2px 6px #908a8a;
+    margin-bottom: 10px;
+}
+
+#savebill,
+#exitbill {
+    display: inline-block;
+    border-bottom: 1px solid blue;
+    padding: 5px;
+    color: blue;
+    cursor: pointer;
+    user-select: none;
+}
+
+#savebill {
+    margin-right: 15px
+}
+
+p {
+    text-align: center;
+    color: #c9d0d9;
+    font-size: 1.1em;
+}
+
+.previewimg {
+    width: 90%;
+    overflow: hidden;
+    border: 2px solid #94618e;
+    background: #fefefe;
+    box-shadow: inset 2px 2px 10px 2px #4f4b4b;
+}
+
+.previewimg>img {
+    width: 100%;
+    min-width: 200px;
+    height: auto
+}
+
+.input-image {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.input-image+label {
+    font-size: 1.1em;
+    /* font-weight: 700; */
+    color: white;
+    background-color: #5d6b9d;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer
+}
+
+.input-image:focus+label,
+.input-image+label:hover {
+    background-color: #7482d0;
+}
+
+.input-image:focus+label {
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+
+@media (max-width:920px) {
+
+    #billTable,
+    .previewimg,
+    .prev-block {
+        items-align: flex-start;
+        width: 100%
+    }
+
+    #billTable input {
+        width: 90%
+    }
+
+    #billTable select {
+        width: 94%;
+    }
+
+}
+
+
+@media (max-width:450px) {
+    .input-image+label {
+        font-size: .9em
+    }
+}
+
+@media (max-width:415px) {
+    section.side-nav {
+        width: 10%;        
+    }
+
+    section.main {
+        width: 90%
+    }
+
+
+}
