@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
+    <title>Login | Bill Vault</title>
     <link rel="stylesheet" href="resets.css">
     <link rel="stylesheet" href="styles-login.css">
 </head>
@@ -14,12 +14,12 @@
 <body>
     <div class="container">
         <header>
-            <img src="logo.png" alt="Logo">
+            <img src="logo-sq.png" alt="Logo">
         </header>
         <div class="content-box">
             <div class="loginbox">
                 <p>
-                    <input type="text" id="email" placeholder="Enter Your Email">
+                    <input type="text" id="email" autofocus placeholder="Enter Your Email">
                 </p>
                 <p>
                     <input type="password" class="hidden" id="pswd" placeholder="Enter Your Password">
@@ -42,22 +42,26 @@
         const loginBtn = document.getElementById("login");
         const registerBtn = document.getElementById("register");
         const submitBtn = document.getElementById("submit");
+        const password = document.getElementById("pswd");
+        const email = document.getElementById("email");
+        const confirm = document.getElementById("confirm");
+        const activation = document.getElementById("act_code");
 
         loginBtn.addEventListener("click",function(){
-            document.getElementById("pswd").classList.remove("hidden");
-             document.getElementById("email").classList.add("hidden");
+            password.classList.remove("hidden");
+            submitBtn.classList.remove("hidden");
+            email.classList.add("hidden");
             registerBtn.classList.add("hidden");
             loginBtn.classList.add("hidden");
-            submitBtn.classList.remove("hidden");
+            
         });
         registerBtn.addEventListener("click",function(){
-            document.getElementById("pswd").classList.remove("hidden");
-            document.getElementById("confirm").classList.remove("hidden");
-            document.getElementById("act_code").classList.remove("hidden");
-            document.getElementById("email").classList.add("hidden");
+            password.classList.remove("hidden");
+            confirm.classList.remove("hidden");
+            activation.classList.remove("hidden");
             submitBtn.classList.remove("hidden");
+            email.classList.add("hidden");            
             registerBtn.classList.add("hidden");
-
             loginBtn.classList.add("hidden");
         });
     </script>
