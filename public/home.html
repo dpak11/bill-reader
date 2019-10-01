@@ -7,22 +7,21 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bill Vault</title>
-    <link rel="stylesheet" href="resets.css">
-    <link rel="stylesheet" href="spinner.css">
-    <link rel="stylesheet" href="styles-home.css">
-   
+    <link rel="stylesheet" href="css/resets.css">
+    <link rel="stylesheet" href="css/spinner.css">
+    <link rel="stylesheet" href="css/styles-home.css">
 </head>
 
 <body>
     <div class="container">
         <header>
-            <img src="logo-sq.png" alt="Logo">
+            <img src="images/logo-sq.png" alt="Logo">
         </header>
         <div class="content-box">
             <section class="side-nav">
-                <p><span>Bills</span><img src="bills.png" style="width:50%"></p>
-                <p><span>Expenses</span><img src="expenses.png"></p>
-                <p><span>Settings</span><img src="settings.png"></p>
+                <p><span>Bills</span><img src="images/bills.png" style="width:50%"></p>
+                <p><span>Expenses</span><img src="images/expenses.png"></p>
+                <p><span>Settings</span><img src="images/settings.png"></p>
             </section>
             <section class="main">
                 <!--  <form action="#" id="myform" enctype="multipart/form-data"> -->
@@ -41,7 +40,7 @@
                 <section id="billTable" class="hide">
                     <div class="table-head">Edit Bill Details</div>
                     <input type="text" placeholder="Merchant" id="merchant_field">
-                    <input type="text" placeholder="Date" id="date_field">                    
+                    <input type="text" placeholder="Date" id="date_field">
                     <input type="text" placeholder="Amount" id="amount_field">
                     <input type="text" placeholder="Description" id="descr_field">
                     <select name="billtype" id="billtype">
@@ -72,9 +71,21 @@
                 </section>
             </section>
         </div>
-    </div>    
-    <script src='readImage.js'></script>
+    </div>
+    <script src="auth.js"></script>
     <script src="crypts.js"></script>
+    <script src='readImage.js'></script>
+    <script>
+        user_validate().then(function(status){
+            if(status == "valid"){
+                console.log("Auto Logged in")
+            }
+        }).catch(function(){            
+            location.replace("/")            
+        })
+
+    </script>
+   
 </body>
 
 </html>

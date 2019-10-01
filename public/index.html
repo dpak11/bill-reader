@@ -7,14 +7,14 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login | Bill Vault</title>
-    <link rel="stylesheet" href="resets.css">
-    <link rel="stylesheet" href="styles-login.css">
+    <link rel="stylesheet" href="css/resets.css">
+    <link rel="stylesheet" href="css/styles-login.css">
 </head>
 
 <body>
     <div class="container">
         <header>
-            <img src="logo-sq.png" alt="Logo">
+            <img src="images/logo-sq.png" alt="Logo">
         </header>
         <div class="content-box">
             <div class="loginbox">
@@ -35,37 +35,14 @@
                     <span class="btn" id="login">Login</span>
                     <span class="btn hidden" id="submit">Submit</span>
                 </p>
+                <div id="statusbox" class="hidden"></div>
             </div>
         </div>
     </div>
-    <script>
-        const loginBtn = document.getElementById("login");
-        const registerBtn = document.getElementById("register");
-        const submitBtn = document.getElementById("submit");
-        const password = document.getElementById("pswd");
-        const email = document.getElementById("email");
-        const confirm = document.getElementById("confirm");
-        const activation = document.getElementById("act_code");
-
-        loginBtn.addEventListener("click",function(){
-            password.classList.remove("hidden");
-            submitBtn.classList.remove("hidden");
-            email.classList.add("hidden");
-            registerBtn.classList.add("hidden");
-            loginBtn.classList.add("hidden");
-            
-        });
-        registerBtn.addEventListener("click",function(){
-            password.classList.remove("hidden");
-            confirm.classList.remove("hidden");
-            activation.classList.remove("hidden");
-            submitBtn.classList.remove("hidden");
-            email.classList.add("hidden");            
-            registerBtn.classList.add("hidden");
-            loginBtn.classList.add("hidden");
-        });
-    </script>
+    <script src="auth.js"></script>
     <script src="crypts.js"></script>
+    <script src="userlogin.js"></script>
+    
 </body>
 
 
