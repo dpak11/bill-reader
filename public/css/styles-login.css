@@ -36,6 +36,10 @@ p {
     font-size: .8em;
     box-sizing: border-box;
 }
+.btn.inactive{
+    opacity:.3;
+    cursor: default;
+}
 
 input {
     padding: 10px;

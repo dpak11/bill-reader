@@ -70,19 +70,16 @@ function sendActivationMail(toEmail, code, resp) {
         to: toEmail,
         subject: "Your Activation Code",
         html: `<h3>Hello!</h3>
-        <p>Thank You for your interest in trying out Bill Reader</p>
+        <p>Thank You for your interest in trying out Bill Vault</p>
         <p>Your activation code is: <b>${code}</b></p> `
     }
 
     transporter.sendMail(mailOptions, function(err, data) {
 
         if (err) {
-            console.log("Node Mailer Error: \n" + err);
-            // resp.json({ status: "email_send_fail" });
-            console.log("Activation:" + code);
-            resp.json({ status: "activation_code", e_mail: toEmail });
-
+            resp.json({ status: "email_send_fail" });
         } else {
+            dummyDB.push({ email: toEmail, activation: code, key: "", browser: "" });
             console.log("Email delivered");
             resp.json({ status: "activation_code", e_mail: toEmail });
 
@@ -99,13 +96,17 @@ function isValidEmail(em) {
     indexes.push(em.indexOf("@"));
     indexes.push(em.lastIndexOf("."));
     indexes.push(em.lastIndexOf("@"));
-    if (em.length < 10 || indexes[0] <= 2 || indexes[0] !== indexes[2] || indexes[1] < indexes[2]) {
+    if (em.length < 10 || indexes[2] <= 2 || indexes[0] !== indexes[2] || indexes[1] < indexes[2]) {
         return false;
     }
     for (let i = 0; i < em.length; i++) {
         if (validchars.indexOf(em.substr(i, 1)) == -1) {
             return false;
         }
+    }
+    let domain = em.split(".").pop();
+    if(domain !== "org" && domain !== "com" && domain !== "net" && domain !== "in"){
+        return false;
     }
 
     return true;
@@ -251,8 +252,6 @@ function genActivationCode(em, apiresponse) {
     for (let i = 0; i < 5; i++) {
         actvCode = `${actvCode}${Math.floor(Math.random()*10)}`;
     }
-
-    dummyDB.push({ email: em, activation: actvCode, key: "", browser: "" });
     sendActivationMail(em, actvCode, apiresponse);
 }
 
@@ -352,7 +351,7 @@ app.post("/login", (req, res) => {
     }
 });
 
-app.post("/storekey", (req, res) => {
+app.post("/storekey", (req, res) => {    
     let pwdkey = req.body.serv_copy;
     let useragent = req.body.agent;
     let email = req.body.email;

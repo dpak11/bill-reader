@@ -11,13 +11,18 @@ let user_mode = "";
 
 registerBtn.addEventListener("click", function() {
     if (buttonsActive) {
-        buttonsActive = false;
+        buttonsActive = false;        
+        statusBox.innerText = "please wait a moment...";
+        statusBox.classList.remove("hidden");
+        loginBtn.classList.add("inactive");
+        registerBtn.classList.add("inactive");
         fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.value, mode: "register" }) })
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "activation_code") {
-                    showStatus("Sent Activation Code to your email. Please check your inbox or spam folder.");
+                    showStatus("Sent Activation Code to your email. Please check your inbox or spam folder.",5000);
                     user_mode = "register";
+                    buttonsActive = true;
                     password.classList.remove("hidden");
                     confirm.classList.remove("hidden");
                     activation.classList.remove("hidden");
@@ -28,13 +33,13 @@ registerBtn.addEventListener("click", function() {
                     sessionStorage.setItem("em", btoa(res.e_mail));
                 }
                 if (res.status == "email_send_fail") {
-                    showStatus("Oops! Unable to send activation code to your email.");
+                    showStatus("Oops! Unable to send activation code to your email. Please try again.",5000);
                 }
                 if (res.status == "email_exists") {
-                    showStatus("This Email is already registered");
+                    showStatus("This Email is already registered",3000);
                 }
                 if (res.status == "invalid") {
-                    showStatus("Invalid Email Address");
+                    showStatus("Invalid Email Address",3000);
                 }
             });
     }
@@ -43,15 +48,17 @@ registerBtn.addEventListener("click", function() {
 
 loginBtn.addEventListener("click", function() {
     if (buttonsActive) {
-        buttonsActive = false;
+        buttonsActive = false;        
+        loginBtn.classList.add("inactive");
+        registerBtn.classList.add("inactive");
         fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.value, mode: "login" }) })
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "email_none") {
-                    showStatus("Email Address not registered.");
+                    showStatus("Email Address not registered.",3000);
                 }
                 if (res.status == "invalid") {
-                    showStatus("Invalid Email Address");
+                    showStatus("Invalid Email Address",3000);
                 }
                 if (res.status == "require_pswd") {
                     user_mode = "login";
@@ -79,23 +86,28 @@ submitBtn.addEventListener("click", function() {
                         verifyPswdKeyDB(res.serv_em_key);
                     }
                     if (res.status == "email_invalid") {
-                        showStatus("Unable to LogIn");
+                        showStatus("Unable to LogIn",3000);
                     }
                 });
         } else if (password.value === confirm.value) {
-            fetch("../register/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")), a_code: activation.value }) })
-                .then(data => data.json())
-                .then(function(res) {
-                    if (res.status == "activation_verified") {
-                        saveKeyToDB(res.serv_em_key);
+            if (passwordStrength(password.value)) {
+                fetch("../register/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")), a_code: activation.value }) })
+                    .then(data => data.json())
+                    .then(function(res) {
+                        if (res.status == "activation_verified") {
+                            saveKeyToDB(res.serv_em_key);
 
-                    }
-                    if (res.status == "code_invalid") {
-                        showStatus("Invalid Activation Code");
-                    }
-                });
+                        }
+                        if (res.status == "code_invalid") {
+                            showStatus("Invalid Activation Code",3000);
+                        }
+                    });
+            }else{
+                console.log("Invalid Password");
+            }
+
         } else {
-            showStatus("Passwords do not Match.");
+            showStatus("Passwords do not Match.",3000);
         }
     }
 
@@ -127,29 +139,59 @@ function verifyPswdKeyDB(em_key) {
                 location.replace("/home")
             }
             if (res.status == "invalid") {
-                showStatus("Invalid credentials");
+                showStatus("Invalid credentials",3000);
             }
         })
 
 }
 
-function showStatus(msg) {
-    statusBox.innerText = msg;
-    statusBox.classList.remove("hidden");
-    setTimeout(function() {
-        statusBox.classList.add("hidden");
-        buttonsActive = true;
-    }, 5000)
+function passwordStrength(pswd) {
+    if (pswd.length < 10) {
+        showStatus("Error: password must have atleast 10 characters.",5000);
+        return false;
+    }
+    let re = new RegExp("[0-9]");
+    if (!re.test(pswd)) {
+        showStatus("Error: password must contain at least 1 number.",5000);
+        return false;
+    }
+   
+    re = new RegExp("[a-z]");
+    if (!re.test(pswd)) {
+        showStatus("Error: password must contain at least 1 lowercase letter.",5000);
+        return false;
+    }
+   
+    re = new RegExp("[A-Z]");
+    if (!re.test(pswd)) {
+        showStatus("Error: password must contain at least 1 uppercase letter.",5000);
+        return false;
+    }
+    return true;
 }
 
-user_validate().then(function(status){
-    if(status == "valid"){
+function showStatus(msg,duration) {
+    statusBox.innerText = msg;
+    statusBox.classList.remove("hidden");
+    loginBtn.classList.add("inactive");
+    registerBtn.classList.add("inactive");
+    submitBtn.classList.add("inactive");
+    setTimeout(function() {
+        statusBox.classList.add("hidden");
+        loginBtn.classList.remove("inactive");
+        registerBtn.classList.remove("inactive");
+        submitBtn.classList.remove("inactive");
+        buttonsActive = true;
+    }, duration);
+}
+
+user_validate().then(function(status) {
+    if (status == "valid") {
         location.replace("/home")
     }
-}).catch(function(s){
-    if(s == "Server_error"){
-        showStatus("Server Busy");
+}).catch(function(s) {
+    if (s == "Server_error") {
+        showStatus("Server Busy",3000);
     }
-    console.log(s)
+    
 })
-

@@ -26,6 +26,7 @@ function user_validate() {
                 });
             });
     } else {
+        sessionStorage.clear();
         return new Promise(function(resolve, reject) {
             reject("new_user");
         });

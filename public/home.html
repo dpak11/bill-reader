@@ -19,9 +19,10 @@
         </header>
         <div class="content-box">
             <section class="side-nav">
-                <p><span>Bills</span><img src="images/bills.png" style="width:50%"></p>
-                <p><span>Expenses</span><img src="images/expenses.png"></p>
-                <p><span>Settings</span><img src="images/settings.png"></p>
+                <p id="billshome"><span>Bills</span><img src="images/bills.png" style="width:50%"></p>
+                <p id="expenses"><span>Expenses</span><img src="images/expenses.png"></p>
+                <p id="settings"><span>Settings</span><img src="images/settings.png"></p>
+                <p id="logout"><span>Log Out</span><img src="images/logout.png"></p>
             </section>
             <section class="main">
                 <!--  <form action="#" id="myform" enctype="multipart/form-data"> -->
@@ -74,7 +75,7 @@
     </div>
     <script src="auth.js"></script>
     <script src="crypts.js"></script>
-    <script src='readImage.js'></script>
+    <script src="readImage.js"></script>
     <script>
         user_validate().then(function(status){
             if(status == "valid"){
@@ -82,6 +83,11 @@
             }
         }).catch(function(){            
             location.replace("/")            
+        })
+        const logOutBtn = document.getElementById("logout");
+        logOutBtn.addEventListener("click",function(){
+            sessionStorage.clear();
+            location.replace("/")
         })
 
     </script>
