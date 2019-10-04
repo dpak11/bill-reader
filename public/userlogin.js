@@ -147,24 +147,24 @@ function verifyPswdKeyDB(em_key) {
 
 function passwordStrength(pswd) {
     if (pswd.length < 10) {
-        showStatus("Error: password must have atleast 10 characters.",5000);
+        showStatus("Password must have atleast 10 characters.",5000);
         return false;
     }
     let re = new RegExp("[0-9]");
     if (!re.test(pswd)) {
-        showStatus("Error: password must contain at least 1 number.",5000);
+        showStatus("Password must contain at least 1 number.",5000);
         return false;
     }
    
     re = new RegExp("[a-z]");
     if (!re.test(pswd)) {
-        showStatus("Error: password must contain at least 1 lowercase letter.",5000);
+        showStatus("Password must contain at least 1 lowercase letter.",5000);
         return false;
     }
    
     re = new RegExp("[A-Z]");
     if (!re.test(pswd)) {
-        showStatus("Error: password must contain at least 1 uppercase letter.",5000);
+        showStatus("Password must contain at least 1 uppercase letter.",5000);
         return false;
     }
     return true;
