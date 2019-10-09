@@ -18,38 +18,50 @@ app.use(bodyParser.json({ limit: '2mb' })); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-let mongoURL = KEYS_DATA.mongodb;
-let ReceiptUsers = mongoose.model("ReceiptUsers", new mongoose.Schema({
-    userid: String,
-    username: String,
-    usertype: String,
-    userpass: String,
-    email: String
-}));
-/*mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
-    console.log("MongoDB connected");
+mongoose.Promise = global.Promise;
+const mongoURL = KEYS_DATA.mongodb;
 
-    ReceiptUsers.create({
-        userid: "saddad321",
-        username: "gopi",
-        usertype: "admin",
-        userpass: "password",
-        email: "gopi@yahoo.com"
-    }, function(err,data) {
-        if(err){
-            console.log(err)
-        }else{
-            console.log("Added collection");
-            console.log(data)
-        }
-    })
+const billSchema = new mongoose.Schema({
+    encr_img: String,
+    data: String
+});
+
+let Users = null;
+let Teams = null;
+
+mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
+    console.log("MongoDB connected");
+    Users = mongoose.model("Users", new mongoose.Schema({
+        email: String,
+        activation: String,
+        key: String,
+        browser: String,
+        name: String,
+        photo: String,
+        default: String,
+        teamid: String,
+        created: String,
+        teamrole: String,
+        personal: new mongoose.Schema({
+            bills: [{ encr_img: String, data: String }]
+        })
+    }));
+
+    Teams = mongoose.model("Teams", new mongoose.Schema({
+        teamid: String,
+        logo: String,
+        title: String,
+        user_email: String,
+        role: String,
+        bills: [{ encr_img: String, data: String }]
+
+    }));
 }).catch(function(err) {
     console.log("MongoDB error");
     console.log(err)
-});*/
+});
 
 
-let dummyDB = [];
 
 
 
@@ -79,11 +91,54 @@ function sendActivationMail(toEmail, code, resp) {
         if (err) {
             resp.json({ status: "email_send_fail" });
         } else {
-            dummyDB.push({ email: toEmail, activation: code, key: "", browser: "" });
             console.log("Email delivered");
             resp.json({ status: "activation_code", e_mail: toEmail });
 
         }
+    });
+}
+
+function addUserToDB(e_mail, actCode) {
+    const thisdate = new Date();
+    const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
+    console.log("addUserToDB:" + e_mail);
+    const users = new Users({
+        email: e_mail,
+        activation: actCode,
+        key: "",
+        browser: "",
+        name: "",
+        photo: "",
+        default: "",
+        teamid: "",
+        created: date,
+        teamrole: "member",
+        personal: new mongoose.Schema({
+            bills: [{ encr_img: String, data: String }]
+        })
+    });
+    return users.save().then(function(data) {
+        return new Promise((resolve, rej) => resolve());
+
+    }).catch(function() {
+        return new Promise((res, rej) => rej());
+    })
+}
+
+function addToTeam(email, team) {
+    console.log("addToTeam:" + email);
+    const teams = new Teams({
+        teamid: team,
+        logo: "",
+        title: "",
+        user_email: email,
+        role: "member",
+        bills: [{ encr_img: "", data: "" }]
+    });
+    return teams.save().then(function(data) {
+        return new Promise((resolve, rej) => resolve());
+    }).catch(function() {
+        return new Promise((res, rej) => rej());
     });
 }
 
@@ -105,7 +160,7 @@ function isValidEmail(em) {
         }
     }
     let domain = em.split(".").pop();
-    if(domain !== "org" && domain !== "com" && domain !== "net" && domain !== "in"){
+    if (domain !== "org" && domain !== "com" && domain !== "net" && domain !== "in") {
         return false;
     }
 
@@ -114,9 +169,8 @@ function isValidEmail(em) {
 
 
 function generateEmailConstantKey(email) {
-    let constantkey = "2UoH8OIQlxWJzAVcu9T6smLNXpFqZSR1tyD+g4bnwCfhkd=GKv7BMeaYirEjP503";
+    let constantkey = KEYS_DATA.servConstantKey;
     let encodedEmail = Buffer.from(email).toString('base64');
-    console.log(encodedEmail);
     const len = encodedEmail.length;
     const max = constantkey.length - 1;
     let str = ``;
@@ -125,7 +179,7 @@ function generateEmailConstantKey(email) {
         index = index >= max ? index - max : index;
         str = `${str}${constantkey.substr(index,1)}`;
     }
-    console.log(str);
+
     return Buffer.from(str).toString('base64')
 }
 
@@ -165,7 +219,7 @@ function dateSearch(lines) {
     let pattern1 = new RegExp("([0-9]){1,2}/([0-9]){1,2}/([0-9]){2,4}");
     let pattern2 = new RegExp("([0-9]){1,2}-([0-9]){1,2}-([0-9]){2,4}");
     let dates = [];
-    //console.log("date>>>>"+lines.length);
+
     let monthCheck = {
         vals: function(v) {
             if (v[2].length == 2 || v[2].length == 4) {
@@ -233,18 +287,22 @@ function sanitiser(str, isNumber) {
 }
 
 
-function email_db_check(em, usermode) {
-    let exists = false;
-    dummyDB.forEach(function(val) {
-        if (val.email == em) {
-            exists = true;
+function emailDBcheck(em, usermode) {
+
+    return Users.find({ email: em, activation: "_ENABLED_" }).exec().then(docs => {
+        if (docs.length == 1) {
+            if (usermode == "register") {
+                return new Promise((resolve, reject) => reject({ error: "email" }));
+            } else {
+                return new Promise((resolve, reject) => resolve());
+            }
+        } else if (usermode == "register") {
+            return new Promise((resolve, reject) => resolve());
+        } else {
+            return new Promise((resolve, reject) => reject({ error: "email" }));
         }
     });
-    if (usermode == "register") {
-        return !exists;
-    }
 
-    return exists;
 }
 
 function genActivationCode(em, apiresponse) {
@@ -252,42 +310,124 @@ function genActivationCode(em, apiresponse) {
     for (let i = 0; i < 5; i++) {
         actvCode = `${actvCode}${Math.floor(Math.random()*10)}`;
     }
-    sendActivationMail(em, actvCode, apiresponse);
+
+    addUserToDB(em, actvCode).then(function() {
+        sendActivationMail(em, actvCode, apiresponse);
+    }).catch(function() {
+        apiresponse.json({ status: "email_send_fail" });
+
+    })
+
 }
 
 function activation_code_verify(em, code) {
-    let valid = false;
-    dummyDB.forEach(function(val) {
-        if (val.email == em && val.activation == code) {
-            valid = true;
-        }
-    });
-    return valid;
+
+    if (code.trim() == "") {
+        return new Promise((resolve, reject) => reject());
+    } else {
+        return Users.findOne({ email: em, activation: code }).exec().then(doc => {
+            doc.activation = "_ENABLED_";
+            return doc.save().then(function() {
+                return new Promise((resolve, rej) => resolve());
+            })
+        }).catch(err => {
+            return new Promise((resolve, reject) => reject());
+        });
+    }
+
 }
 
 function saveRegisterationDB(key, agent, email) {
-    dummyDB.forEach(function(val) {
-        if (val.email == email) {
-            val.browser = agent;
-            val.key = key;
-        }
+    return Users.findOne({ email: email }).exec().then(doc => {
+        doc.browser = agent;
+        doc.key = key;
+        return doc.save().then(function() {
+            return new Promise((resolve, rej) => resolve());
+        }).catch(function() {
+            return new Promise((resolve, rej) => rej());
+        })
+
     });
+
 }
 
 function userAuthenticate(pskey, agent, email, mode) {
-    let valid = false;
-    dummyDB.forEach(function(val) {
-        if (mode == "manual") {
-            if (val.email == email && val.key == pskey) {
-                val.browser = agent;
-                valid = true;
+
+    if (mode == "login") {
+        return Users.findOne({ email: email, key: pskey }).exec().then(doc => {
+            doc.browser = agent;
+            return doc.save().then(function() {
+                return new Promise((resolve, rej) => resolve());
+            }).catch(function() {
+                return new Promise((resolve, rej) => rej());
+            })
+        });
+    } else {
+        return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+            if (doc == null) {
+                return new Promise((resolve, rej) => rej());
+            } else {
+                return new Promise((resolve, rej) => resolve());
             }
-        } else if (val.email == email && val.key == pskey && val.browser == agent) {
-            valid = true;
+
+        })
+
+    }
+
+}
+
+function loadUserBills(pskey, agent, email) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+       
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            
+            let obj = {
+                user_name: doc.name,
+                user_photo: doc.photo,
+                user_role: doc.teamrole,
+                user_default: doc.default,
+            };
+            if (doc.default == "team") {
+                loadTeamBill(doc.teamid, doc.teamrole)
+            } else {               
+                obj.user_bills = doc.personal.bills.map(function(bill) {
+                   
+                    return {
+                        img: bill.encr_img,
+                        data: bill.data,
+                        id:bill._id
+                    }
+                });
+               
+                return new Promise((resolve, rej) => resolve({ data: obj }));
+            }
         }
 
-    });
-    return valid;
+    })
+}
+
+function saveUserBill(pskey, agent, email, receipt) {
+    console.log("saving 1...");
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+       
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            let docBills = doc.personal.bills;
+            docBills.push({ encr_img: receipt.bill, data: receipt.billFields });
+            doc.personal.bills = docBills;
+            
+            return doc.save().then(function() {
+                
+                return new Promise((resolve, rej) => resolve());
+            }).catch(function() {
+                return new Promise((resolve, rej) => rej());
+            })
+        }
+
+    })
 }
 
 
@@ -309,20 +449,23 @@ app.post("/emailreq", (req, res) => {
     let mode = req.body.mode;
 
     if (isValidEmail(email)) {
-        if (email_db_check(email, mode)) {
+        emailDBcheck(email, mode).then(function() {
             if (mode == "register") {
                 genActivationCode(email, res);
             } else {
                 res.json({ status: "require_pswd", e_mail: email })
             }
-
-        } else {
-            if (mode == "register") {
-                res.json({ status: "email_exists" })
+        }).catch(function(s) {
+            if (s.error == "email") {
+                if (mode == "register") {
+                    res.json({ status: "email_exists" })
+                } else {
+                    res.json({ status: "email_none" })
+                }
             } else {
-                res.json({ status: "email_none" })
+                res.json({ status: "busy" })
             }
-        }
+        })
 
     } else {
         res.json({ status: "invalid" })
@@ -334,29 +477,38 @@ app.post("/emailreq", (req, res) => {
 app.post("/register", (req, res) => {
     let email = req.body.email;
     let code = req.body.a_code;
-    if (activation_code_verify(email, code)) {
+    activation_code_verify(email, code).then(function() {
         let key = generateEmailConstantKey(email);
         res.json({ status: "activation_verified", serv_em_key: key })
-    } else {
+    }).catch(function() {
         res.json({ status: "code_invalid" })
-    }
+    })
+
 });
 app.post("/login", (req, res) => {
     let email = req.body.email;
-    if (email_db_check(email, "login")) {
+    emailDBcheck(email, "login").then(function() {
         let key = generateEmailConstantKey(email);
         res.json({ status: "email_ok", serv_em_key: key })
-    } else {
-        res.json({ status: "email_invalid" })
-    }
+    }).catch(function(s) {
+        if (s.error == "email") {
+            res.json({ status: "email_invalid" })
+        } else {
+            res.json({ status: "busy" })
+        }
+    });
 });
 
-app.post("/storekey", (req, res) => {    
+app.post("/storekey", (req, res) => {
     let pwdkey = req.body.serv_copy;
     let useragent = req.body.agent;
     let email = req.body.email;
-    saveRegisterationDB(pwdkey, useragent, email);
-    res.json({ status: "registered" });
+    saveRegisterationDB(pwdkey, useragent, email).then(function() {
+        res.json({ status: "registered" });
+    }).catch(function() {
+        res.json({ status: "server_error" });
+    })
+
 
 });
 
@@ -364,11 +516,11 @@ app.post("/checkloginkey", (req, res) => {
     let pwdkey = req.body.serv_copy;
     let useragent = req.body.agent;
     let email = req.body.email;
-    if (userAuthenticate(pwdkey, useragent, email, "manual")) {
+    userAuthenticate(pwdkey, useragent, email, "login").then(function() {
         res.json({ status: "verified" });
-    } else {
+    }).catch(function() {
         res.json({ status: "invalid" });
-    }
+    })
 
 });
 
@@ -376,11 +528,41 @@ app.post("/userAuth", (req, res) => {
     let pwdkey = req.body.key_serv;
     let useragent = req.body.agent;
     let email = req.body.em;
-    if (userAuthenticate(pwdkey, useragent, email, "auto")) {
+    userAuthenticate(pwdkey, useragent, email, "auto").then(function() {
         res.json({ status: "verified" });
-    } else {
+    }).catch(function() {
         res.json({ status: "invalid" });
-    }
+    })
+
+});
+
+app.post("/loadBills", (req, res) => {
+    let pwdkey = req.body.key_serv;
+    let useragent = req.body.agent;
+    let email = req.body.em;
+    loadUserBills(pwdkey, useragent, email).then(function(d) {
+        console.log("loaded");
+        res.json({ status: "done", user_data: d.data });
+    }).catch(function() {
+        console.log("load fail");
+        res.json({ status: "invalid" });
+    })
+
+});
+
+app.post("/saveBill", (req, res) => {
+    let pwdkey = req.body.key_serv;
+    let useragent = req.body.agent;
+    let email = req.body.em;
+    let bill = req.body.receipt;
+       
+    saveUserBill(pwdkey, useragent, email, bill).then(function() {
+        console.log("saved 2");
+        res.json({ status: "saved" });
+    }).catch(function() {
+        console.log("cannot save");
+        res.json({ status: "invalid" });
+    })
 
 });
 

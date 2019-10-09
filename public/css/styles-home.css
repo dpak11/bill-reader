@@ -12,7 +12,7 @@ header {
     height: 100px;
     width: 100%;
     display: block;
-    background: #49274A;
+    background: #850689;
     border-bottom: solid 4px #adaceb;
 }
 
@@ -21,7 +21,7 @@ header {
 }
 
 
-header img{
+header img {
     width: 150px;
     height: auto;
     margin: 6px 0 0 30px
@@ -52,21 +52,29 @@ section.side-nav p {
     color: #111212;
 }
 
+.saving-state {
+    color: #716c6c;
+    border-bottom: none;
+    cursor: default;
+}
+
 section.side-nav p:hover {
     background: rgba(224, 227, 235, 0.5);
     color: #0e0e0e;
     font-weight: bold;
 }
 
-section.side-nav span{
+section.side-nav span {
     display: inline-block;
-    color:#3a3975;
+    color: #3a3975;
 }
-section.side-nav img{
+
+section.side-nav img {
     display: none;
     width: 25%;
     height: auto;
 }
+
 section.main {
     display: flex;
     /*! justify-content: center; */
@@ -77,7 +85,7 @@ section.main {
     padding: 20px
 }
 
-.main section:nth-child(1) {
+#imageuploader {
     border-style: dashed;
     border-width: 1px;
     padding: 10px;
@@ -86,6 +94,7 @@ section.main {
     border-color: #49274a;
     display: flex;
     justify-content: center;
+    margin-bottom: 20px;
 }
 
 
@@ -141,9 +150,10 @@ section.main {
     box-shadow: inset 2px 2px 6px #908a8a;
     margin-bottom: 10px;
 }
-
+#exitbill,
 #savebill,
-#exitbill {
+#updatebill,
+#deletebill {
     display: inline-block;
     border-bottom: 1px solid blue;
     padding: 5px;
@@ -152,8 +162,23 @@ section.main {
     user-select: none;
 }
 
-#savebill {
+#savebill, #updatebill, #deletebill {
     margin-right: 15px
+}
+
+#savebill.saving-state, #updatebill.saving-state {
+    color: #716c6c;
+    border-bottom: none;
+    cursor: default;
+}
+
+#exitbill.hide,
+#deletebill.hide, 
+#savebill.hide,
+#updatebill.hide,
+#imageuploader.hide
+{
+    display: none
 }
 
 p {
@@ -207,6 +232,43 @@ p {
     outline: -webkit-focus-ring-color auto 5px;
 }
 
+.thumb-img img {
+    width: 200px;
+    height: auto
+}
+
+.thumbnail {
+    border: 5px solid rgba(84, 159, 250, 0.36);
+    background: #e0dcf2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0px 0px 8px 2px rgba(0, 0, 0, 0.69);
+    border-radius: 8px;
+    padding: 0 10px;
+}
+
+.thumb-date-bill,
+.thumb-title-bill {
+    padding: 10px 0;
+}
+
+#billThumbnails {
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.amount-thumb {
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px 0;
+}
+
+
 @media (max-width:920px) {
 
     #billTable,
@@ -231,21 +293,30 @@ p {
     .input-image+label {
         font-size: .9em
     }
-     header img{
+
+    header img {
         margin: 6px 0 0 5px;
     }
-      section.side-nav {
-        width: 10%;  
-        min-width: 65px      
+
+    section.side-nav {
+        width: 10%;
+        min-width: 65px
     }
-    section.side-nav span{
+
+    section.side-nav span {
         display: none;
     }
-    section.side-nav img{
+
+    section.side-nav img {
         display: inline-block;
     }
 
     section.main {
         width: 90%
+    }
+
+
+    .thumb-img img {
+        width: 100px;
     }
 }

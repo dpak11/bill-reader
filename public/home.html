@@ -25,8 +25,8 @@
                 <p id="logout"><span>Log Out</span><img src="images/logout.png"></p>
             </section>
             <section class="main">
-                <!--  <form action="#" id="myform" enctype="multipart/form-data"> -->
-                <section>
+               
+                <section id="imageuploader">
                     <div style="margin-right: 10px">
                         <input class="input-image" type="file" id="captureImg" accept="image/*" capture />
                         <label for="captureImg">Capture Photo</label>
@@ -36,8 +36,7 @@
                         <label for="fileImg">Upload Image</label>
                     </div>
                 </section>
-                <!--  <input type="submit" value="Process" /> -->
-                <!-- </form> -->
+                
                 <section id="billTable" class="hide">
                     <div class="table-head">Edit Bill Details</div>
                     <input type="text" placeholder="Merchant" id="merchant_field">
@@ -49,11 +48,13 @@
                         <option value="fuel">Fuel</option>
                         <option value="food">Restaurant/Food</option>
                         <option value="lodging">Lodging</option>
-                        <option value="Entertainment">Entertainment</option>
+                        <option value="entertainment">Entertainment</option>
                         <option value="other">Other Expenses</option>
                     </select>
                     <div>
-                        <span id="savebill">Save</span>
+                        <span id="savebill">Save</span>                        
+                        <span id="updatebill" class="hide">Update</span>
+                        <span id="deletebill">Delete</span>
                         <span id="exitbill">Cancel</span>
                     </div>
                 </section>
@@ -70,16 +71,17 @@
                         <div></div>
                     </div>
                 </section>
+                <section id="billThumbnails"></section>
             </section>
         </div>
     </div>
     <script src="auth.js"></script>
     <script src="crypts.js"></script>
-    <script src="readImage.js"></script>
+    <script src="bills.js"></script>
     <script>
         user_validate().then(function(status){
             if(status == "valid"){
-                console.log("Auto Logged in")
+                billshomeBtn.click();
             }
         }).catch(function(){            
             location.replace("/")            

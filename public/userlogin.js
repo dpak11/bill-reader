@@ -38,6 +38,9 @@ registerBtn.addEventListener("click", function() {
                 if (res.status == "email_exists") {
                     showStatus("This Email is already registered",3000);
                 }
+                if (res.status == "busy") {
+                    showStatus("Server Busy",3000);
+                }
                 if (res.status == "invalid") {
                     showStatus("Invalid Email Address",3000);
                 }
@@ -51,6 +54,8 @@ loginBtn.addEventListener("click", function() {
         buttonsActive = false;        
         loginBtn.classList.add("inactive");
         registerBtn.classList.add("inactive");
+        statusBox.innerText = "checking...";
+        statusBox.classList.remove("hidden");
         fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.value, mode: "login" }) })
             .then(data => data.json())
             .then(function(res) {
@@ -60,6 +65,9 @@ loginBtn.addEventListener("click", function() {
                 if (res.status == "invalid") {
                     showStatus("Invalid Email Address",3000);
                 }
+                if (res.status == "busy") {
+                    showStatus("Server Busy",3000);
+                }
                 if (res.status == "require_pswd") {
                     user_mode = "login";
                     password.classList.remove("hidden");
@@ -67,6 +75,7 @@ loginBtn.addEventListener("click", function() {
                     email.classList.add("hidden");
                     registerBtn.classList.add("hidden");
                     loginBtn.classList.add("hidden");
+                    statusBox.classList.add("hidden");
                     sessionStorage.setItem("em", btoa(res.e_mail));
                     buttonsActive = true;
                 }
@@ -78,6 +87,9 @@ loginBtn.addEventListener("click", function() {
 submitBtn.addEventListener("click", function() {
     if (buttonsActive) {
         buttonsActive = false;
+        submitBtn.classList.add("inactive");  
+        statusBox.innerText = "Signing in...";
+        statusBox.classList.remove("hidden");      
         if (user_mode == "login") {
             fetch("../login/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")) }) })
                 .then(data => data.json())
@@ -86,7 +98,7 @@ submitBtn.addEventListener("click", function() {
                         verifyPswdKeyDB(res.serv_em_key);
                     }
                     if (res.status == "email_invalid") {
-                        showStatus("Unable to LogIn",3000);
+                        showStatus("Unable to LogIn",3000);                        
                     }
                 });
         } else if (password.value === confirm.value) {
@@ -123,6 +135,9 @@ function saveKeyToDB(em_key) {
                 sessionStorage.setItem("ckey", _key.cli);
                 sessionStorage.setItem("skey", _key.serv);
                 location.replace("/home")
+            }
+            if (res.status == "server_error") {
+                showStatus("Server Busy",3000);
             }
         })
 

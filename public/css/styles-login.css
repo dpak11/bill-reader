@@ -12,7 +12,7 @@ header {
     height: 100px;
     width: 100%;
     display: block;
-    background: #49274A;
+    background: #850689;
     border-bottom: solid 4px #adaceb;
 }
 
@@ -72,13 +72,12 @@ input {
 
 .loginbox {
     padding: 60px 55px;
-    background: rgba(231, 117, 231, 0.2);
+    background: rgb(234, 129, 234);
     border-radius: 8px;
     box-shadow: 1px 1px 13px 0px #4c4d51;
     display: flex;
     flex-direction: column;
     align-items: center;
-    /*! height: 50%; */
 }
 
 .content-box {
@@ -89,9 +88,10 @@ input {
     justify-content: center;
     width: 100%;
     align-items: center;
-    background: linear-gradient(180deg, rgba(244, 244, 250, 0.98), rgba(0, 0, 0, 0.52));
+    background: #c3bfd4;
+    /* background: linear-gradient(180deg, rgba(244, 244, 250, 0.98), rgba(0, 0, 0, 0.52));
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-attachment: fixed; */
 }
 
 .btn-box {
