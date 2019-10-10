@@ -54,24 +54,13 @@ function imageProcess(imgfile) {
             img.src = srcData;
             console.log("Init processing....\n" + srcData);            
             document.querySelector('.lds-roller').classList.remove("hide");
-
-            fetch("../processimage/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ img: srcData }) })
+            fetch("../processimage/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ img: srcData, em: atob(sessionStorage.getItem("em"))}) })
                 .then(data => data.json())
                 .then(function(json) {
-                    document.querySelector(".lds-roller").classList.add("hide");
-                    document.getElementById("billThumbnails").classList.add("hide");
-                    exitBillBtn.classList.remove("hide");
-                    deleteBillBtn.classList.add("hide");
-                    saveBillBtn.classList.remove("hide");
-                    updateBillBtn.classList.add("hide");
-                    displayBillingTable(json.status);
-                    currentUploadStatus = "unsaved";
-                    billMode = "save";
+                    imageProcessDone(json.status);
                 }).catch(function(s) {
-                    currentUploadStatus = "";
-                    console.log("fetch API failed..");
-                    console.log(s);
-                    document.querySelector(".lds-roller").classList.add("hide");
+                    imageProcessDone({});
+                    alert("Problem reading your Receipt data.\nThis may be due to unsupported camera orientation, or unexpected image format");
                 });
         }
         fileReader.readAsDataURL(imgfile);
@@ -82,6 +71,18 @@ function imageProcess(imgfile) {
         alert("Expecting an Image file")
     }
 
+}
+
+function imageProcessDone(imgdata){
+    document.querySelector(".lds-roller").classList.add("hide");
+    document.getElementById("billThumbnails").classList.add("hide");
+    exitBillBtn.classList.remove("hide");
+    deleteBillBtn.classList.add("hide");
+    saveBillBtn.classList.remove("hide");
+    updateBillBtn.classList.add("hide");
+    displayBillingTable(imgdata);
+    currentUploadStatus = "unsaved";
+    billMode = "save";
 }
 
 function displayBillingTable(data) {
@@ -187,12 +188,14 @@ function saveBill(bill, email, serv) {
                 saveBillBtn.classList.remove("saving-state");
                 exitBillBtn.classList.remove("hide");
                 currentUploadStatus = "";
+                location.reload();
             }
         }).catch(function() {
             document.querySelector('.lds-roller').classList.add("hide");
             saveBillBtn.innerText = "Save";
             saveBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
+            alert("Opps! Server timed out");
         });
 }
 
@@ -227,6 +230,7 @@ function updateBill() {
             updateBillBtn.classList.remove("saving-state");
             deleteBillBtn.classList.remove("hide");
             exitBillBtn.classList.remove("hide");
+            alert("Opps! Server timed out");
         });
 
 }

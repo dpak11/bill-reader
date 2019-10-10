@@ -41,6 +41,7 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         default: String,
         teamid: String,
         created: String,
+        lastlogin: String,
         teamrole: String,
         personal: new mongoose.Schema({
             bills: [{ billid: String, encr_img: String, data: String }]
@@ -112,6 +113,7 @@ function addUserToDB(e_mail, actCode) {
         default: "",
         teamid: "",
         created: date,
+        lastlogin: "",
         teamrole: "member",
         personal: new mongoose.Schema({
             bills: [{ encr_img: String, data: String }]
@@ -346,6 +348,9 @@ function activation_code_verify(em, code) {
 
 function saveRegisterationDB(key, agent, email) {
     return Users.findOne({ email: email }).exec().then(doc => {
+        const thisdate = new Date();
+        const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
+        doc.lastlogin = date;
         doc.browser = agent;
         doc.key = key;
         return doc.save().then(function() {
@@ -362,7 +367,10 @@ function userAuthenticate(pskey, agent, email, mode) {
 
     if (mode == "login") {
         return Users.findOne({ email: email, key: pskey }).exec().then(doc => {
-            doc.browser = agent;
+            const thisdate = new Date();
+            const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
+            doc.lastlogin = date;
+            doc.browser = agent;            
             return doc.save().then(function() {
                 return new Promise((resolve, rej) => resolve());
             }).catch(function() {
