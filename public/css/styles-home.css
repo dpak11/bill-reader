@@ -52,11 +52,6 @@ section.side-nav p {
     color: #111212;
 }
 
-.saving-state {
-    color: #716c6c;
-    border-bottom: none;
-    cursor: default;
-}
 
 section.side-nav p:hover {
     background: rgba(224, 227, 235, 0.5);
@@ -166,7 +161,9 @@ section.main {
     margin-right: 15px
 }
 
-#savebill.saving-state, #updatebill.saving-state {
+#savebill.saving-state, 
+#updatebill.saving-state, 
+#deletebill.saving-state {
     color: #716c6c;
     border-bottom: none;
     cursor: default;
@@ -176,7 +173,8 @@ section.main {
 #deletebill.hide, 
 #savebill.hide,
 #updatebill.hide,
-#imageuploader.hide
+#imageuploader.hide,
+#billThumbnails.hide
 {
     display: none
 }
@@ -233,7 +231,7 @@ p {
 }
 
 .thumb-img img {
-    width: 200px;
+    width: 220px;
     height: auto
 }
 
@@ -317,6 +315,6 @@ p {
 
 
     .thumb-img img {
-        width: 100px;
+        width: 190px;
     }
 }
