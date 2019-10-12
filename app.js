@@ -110,7 +110,7 @@ function addUserToDB(e_mail, actCode) {
         browser: "",
         name: "",
         photo: "",
-        default: "",
+        default: "personal",
         teamid: "",
         created: date,
         lastlogin: "",
@@ -299,6 +299,7 @@ function idRandomise() {
 function emailDBcheck(em, usermode) {
 
     return Users.find({ email: em, activation: "_ENABLED_" }).exec().then(docs => {
+        console.log(docs);
         if (docs.length == 1) {
             if (usermode == "register") {
                 return new Promise((resolve, reject) => reject({ error: "email" }));
@@ -370,7 +371,7 @@ function userAuthenticate(pskey, agent, email, mode) {
             const thisdate = new Date();
             const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
             doc.lastlogin = date;
-            doc.browser = agent;            
+            doc.browser = agent;
             return doc.save().then(function() {
                 return new Promise((resolve, rej) => resolve());
             }).catch(function() {
@@ -391,7 +392,7 @@ function userAuthenticate(pskey, agent, email, mode) {
 
 }
 
-function loadUserBills(pskey, agent, email) {
+function loadSettingsData(pskey, agent, email) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
 
         if (doc == null) {
@@ -401,23 +402,61 @@ function loadUserBills(pskey, agent, email) {
             let obj = {
                 user_name: doc.name,
                 user_photo: doc.photo,
-                user_role: doc.teamrole,
                 user_default: doc.default,
             };
-            if (doc.default == "team") {
-                loadTeamBill(doc.teamid, doc.teamrole)
-            } else {
-                obj.user_bills = doc.personal.bills.map(function(bill) {
 
-                    return {
-                        img: bill.encr_img,
-                        data: bill.data,
-                        id: bill.billid
-                    }
-                });
+            obj.user_role = doc.teamrole;
+            obj.user_email = email;
+            let objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
+            return new Promise((resolve, rej) => resolve({ data: objdata }));
 
-                return new Promise((resolve, rej) => resolve({ data: obj }));
-            }
+        }
+    })
+
+}
+
+function saveSettingsData(pskey, agent, email, acc_setting) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            let settings = JSON.parse(Buffer.from(acc_setting, "base64").toString('ascii'));
+            doc.photo = settings.profile_img;
+            doc.name = settings.displayname;
+            doc.default = settings.account;
+
+            return doc.save().then(function() {
+                return new Promise((resolve, rej) => resolve());
+            }).catch(function() {
+                return new Promise((resolve, rej) => rej());
+            })
+
+        }
+
+    })
+}
+
+function loadUserBills(pskey, agent, email) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+
+            let obj = {};
+
+            obj.user_bills = doc.personal.bills.map(function(bill) {
+
+                return {
+                    img: bill.encr_img,
+                    data: bill.data,
+                    id: bill.billid
+                }
+            });
+
+            return new Promise((resolve, rej) => resolve({ data: obj }));
+
         }
 
     })
@@ -426,17 +465,16 @@ function loadUserBills(pskey, agent, email) {
 
 
 function saveUserBill(pskey, agent, email, receipt) {
-    
+
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
         if (doc == null) {
             return new Promise((resolve, rej) => rej());
         } else {
             let docBills = doc.personal.bills;
             let isDuplicates = false;
-            docBills.forEach(function(bill) {
-                console.log(bill.encr_img.length+"/"+receipt.bill.length);
-                let half1 = receipt.bill.substr(0,2000);
-                let half2 = bill.encr_img.substr(0,2000);
+            docBills.forEach(function(bill) {                
+                let half1 = receipt.bill.substr(0, 2000);
+                let half2 = bill.encr_img.substr(0, 2000);
                 if (half1 == half2) {
                     isDuplicates = true;
                 }
@@ -449,7 +487,7 @@ function saveUserBill(pskey, agent, email, receipt) {
                 }).catch(function() {
                     return new Promise((resolve, rej) => rej());
                 })
-            } else {               
+            } else {
                 return new Promise((resolve, rej) => rej("duplicate"));
             }
 
@@ -480,23 +518,9 @@ function deleteUserBill(pskey, agent, email, bill_id) {
 
 function updateUserBill(pskey, agent, email, bill_id, bill_data) {
     console.log("To Update: " + bill_id);
-    //User.findOneAndUpdate({_id:req.user._id}, {$push : { books : { author: "c", title: "d"}}})
-    /*return Users.findOneAndUpdate({ email: email, key: pskey, browser: agent, "personal.$.bills.billid": bill_id }, {
-        "$set": {
-            "personal.$.bills.data": bill_data
-        }
-    }).exec().then(function(doc) {
-        console.log("updateOne");
-        console.log(doc);
-        return new Promise((resolve, rej) => resolve());
-    }).catch(function(err) {
-        console.log(err);
-        return new Promise((resolve, rej) => rej());
-    });*/
 
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {
-            console.log("NULL")
+        if (doc == null) {            
             return new Promise((resolve, rej) => rej());
         } else {
             console.log("update query...");
@@ -565,7 +589,7 @@ app.post("/emailreq", (req, res) => {
 
 
 app.post("/register", (req, res) => {
-    const email = req.body.email;
+    const email = req.body.email.toLowerCase();
     const code = req.body.a_code;
     activation_code_verify(email, code).then(function() {
         let key = generateEmailConstantKey(email);
@@ -576,7 +600,7 @@ app.post("/register", (req, res) => {
 
 });
 app.post("/login", (req, res) => {
-    const email = req.body.email;
+    const email = req.body.email.toLowerCase();
     emailDBcheck(email, "login").then(function() {
         let key = generateEmailConstantKey(email);
         res.json({ status: "email_ok", serv_em_key: key })
@@ -584,6 +608,7 @@ app.post("/login", (req, res) => {
         if (s.error == "email") {
             res.json({ status: "email_invalid" })
         } else {
+            console.log(s);
             res.json({ status: "busy" })
         }
     });
@@ -592,7 +617,7 @@ app.post("/login", (req, res) => {
 app.post("/storekey", (req, res) => {
     const pwdkey = req.body.serv_copy;
     const useragent = req.body.agent;
-    const email = req.body.email;
+    const email = req.body.email.toLowerCase();
     saveRegisterationDB(pwdkey, useragent, email).then(function() {
         res.json({ status: "registered" });
     }).catch(function() {
@@ -605,7 +630,7 @@ app.post("/storekey", (req, res) => {
 app.post("/checkloginkey", (req, res) => {
     const pwdkey = req.body.serv_copy;
     const useragent = req.body.agent;
-    const email = req.body.email;
+    const email = req.body.email.toLowerCase();
     userAuthenticate(pwdkey, useragent, email, "login").then(function() {
         res.json({ status: "verified" });
     }).catch(function() {
@@ -617,7 +642,7 @@ app.post("/checkloginkey", (req, res) => {
 app.post("/userAuth", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
-    const email = req.body.em;
+    const email = req.body.em.toLowerCase();
     userAuthenticate(pwdkey, useragent, email, "auto").then(function() {
         res.json({ status: "verified" });
     }).catch(function() {
@@ -629,7 +654,7 @@ app.post("/userAuth", (req, res) => {
 app.post("/loadBills", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
-    const email = req.body.em;
+    const email = req.body.em.toLowerCase();
     loadUserBills(pwdkey, useragent, email).then(function(d) {
         console.log("loaded");
         res.json({ status: "done", user_data: d.data });
@@ -643,7 +668,7 @@ app.post("/loadBills", (req, res) => {
 app.post("/saveBill", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
-    const email = req.body.em;
+    const email = req.body.em.toLowerCase();
     const bill = req.body.receipt;
 
     saveUserBill(pwdkey, useragent, email, bill).then(function() {
@@ -657,13 +682,12 @@ app.post("/saveBill", (req, res) => {
         }
 
     })
-
 });
 
 app.post("/deleteBill", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
-    const email = req.body.em;
+    const email = req.body.em.toLowerCase();
     const billid = req.body.receiptid;
 
     deleteUserBill(pwdkey, useragent, email, billid).then(function() {
@@ -679,7 +703,7 @@ app.post("/deleteBill", (req, res) => {
 app.post("/updateBill", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
-    const email = req.body.em;
+    const email = req.body.em.toLowerCase();
     const billid = req.body.receiptid;
     const billdata = req.body.bdata;
 
@@ -688,6 +712,33 @@ app.post("/updateBill", (req, res) => {
         res.json({ status: "updated" });
     }).catch(function() {
         console.log("cannot update");
+        res.json({ status: "invalid" });
+    })
+
+});
+
+app.post("/settingsload", (req, res) => {
+    const pwdkey = req.body.key_serv;
+    const useragent = req.body.agent;
+    const email = req.body.em.toLowerCase();
+    loadSettingsData(pwdkey, useragent, email).then(function(d) {
+        res.json({ status: "done", accdata: d.data })
+    }).catch(function() {
+        console.log("cannot load settings");
+        res.json({ status: "invalid" });
+    })
+
+});
+
+app.post("/settingsave", (req, res) => {
+    const pwdkey = req.body.key_serv;
+    const useragent = req.body.agent;
+    const email = req.body.em.toLowerCase();
+    const setting = req.body.usersetting;
+    saveSettingsData(pwdkey, useragent, email, setting).then(function(d) {
+        res.json({ status: "saved" })
+    }).catch(function() {
+        console.log("cannot save settings");
         res.json({ status: "invalid" });
     })
 

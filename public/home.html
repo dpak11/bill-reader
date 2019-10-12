@@ -19,24 +19,22 @@
         </header>
         <div class="content-box">
             <section class="side-nav">
-                <p id="billshome"><span>Bills</span><img src="images/bills.png" style="width:50%"></p>
-                <p id="expenses"><span>Expenses</span><img src="images/expenses.png"></p>
+                <p id="billshome"><span>Bills</span><img src="images/bills.png"></p>
+                <p id="charts"><span>Chart</span><img src="images/chart.png"></p>
                 <p id="settings"><span>Settings</span><img src="images/settings.png"></p>
                 <p id="logout"><span>Log Out</span><img src="images/logout.png"></p>
             </section>
             <section class="main">
-               
                 <section id="imageuploader">
                     <div style="margin-right: 10px">
                         <input class="input-image" type="file" id="captureImg" accept="image/*" capture />
-                        <label for="captureImg">Capture Photo</label>
+                        <label for="captureImg">Capture Bill</label>
                     </div>
                     <div>
                         <input class="input-image" type="file" id="fileImg" accept="image/*" />
-                        <label for="fileImg">Upload Image</label>
+                        <label for="fileImg">Upload Bill</label>
                     </div>
                 </section>
-                
                 <section id="billTable" class="hide">
                     <div class="table-head">Edit Bill Details</div>
                     <input type="text" placeholder="Merchant" id="merchant_field">
@@ -52,7 +50,7 @@
                         <option value="other">Other Expenses</option>
                     </select>
                     <div>
-                        <span id="savebill">Save</span>                        
+                        <span id="savebill">Save</span>
                         <span id="updatebill" class="hide">Update</span>
                         <span id="deletebill">Delete</span>
                         <span id="exitbill">Cancel</span>
@@ -60,7 +58,7 @@
                 </section>
                 <section class="prev-block">
                     <p class="previewimg hide"><img src="" alt="preview" /></p>
-                    <div class="lds-roller hide">
+                    <div class="lds-roller">
                         <div></div>
                         <div></div>
                         <div></div>
@@ -71,29 +69,80 @@
                         <div></div>
                     </div>
                 </section>
-                <section id="billThumbnails"></section>
+                <section id="billThumbnails" class="hide"></section>
+                <section id="chartsBlock" class="hide">
+                </section>
+                <section id="settingsBlock" class="hide">
+                    <div id="userSettingsPage" class="profile_info">
+                        <p id="team_setting_link">Go to Team Settings</p>
+                        <h2>User Settings</h2>
+                        <p><img id="userprofilepic" src="images/user.png"><br>
+                            <input class="input-image" type="file" id="profile_img_browse" accept="image/*" />
+                            <label for="profile_img_browse">Upload Your Photo</label>
+                        </p>
+                        <p>
+                            <label for="displayname_field">Display Name</label>
+                            <input type="text" id="displayname_field">
+                        </p>
+                        <p>
+                            <label for="myemail_field">Registered Email</label>
+                            <input class="inactive" readonly type="text" id="myemail_field">
+                        </p>
+                        <p class="user_role">
+                            <label for="userrole_field">Your Role</label>
+                            <input class="inactive" readonly type="text" id="userrole_field">
+                        </p>
+                        <p>
+                            <label for="user_account_field">Account Type</label>
+                            <select name="user_account_field" id="user_account_field">
+                                <option value="team">Team / Business Account</option>
+                                <option value="personal">Personal Account</option>
+                            </select>
+                        </p>
+                        <p class="tip-info hide">You are currently logged into your <span id="active_account_txt"></span> Account. After Saving the changes, you will be automatically logged into <span id="new_account_txt"></span> Account</p>
+                        <p style="margin-top: 50px">
+                            <span class="btn" id="savesettings" style="margin-right: 20px">Save</span>
+                            <span class="btn" id="cancelsettings">Cancel</span>
+                        </p>
+                    </div>
+                    <div id="teamSettingsPage" class="profile_info hide">
+                        <p id="user_setting_link">Go to User Settings</p>
+                        <h2>Team Settings</h2>
+                        <span class="btn" id="createNewTeam" style="margin-right: 20px">Create Team</span>
+                        <div id="teamDetailsSection" class="hide">
+                            <div class="team-sub-setting">
+                                <p><img id="teamlogoImg" src="images/user.png"><br>
+                                    <input class="input-image" type="file" id="team_img_browse" accept="image/*" />
+                                    <label for="team_img_browse">Upload Logo</label>
+                                </p>
+                                <p>
+                                    <label for="displayteamname">Team/Company Name</label>
+                                    <input type="text" id="displayteamname">
+                                </p>
+                            </div>
+                            
+                            <div id="addUserPanel" class="team-sub-setting hide">
+                                <div id="newMemberPanelBody"></div>
+                                <p>
+                                    <b>Roles:</b><br>
+                                    - A Manager can Add or Delete a member from the Team. Can modify the Roles of other members in the team<br>
+                                    - An Admin can Add or Delete Members and Managers from the Team. Can modify the Roles of Managers and Members. Admin also has rights to modify the Logo and Name of the Team.<br>
+                                    - Members do not have access to any of the above.
+                                </p>
+                            </div>
+                            <div>
+                                <span class="btn" id="addNewMember" style="margin-right: 20px">Add Member to Team</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </section>
             </section>
         </div>
     </div>
     <script src="auth.js"></script>
     <script src="crypts.js"></script>
     <script src="bills.js"></script>
-    <script>
-        user_validate().then(function(status){
-            if(status == "valid"){
-                billshomeBtn.click();
-            }
-        }).catch(function(){            
-            location.replace("/")            
-        })
-        const logOutBtn = document.getElementById("logout");
-        logOutBtn.addEventListener("click",function(){
-            sessionStorage.clear();
-            location.replace("/")
-        })
-
-    </script>
-   
 </body>
 
 </html>

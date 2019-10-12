@@ -20,6 +20,141 @@ header {
     display: none
 }
 
+.btn {
+    width: 100%;
+    padding: 8px;
+    background: #3354e6;
+    text-align: center;
+    margin-bottom: 6px;
+    color: #d5dde3;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.profile_info {
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.profile_info h2 {
+    border-bottom: 2px solid #b1b3b9;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    color: #850689;
+}
+
+.profile_info p {
+
+    text-align: left;
+    color: black;
+
+}
+.team-sub-setting{
+    border: 1px solid #697b9c;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#addUserPanel > p{
+    font-size: .9em;
+    color: #6f6d6b;
+    line-height: 1.6em;
+    padding: 15px;
+    text-align: left
+}
+
+
+.profile_info p:nth-child(3),
+.team-sub-setting:nth-child(1) > p:nth-child(1)
+ {
+    margin-bottom: 50px;
+    width: 270px;
+    text-align: center;
+}
+
+.team-sub-setting:nth-child(1) > p:nth-child(1),
+.team-sub-setting:nth-child(1) > p:nth-child(2)
+{
+    width: 100%;
+    text-align: center
+}
+
+.profile_info label {
+    display: inline-block;
+    width: 200px;
+}
+
+.profile_info input,
+.profile_info select {
+    padding: 5px;
+    width: 200px;
+}
+
+#profile_img_browse+label, 
+#team_img_browse+label {
+    padding: 5px;
+    font-size: 1em;
+    background-color: #8792ba;
+}
+
+.profile_info input.inactive {
+    background: #d7c5c5;
+    color: #898383;
+    cursor: default;
+}
+
+.newuserGroup{
+    padding: 15px 5px;
+}
+
+#team_setting_link,
+#user_setting_link {
+    text-align: right;
+    font-size: .9em;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer
+}
+
+#userprofilepic,#teamlogoImg {
+    border-radius: 50%;
+    height: auto;
+    max-width: 150px;
+}
+
+#active_account_txt,
+#new_account_txt {
+    color: red;
+    font-weight: bold;
+    text-transform: capitalize
+}
+
+#userrole_field {
+    text-transform: capitalize;
+}
+
+#settingsBlock {
+    z-index: 10;
+    position: absolute;
+    top: 110px;
+    background: #CEDFE5;
+    width: 80%;
+    min-height: 90vh;
+    box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.6);
+}
+
+.prev-block,
+#imageuploader,
+#billTable,
+#billThumbnails {
+    z-index: 5;
+}
+
+#chartsBlock {
+    z-index: 10;
+}
+
+
 
 header img {
     width: 150px;
@@ -80,13 +215,14 @@ section.main {
     padding: 20px
 }
 
+
 #imageuploader {
     /* border-style: dashed;
     border-width: 1px;
     border-color: #49274a; */
     padding: 10px;
     width: 100%;
-    height: 105px;    
+    height: 105px;
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
@@ -111,7 +247,8 @@ section.main {
     align-items: center;
     box-shadow: 1px 1px 8px 1px #372f2f;
     background: #d5bad1;
-    margin-top: 20px
+    margin-top: 20px;
+    margin-left: 10px;
 }
 
 #billTable input {
@@ -122,8 +259,10 @@ section.main {
     box-shadow: inset 2px 2px 6px #908a8a;
 }
 
-#billTable.hide {
-    display: none
+p.tip-info {
+    margin-top: 50px;
+    color: #303c73;
+    font-size: .9em;
 }
 
 .table-head {
@@ -145,6 +284,7 @@ section.main {
     box-shadow: inset 2px 2px 6px #908a8a;
     margin-bottom: 10px;
 }
+
 #exitbill,
 #savebill,
 #updatebill,
@@ -157,25 +297,31 @@ section.main {
     user-select: none;
 }
 
-#savebill, #updatebill, #deletebill {
+#savebill,
+#updatebill,
+#deletebill {
     margin-right: 15px
 }
 
-#savebill.saving-state, 
-#updatebill.saving-state, 
+#savebill.saving-state,
+#updatebill.saving-state,
+#savesettings.saving-state,
 #deletebill.saving-state {
     color: #716c6c;
     border-bottom: none;
     cursor: default;
+    background: none;
 }
 
 #exitbill.hide,
-#deletebill.hide, 
+#deletebill.hide,
 #savebill.hide,
 #updatebill.hide,
 #imageuploader.hide,
-#billThumbnails.hide
-{
+#billThumbnails.hide,
+#billTable.hide,
+#chartsBlock.hide,
+#settingsBlock.hide {
     display: none
 }
 
@@ -292,13 +438,18 @@ p {
         font-size: .9em
     }
 
+    header {
+        height: 80px
+    }
+
     header img {
-        margin: 6px 0 0 5px;
+        margin: 6px 0 0 13px;
+        width: 120px
     }
 
     section.side-nav {
         width: 10%;
-        min-width: 65px
+        min-width: 50px
     }
 
     section.side-nav span {
@@ -307,6 +458,11 @@ p {
 
     section.side-nav img {
         display: inline-block;
+        width: 35%
+    }
+
+    section.side-nav p {
+        padding: 30px 0;
     }
 
     section.main {

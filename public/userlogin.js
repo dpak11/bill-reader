@@ -209,4 +209,4 @@ user_validate().then(function(status) {
         showStatus("Server Busy",3000);
     }
     
-})
+});
