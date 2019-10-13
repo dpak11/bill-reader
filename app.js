@@ -299,7 +299,7 @@ function idRandomise() {
 function emailDBcheck(em, usermode) {
 
     return Users.find({ email: em, activation: "_ENABLED_" }).exec().then(docs => {
-        console.log(docs);
+       
         if (docs.length == 1) {
             if (usermode == "register") {
                 return new Promise((resolve, reject) => reject({ error: "email" }));
@@ -546,14 +546,18 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
 }
 
 
-function testingDate() {
-    const serverDate = new Date();
-    const date1 = `${serverDate.getDate()}/${serverDate.getMonth()+1}/${serverDate.getFullYear()} ${serverDate.getHours()}:${serverDate.getMinutes()}`;
+function testingDate() {    
+    const thisdate = new Date();
+    const serverdate = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
+
     const indianDate = new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Calcutta'
     });
-    const date2 = `${indianDate.getDate()}/${indianDate.getMonth()+1}/${indianDate.getFullYear()} ${indianDate.getHours()}:${indianDate.getMinutes()}`;
-    return date1+"\n\n"+date2;
+    const date = indianDate.split(",");
+    const daymonthyear = date[0].split("/");
+
+    const ind = `${daymonthyear[1]}${daymonthyear[0]}${daymonthyear[2]}, ${date[1]}`
+    return serverdate+"\n"+ind;
 }
 
 app.get("/", (req, res) => {
@@ -577,10 +581,12 @@ app.post("/emailreq", (req, res) => {
                 res.json({ status: "require_pswd", e_mail: email })
             }
         }).catch(function(s) {
+            console.log("date error 1");
             if (s.error == "email") {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
                 } else {
+                    console.log("date error2");
                     res.json({ status: "email_none", datelog:testingDate() })
                 }
             } else {
