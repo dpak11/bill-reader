@@ -60,7 +60,8 @@ header {
     color: #6f6d6b;
     line-height: 1.6em;
     padding: 15px;
-    text-align: left
+    text-align: left;
+    width: 95%
 }
 
 
@@ -103,6 +104,13 @@ header {
     cursor: default;
 }
 
+.settingloadstatus{
+    color: #a69e9e;
+    font-size: .7em;
+    font-weight: normal;
+    padding-left: 20px;
+}
+
 .newuserGroup{
     padding: 15px 5px;
 }
@@ -142,6 +150,7 @@ header {
     min-height: 90vh;
     box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.6);
 }
+
 
 .prev-block,
 #imageuploader,

@@ -397,7 +397,8 @@ settingsBtn.addEventListener("click", function() {
         billshomeBtn.classList.remove("nav-selected");
         settingsBtn.classList.add("nav-selected");
         document.getElementById("settingsBlock").classList.remove("hide");
-        savesettingsBtn.classList.add("hide");
+        savesettingsBtn.classList.add("hide");        
+        document.querySelector('.settingloadstatus').classList.remove("hide");
         saveSettingEnabled = false;
         loadAccountSettings();
     }
@@ -471,6 +472,7 @@ function loadAccountSettings() {
             if (setting.status == "done") {
                 let settingdata = JSON.parse(atob(setting.accdata));
                 console.log(settingdata);
+                document.querySelector('.settingloadstatus').classList.add("hide");
                 initAccountVals.name = settingdata.user_name;
                 initAccountVals.type = settingdata.user_default;
                 if (settingdata.user_photo != "" && settingdata.user_photo.length > 100) {
@@ -488,6 +490,7 @@ function loadAccountSettings() {
             }
 
         }).catch(function(s) {
+            document.querySelector('.settingloadstatus').classList.add("hide");
             alert("Opps! Server timed out");
 
         });

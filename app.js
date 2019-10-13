@@ -548,7 +548,7 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
 
 function testingDate() {    
     const thisdate = new Date();
-    const serverdate = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
+    const serverdate = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}, ${thisdate.getHours()}:${thisdate.getMinutes()}`;
 
     const indianDate = new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Calcutta'
@@ -556,7 +556,7 @@ function testingDate() {
     const date = indianDate.split(",");
     const daymonthyear = date[0].split("/");
 
-    const ind = `${daymonthyear[1]}${daymonthyear[0]}${daymonthyear[2]}, ${date[1]}`
+    const ind = `${daymonthyear[1]}/${daymonthyear[0]}/${daymonthyear[2]},${date[1]}`
     return serverdate+"\n"+ind;
 }
 
