@@ -546,8 +546,15 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
 }
 
 
-//console.log(Buffer.from("lop@yahoo.com").toString('base64'));
-//console.log(Buffer.from("am9zZXBoQHlhaG9vLmNvbQ==","base64").toString('ascii'));
+function testingDate() {
+    const serverDate = new Date();
+    const date1 = `${serverDate.getDate()}/${serverDate.getMonth()+1}/${serverDate.getFullYear()} ${serverDate.getHours()}:${serverDate.getMinutes()}`;
+    const indianDate = new Date().toLocaleString('en-US', {
+        timeZone: 'Asia/Calcutta'
+    });
+    const date2 = `${indianDate.getDate()}/${indianDate.getMonth()+1}/${indianDate.getFullYear()} ${indianDate.getHours()}:${indianDate.getMinutes()}`;
+    return date1+"\n\n"+date2;
+}
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/index.html");
@@ -574,7 +581,7 @@ app.post("/emailreq", (req, res) => {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
                 } else {
-                    res.json({ status: "email_none" })
+                    res.json({ status: "email_none", datelog:testingDate() })
                 }
             } else {
                 res.json({ status: "busy" })
