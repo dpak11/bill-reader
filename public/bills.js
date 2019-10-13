@@ -110,13 +110,15 @@ function displayBillThumbnails() {
         let billImg = decryptImg(bill.img, key);
         let billData = decryptData(bill.data, key);
         let typeImg = "images/" + billData.type + ".png";
+        let submit_date = bill.lastdate.split(",")[0];
         let thumbs = `<div class="amount-thumb">&#8377;${billData.total}</div>
             <div class="thumb-img">
                 <img src="${billImg}">                
             </div> 
             <div class="thumb-title-bill">${billData.title}</div>
             <div class="thumb-type-bill"><img src="${typeImg}"></div>
-            <div class="thumb-date-bill">${billData.date}</div>
+            <div class="thumb-date-submit">Submitted: ${submit_date}</div>
+            <div class="thumb-date-bill">Bill Date: ${billData.date}</div>
             `;
         let div = document.createElement("div");
         div.className = "thumbnail";
@@ -478,12 +480,12 @@ function loadAccountSettings() {
                 if (settingdata.user_photo != "" && settingdata.user_photo.length > 100) {
                     document.getElementById("userprofilepic").setAttribute("src", settingdata.user_photo);
                 }
-                if (initAccountVals.type == "personal") {
-                    document.querySelector(".user_role").classList.add("hide");
+                if (initAccountVals.type == "team") {
+                    document.querySelector(".user_role").classList.remove("hide");
                 }
                 document.getElementById("user_account_field").value = initAccountVals.type;
                 document.getElementById("displayname_field").value = initAccountVals.name;
-                document.getElementById("userrole_field").value = settingdata.user_role;
+                //document.getElementById("userrole_field").value = settingdata.user_role;
                 document.getElementById("myemail_field").value = settingdata.user_email;
                 savesettingsBtn.classList.remove("hide");
                 saveSettingEnabled = true;

@@ -39,12 +39,10 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         name: String,
         photo: String,
         default: String,
-        teamid: String,
         created: String,
         lastlogin: String,
-        teamrole: String,
         personal: new mongoose.Schema({
-            bills: [{ billid: String, encr_img: String, data: String }]
+            bills: [{ billid: String, encr_img: String, data: String, submitdate: String }]
         })
     }));
 
@@ -54,7 +52,12 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         title: String,
         user_email: String,
         role: String,
-        bills: [{ billid: String, encr_img: String, data: String }]
+        default:String,
+        created: String,
+        lastlogin: String,
+        approver:String,
+        logs:[],
+        bills: [{ billid: String, encr_img: String, data: String, submitdate: String, status: String, logs:[] }]
 
     }));
 }).catch(function(err) {
@@ -99,10 +102,7 @@ function sendActivationMail(toEmail, code, resp) {
     });
 }
 
-function addUserToDB(e_mail, actCode) {
-    const thisdate = new Date();
-    const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
-    console.log("addUserToDB:" + e_mail);
+function addUserToDB(e_mail, actCode) {    
     const users = new Users({
         email: e_mail,
         activation: actCode,
@@ -110,13 +110,11 @@ function addUserToDB(e_mail, actCode) {
         browser: "",
         name: "",
         photo: "",
-        default: "personal",
-        teamid: "",
-        created: date,
+        default: "personal",        
+        created: getIndDate(),
         lastlogin: "",
-        teamrole: "member",
         personal: new mongoose.Schema({
-            bills: [{ encr_img: String, data: String }]
+            bills: [{ billid: String, encr_img: String, data: String, submitdate: String }]
         })
     });
     return users.save().then(function(data) {
@@ -288,18 +286,11 @@ function sanitiser(str, isNumber) {
     return newchar;
 }
 
-function idRandomise() {
-    let rnd = ``;
-    for (let i = 0; i < 20; i++) {
-        rnd = `${rnd}${Math.floor(Math.random()*10)}`;
-    }
-    return rnd;
-}
 
 function emailDBcheck(em, usermode) {
 
     return Users.find({ email: em, activation: "_ENABLED_" }).exec().then(docs => {
-       
+
         if (docs.length == 1) {
             if (usermode == "register") {
                 return new Promise((resolve, reject) => reject({ error: "email" }));
@@ -349,9 +340,7 @@ function activation_code_verify(em, code) {
 
 function saveRegisterationDB(key, agent, email) {
     return Users.findOne({ email: email }).exec().then(doc => {
-        const thisdate = new Date();
-        const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
-        doc.lastlogin = date;
+        doc.lastlogin = getIndDate();
         doc.browser = agent;
         doc.key = key;
         return doc.save().then(function() {
@@ -368,9 +357,7 @@ function userAuthenticate(pskey, agent, email, mode) {
 
     if (mode == "login") {
         return Users.findOne({ email: email, key: pskey }).exec().then(doc => {
-            const thisdate = new Date();
-            const date = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}`;
-            doc.lastlogin = date;
+            doc.lastlogin = getIndDate();
             doc.browser = agent;
             return doc.save().then(function() {
                 return new Promise((resolve, rej) => resolve());
@@ -404,8 +391,7 @@ function loadSettingsData(pskey, agent, email) {
                 user_photo: doc.photo,
                 user_default: doc.default,
             };
-
-            obj.user_role = doc.teamrole;
+            
             obj.user_email = email;
             let objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
             return new Promise((resolve, rej) => resolve({ data: objdata }));
@@ -443,15 +429,13 @@ function loadUserBills(pskey, agent, email) {
         if (doc == null) {
             return new Promise((resolve, rej) => rej());
         } else {
-
             let obj = {};
-
             obj.user_bills = doc.personal.bills.map(function(bill) {
-
                 return {
                     img: bill.encr_img,
                     data: bill.data,
-                    id: bill.billid
+                    id: bill.billid,
+                    lastdate: bill.submitdate
                 }
             });
 
@@ -472,7 +456,7 @@ function saveUserBill(pskey, agent, email, receipt) {
         } else {
             let docBills = doc.personal.bills;
             let isDuplicates = false;
-            docBills.forEach(function(bill) {                
+            docBills.forEach(function(bill) {
                 let half1 = receipt.bill.substr(0, 2000);
                 let half2 = bill.encr_img.substr(0, 2000);
                 if (half1 == half2) {
@@ -480,7 +464,7 @@ function saveUserBill(pskey, agent, email, receipt) {
                 }
             });
             if (!isDuplicates) {
-                docBills.push({ billid: idRandomise(), encr_img: receipt.bill, data: receipt.billFields });
+                docBills.push({ billid: idRandomise("bill"), encr_img: receipt.bill, data: receipt.billFields, submitdate: getIndDate() });
                 doc.personal.bills = docBills;
                 return doc.save().then(function() {
                     return new Promise((resolve, rej) => resolve());
@@ -520,7 +504,7 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
     console.log("To Update: " + bill_id);
 
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {            
+        if (doc == null) {
             return new Promise((resolve, rej) => rej());
         } else {
             console.log("update query...");
@@ -528,6 +512,7 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
                 console.log(bill.billid);
                 if (bill.billid === bill_id) {
                     bill.data = bill_data;
+                    bill.submitdate = getIndDate();
                     console.log("updated: " + bill_id);
                 }
             });
@@ -546,18 +531,29 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
 }
 
 
-function testingDate() {    
-    const thisdate = new Date();
-    const serverdate = `${thisdate.getDate()}/${thisdate.getMonth()+1}/${thisdate.getFullYear()}, ${thisdate.getHours()}:${thisdate.getMinutes()}`;
-
+function getIndDate() {
     const indianDate = new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Calcutta'
     });
     const date = indianDate.split(",");
     const daymonthyear = date[0].split("/");
+    return `${daymonthyear[1]}/${daymonthyear[0]}/${daymonthyear[2]},${date[1]}`;
+}
 
-    const ind = `${daymonthyear[1]}/${daymonthyear[0]}/${daymonthyear[2]},${date[1]}`
-    return serverdate+"\n"+ind;
+
+function idRandomise(idfor) {
+    let rnd = ``;
+    if(idfor == "bill"){
+        for (let i = 0; i < 20; i++) {
+            rnd = `${rnd}${Math.floor(Math.random()*10)}`;
+        }
+    }else{
+        let chars = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPLKJHGFDSAZXCVBNM0987654321";
+        for (let j = 0; j < 30; j++) {
+            rnd = `${rnd}${chars.substr(Math.floor(Math.random()*chars.length),1)}`;
+        }
+    }
+    return rnd;
 }
 
 app.get("/", (req, res) => {
@@ -587,7 +583,7 @@ app.post("/emailreq", (req, res) => {
                     res.json({ status: "email_exists" })
                 } else {
                     console.log("date error2");
-                    res.json({ status: "email_none", datelog:testingDate() })
+                    res.json({ status: "email_none" })
                 }
             } else {
                 res.json({ status: "busy" })

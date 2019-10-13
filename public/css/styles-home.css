@@ -403,9 +403,13 @@ p {
     padding: 0 10px;
 }
 
-.thumb-date-bill,
+.thumb-date-submit,
 .thumb-title-bill {
     padding: 10px 0;
+}
+.thumb-date-bill{
+    font-size: .8em;
+    color: #565252;
 }
 
 #billThumbnails {
