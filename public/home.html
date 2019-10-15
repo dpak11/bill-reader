@@ -9,6 +9,7 @@
     <title>Bill Vault</title>
     <link rel="stylesheet" href="css/resets.css">
     <link rel="stylesheet" href="css/spinner.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="css/styles-home.css">
 </head>
 
@@ -35,10 +36,22 @@
                         <label for="fileImg">Upload Bill</label>
                     </div>
                 </section>
+                <section>
+                    <div class="lds-roller">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </section>
                 <section id="billTable" class="hide">
                     <div class="table-head">Edit Bill Details</div>
                     <input type="text" placeholder="Merchant" id="merchant_field">
-                    <input type="text" placeholder="Date" id="date_field">
+                    <input type="text" placeholder="Date" readonly id="date_field">
                     <input type="text" placeholder="Amount" id="amount_field">
                     <input type="text" placeholder="Description" id="descr_field">
                     <select name="billtype" id="billtype">
@@ -58,19 +71,23 @@
                 </section>
                 <section class="prev-block">
                     <p class="previewimg hide"><img src="" alt="preview" /></p>
-                    <div class="lds-roller">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
                 </section>
                 <section id="billThumbnails" class="hide"></section>
                 <section id="chartsBlock" class="hide">
+                    <div class="chart-filter-day">
+                        <select name="chartdaysFilter" id="chartdaysFilter">
+                            <option value="7" selected>Last 7 Days</option>
+                            <option value="15">Last 15 Days</option>
+                            <option value="30">Last 1 Month</option>
+                            <option value="60">Last 2 Months</option>
+                            <option value="90">Last 3 Months</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div id="piechart"></div>
+                        <div id="barchart"></div>
+                        <div id="barchartstacked"></div>
+                    </div>
                 </section>
                 <section id="settingsBlock" class="hide">
                     <div id="userSettingsPage" class="profile_info">
@@ -120,7 +137,6 @@
                                     <input type="text" id="displayteamname">
                                 </p>
                             </div>
-                            
                             <div id="addUserPanel" class="team-sub-setting hide">
                                 <div id="newMemberPanelBody"></div>
                                 <p>
@@ -134,15 +150,18 @@
                                 <span class="btn" id="addNewMember" style="margin-right: 20px">Add Member to Team</span>
                             </div>
                         </div>
-                        
                     </div>
                 </section>
+                
             </section>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="auth.js"></script>
     <script src="crypts.js"></script>
-    <script src="bills.js"></script>
+    <script src="home.js"></script>
 </body>
 
 </html>
