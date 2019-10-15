@@ -750,7 +750,7 @@ function filterChart(days) {
         barChartList1 = barChartList1.splice(markerPoint + 1);
         console.log("MarkerPoint:"+(markerPoint + 1));
         console.log(barChartList1);
-        todate2 = barChartList1[0].date;
+        todate2 = barChartList1.length>0 ? barChartList1[0].date : "";
         barChartList1Filter = barChartList1.filter(function(dx, p) {
             let tot_days = dateDifference(barChartList1[0].date, dx.date);
             if (tot_days <= 30) {
@@ -773,7 +773,7 @@ function filterChart(days) {
     let todate3 = "";
     if (days == 90) {
         barChartList2Filter = barChartList1.splice(markerPoint + 1);
-        todate3 = barChartList2Filter[0].date;
+        todate3 = barChartList2Filter.length>0 ? barChartList2Filter[0].date : "";
         console.log("MarkerPoint:"+(markerPoint + 1));
         console.log(barChartList2Filter);
         barChartList2Filter = barChartList2Filter.filter(function(dx, p) {
