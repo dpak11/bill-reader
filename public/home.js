@@ -6,6 +6,7 @@ let selectedBillId = "";
 let billMode = "save";
 let currentUploadStatus = "";
 let currentPage = "";
+let userAcType = "";
 
 let billshomeBtn = document.getElementById("billshome");
 let saveBillBtn = document.getElementById("savebill");
@@ -15,6 +16,20 @@ let updateBillBtn = document.getElementById("updatebill");
 let logOutBtn = document.getElementById("logout");
 
 
+billshomeBtn.addEventListener("click", function() {
+    if (currentPage !== "bills") {
+        console.log("fetching..");
+        fetchBills();
+        currentPage = "bills";
+        document.querySelector('.lds-roller').classList.remove("hide");
+        billshomeBtn.classList.add("nav-selected");
+        chartsBtn.classList.remove("nav-selected");
+        settingsBtn.classList.remove("nav-selected");
+        document.getElementById("settingsBlock").classList.add("hide");
+        document.getElementById("chartsBlock").classList.add("hide");
+    }
+
+});
 
 
 captureImg.addEventListener('change', () => {
@@ -90,6 +105,36 @@ function imageProcessDone(imgdata) {
     billMode = "save";
 }
 
+
+function fetchBills() {
+    let client = sessionStorage.getItem("ckey") || false;
+    let serv = sessionStorage.getItem("skey") || false;
+    let sessionemail = sessionStorage.getItem("em") || false;
+    if (client && serv && sessionemail) {
+        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv }) })
+            .then(data => data.json())
+            .then(function(res) {
+                console.log("loaded1");
+                if (res.status == "invalid") {
+                    console.log("load.2");
+                    sessionStorage.clear();
+                    document.querySelector('.lds-roller').classList.add("hide");
+                }
+                if (res.status == "done") {
+                    //console.log(res.user_data);
+                    document.querySelector('.lds-roller').classList.add("hide");
+                    userAcType = res.user_data.account;
+                    allBillsData = res.user_data;
+                    displayBillThumbnails();
+
+                }
+            }).catch(function() {
+                console.log("load failed");
+                document.querySelector('.lds-roller').classList.add("hide");
+            });
+    }
+}
+
 function displayBillingTable(data) {
     document.querySelector('.previewimg').classList.remove("hide");
     document.getElementById("billTable").classList.remove("hide");
@@ -106,9 +151,16 @@ function displayBillThumbnails() {
     thumbnails.classList.remove("hide");
     thumbnails.innerHTML = "";
     allBillsData.user_bills.forEach(function(bill) {
-        const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
-        let billImg = decryptImg(bill.img, key);
-        let billData = decryptData(bill.data, key);
+        let billImg = "";
+        let billData = "";
+        if (userAcType == "personal") {
+            const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
+            billImg = decryptImg(bill.img, key);
+            billData = decryptData(bill.data, key);
+        } else {
+            billImg = atob(bill.img);
+            billData = JSON.parse(atob(bill.data));
+        }
         let typeImg = "images/" + billData.type + ".png";
         let submit_date = bill.lastdate.split(",")[0];
         let thumbs = `<div class="amount-thumb">&#8377;${billData.total}</div>
@@ -145,63 +197,6 @@ function displayBillThumbnails() {
 
 }
 
-function fetchBills() {
-    let client = sessionStorage.getItem("ckey") || false;
-    let serv = sessionStorage.getItem("skey") || false;
-    let sessionemail = sessionStorage.getItem("em") || false;
-    if (client && serv && sessionemail) {
-        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv }) })
-            .then(data => data.json())
-            .then(function(res) {
-                console.log("loaded1");
-                if (res.status == "invalid") {
-                    console.log("load.2");
-                    sessionStorage.clear();
-                    document.querySelector('.lds-roller').classList.add("hide");
-                }
-                if (res.status == "done") {
-                    console.log(res.user_data);
-                    document.querySelector('.lds-roller').classList.add("hide");
-                    allBillsData = res.user_data;
-                    displayBillThumbnails();
-
-                }
-            }).catch(function() {
-                console.log("load failed");
-                document.querySelector('.lds-roller').classList.add("hide");
-            });
-    }
-}
-
-function saveBill(bill, email, serv) {
-    fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(email), agent: btoa(navigator.userAgent), key_serv: serv, receipt: bill }) })
-        .then(data => data.json())
-        .then(function(res) {
-            if (res.status == "invalid") {
-                sessionStorage.clear();
-            }
-            if (res.status == "duplicate_bill") {
-                saveBillBtn.innerText = "Save";
-                saveBillBtn.classList.remove("saving-state");
-                exitBillBtn.classList.remove("hide");
-                alert("Sorry, can not Save.\nA Similar Bill already exists");
-            }
-            if (res.status == "saved") {
-                exitBillBtn.click();
-                saveBillBtn.innerText = "Save";
-                saveBillBtn.classList.remove("saving-state");
-                exitBillBtn.classList.remove("hide");
-                currentUploadStatus = "";
-                location.reload();
-            }
-        }).catch(function() {
-            document.querySelector('.lds-roller').classList.add("hide");
-            saveBillBtn.innerText = "Save";
-            saveBillBtn.classList.remove("saving-state");
-            exitBillBtn.classList.remove("hide");
-            alert("Opps! Server timed out");
-        });
-}
 
 function updateBill() {
     const client = sessionStorage.getItem("ckey");
@@ -214,8 +209,13 @@ function updateBill() {
     const billType = document.getElementById("billtype").value;
 
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
-    const encrypted = encryptData(billdata, { serv: serv, cli: client });
-    fetch("../updateBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, receiptid: selectedBillId, bdata: encrypted }) })
+    let encodedBill = "";
+    if (userAcType == "personal") {
+        encodedBill = encryptData(billdata, { serv: serv, cli: client });
+    } else {
+        encodedBill = btoa(JSON.stringify(billdata));
+    }
+    fetch("../updateBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, receiptid: selectedBillId, bdata: encodedBill }) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -269,16 +269,39 @@ function deleteBill() {
 
 
 
-billshomeBtn.addEventListener("click", function() {
-    if (currentPage !== "bills") {
-        console.log("fetching..");
-        fetchBills();
-        currentPage = "bills";
-        document.querySelector('.lds-roller').classList.remove("hide");
-        billshomeBtn.classList.add("nav-selected");
-    }
+function saveBill(bill, email, serv) {
+    fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(email), agent: btoa(navigator.userAgent), key_serv: serv, receipt: bill }) })
+        .then(data => data.json())
+        .then(function(res) {
+            if (res.status == "invalid") {
+                sessionStorage.clear();
+            }
+            if (res.status == "duplicate_bill") {
+                saveBillBtn.innerText = "Save";
+                saveBillBtn.classList.remove("saving-state");
+                exitBillBtn.classList.remove("hide");
+                alert("Sorry, can not Save.\nA Similar Bill already exists");
+            }
+            if (res.status == "saved") {
+                exitBillBtn.click();
+                saveBillBtn.innerText = "Save";
+                saveBillBtn.classList.remove("saving-state");
+                exitBillBtn.classList.remove("hide");
+                currentUploadStatus = "";
+                location.reload();
+            }
+        }).catch(function() {
+            document.querySelector('.lds-roller').classList.add("hide");
+            saveBillBtn.innerText = "Save";
+            saveBillBtn.classList.remove("saving-state");
+            exitBillBtn.classList.remove("hide");
+            alert("Opps! Server timed out");
+        });
+}
 
-});
+
+
+
 
 saveBillBtn.addEventListener("click", function() {
     const date = document.getElementById("date_field").value;
@@ -292,9 +315,13 @@ saveBillBtn.addEventListener("click", function() {
     const serv = sessionStorage.getItem("skey") || "";
     const sessEmail = sessionStorage.getItem("em") || "";
     const imgSrc = document.querySelector('.previewimg img').getAttribute("src");
-    const billObj = {
-        bill: encryptImg(imgSrc, { serv: serv, cli: client }),
-        billFields: encryptData(billdata, { serv: serv, cli: client })
+    let billObj = {};
+    if (userAcType == "personal") {
+        billObj.bill = encryptImg(imgSrc, { serv: serv, cli: client });
+        billObj.billFields = encryptData(billdata, { serv: serv, cli: client });
+    } else {
+        billObj.bill = btoa(imgSrc);
+        billObj.billFields = btoa(JSON.stringify(billdata));
     }
     console.log(billObj);
     saveBillBtn.innerText = "Saving, please wait...";
@@ -340,15 +367,8 @@ exitBillBtn.addEventListener("click", function() {
 
 });
 
-logOutBtn.addEventListener("click", function() {
-    sessionStorage.clear();
-    location.replace("/")
-});
 
-
-
-
-
+//-------------------------------------------------------------------------
 
 // SETTINGS 
 
@@ -365,6 +385,23 @@ let addNewMemberBtn = document.getElementById("addNewMember");
 let isProfilePicModified = false;
 let saveSettingEnabled = false;
 let initAccountVals = { name: "", type: "" };
+
+
+settingsBtn.addEventListener("click", function() {
+    if (currentPage !== "settings" && userAcType !== "") {
+        currentPage = "settings";
+        billshomeBtn.classList.remove("nav-selected");
+        chartsBtn.classList.remove("nav-selected");
+        settingsBtn.classList.add("nav-selected");
+        document.getElementById("settingsBlock").classList.remove("hide");
+        savesettingsBtn.classList.add("hide");
+        document.querySelector('.settingloadstatus').classList.remove("hide");
+        saveSettingEnabled = false;
+        loadAccountSettings();
+    }
+});
+
+
 
 profileImgBtn.addEventListener('change', () => {
     attachProfileImage(profileImgBtn.files[0]);
@@ -393,18 +430,6 @@ function attachProfileImage(imgfile) {
 }
 
 
-settingsBtn.addEventListener("click", function() {
-    if (currentPage !== "settings") {
-        currentPage = "settings";
-        billshomeBtn.classList.remove("nav-selected");
-        settingsBtn.classList.add("nav-selected");
-        document.getElementById("settingsBlock").classList.remove("hide");
-        savesettingsBtn.classList.add("hide");        
-        document.querySelector('.settingloadstatus').classList.remove("hide");
-        saveSettingEnabled = false;
-        loadAccountSettings();
-    }
-});
 
 savesettingsBtn.addEventListener("click", function() {
     if (!saveSettingEnabled) {
@@ -525,16 +550,16 @@ createNewTeamBtn.addEventListener("click", function() {
     document.getElementById("teamDetailsSection").classList.remove("hide");
 });
 
-addNewMemberBtn.addEventListener("click", function() {    
+addNewMemberBtn.addEventListener("click", function() {
     document.getElementById("addUserPanel").classList.remove("hide");
     let newMemberPanel = document.querySelector("#newMemberPanelBody .newuserGroup") || null;
-    if(!newMemberPanel){
+    if (!newMemberPanel) {
         document.getElementById("addUserPanel").appendChild(addNewMemberBtn);
         let rolesPara = document.querySelector("#addUserPanel p");
         document.getElementById("addUserPanel").appendChild(rolesPara);
     }
     let div = document.createElement("div");
-    div.setAttribute("class","newuserGroup");
+    div.setAttribute("class", "newuserGroup");
     div.innerHTML = `   
         <span><input type="text" placeholder="Member Email"></span>
         <span>
@@ -562,13 +587,296 @@ cancelsettingsBtn.addEventListener("click", function() {
 
 
 
+//-------------------------------------------------------------------------
+
+// Charts
+let chartsBtn = document.getElementById("charts");
+let chartsFilterSelect = document.getElementById("chartdaysFilter");
+let all_chart_data = [];
+
+/*let piechartdata = [
+    ['Task', 'Hours per Day'],
+    ['Fuel', 250],
+    ['Entertainment', 102],
+    ['Food', 20],
+    ['Lodging', 550],
+    ['Travel', 140]
+];
+let barchartdata = [
+    ['Category', 'Fuel', 'Entertainment', 'Food', 'Lodging',
+        'Travel', 'Others', { role: 'annotation' }
+    ],
+    ['Oct', 250, 424, 120, 100, 50, 280, ''],
+    ['Sep', 280, 500, 500, 30, 450, 100, ''],
+    ['Aug', 28, 19, 29, 30, 12, 550, '']
+];
+*/
+
+function drawBillsChart(chartElem, chartdata, title, stacked) {
+    let charts = {
+        drawChart: function() {
+            let options = {};
+            let elem = document.getElementById(chartElem);
+            if (chartElem == "piechart") {
+                options = {
+                    title: title,
+                    is3D: true
+                };
+            } else {
+                options = {
+                    legend: { position: 'top', maxLines: 3 },
+                    bar: { groupWidth: '75%' },
+                    isStacked: stacked,
+                    title: title
+                };
+            }
+            let arraydata = google.visualization.arrayToDataTable(chartdata);
+            let chartPlot = null;
+            if (chartElem == "piechart") {
+                chartPlot = new google.visualization.PieChart(elem);
+            } else {
+                chartPlot = new google.visualization.BarChart(elem);
+            }
+            chartPlot.draw(arraydata, options);
+        }
+    }
+    let get_width = document.getElementById("chartsBlock").offsetWidth;
+    console.log(get_width);
+    let setwidth = get_width > 500 ? Math.round(get_width / 2) + 200 : get_width;
+    document.getElementById(chartElem).style.width = `${setwidth}px`;
+    document.getElementById(chartElem).style.height = `${setwidth-100}px`;
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(charts.drawChart);
+
+}
+
+
+
+chartsFilterSelect.addEventListener("change", function() {
+    filterChart(Number(chartsFilterSelect.value));
+});
+
+
+chartsBtn.addEventListener("click", function() {
+    if (currentPage !== "charts" && userAcType !== "") {
+        currentPage = "charts";
+        billshomeBtn.classList.remove("nav-selected");
+        settingsBtn.classList.remove("nav-selected");
+        chartsBtn.classList.add("nav-selected");
+        document.getElementById("settingsBlock").classList.add("hide");
+        document.getElementById("imageuploader").classList.add("hide");
+        document.getElementById("billTable").classList.add("hide");
+        document.querySelector(".previewimg").classList.add("hide");
+        document.getElementById("billThumbnails").classList.add("hide");
+        document.getElementById("chartsBlock").classList.remove("hide");
+        document.getElementById("chartdaysFilter").classList.add("hide");
+        document.querySelector('.lds-roller').classList.remove("hide");
+
+        loadCharts("personal");
+
+    }
+});
+
+
+function loadCharts(type) {
+    fetch("../chartsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), persTeam: type }) })
+        .then(data => data.json())
+        .then(function(c) {
+            if (c.status == "done") {
+                document.querySelector(".lds-roller").classList.add("hide");
+                document.getElementById("chartdaysFilter").classList.remove("hide");
+                const bData = JSON.parse(atob(c.chartdata));
+                console.log(bData);
+                const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
+                all_chart_data = [];
+                bData.forEach(function(d) {
+                    let billData = null;
+                    if (userAcType == "personal") {
+                        billData = decryptData(d.data, key);
+                    } else {
+                        billData = JSON.parse(atob(d.data));
+                    }
+                    let thedate = d.date.split(",")[0];
+                    let c_obj = {
+                        total: parseInt(billData.total),
+                        category: billData.type,
+                        date: thedate,
+                        datesequence: thedate.split("/").reverse().join("")
+                    };
+                    all_chart_data.push(c_obj);
+
+                });
+                //all_chart_data = JSON.parse(atob(rawChartData));
+                all_chart_data.sort(function(a, b) {
+                    return a.datesequence > b.datesequence ? -1 : (a.datesequence < b.datesequence ? 1 : 0);
+                });
+                filterChart(7);
+            }
+
+        }).catch(function() {
+            console.log("chat data fail load")
+        })
+}
+
+
+
+function filterChart(days) {
+    console.log(all_chart_data);
+    let pieChartList = all_chart_data.slice(0);
+    let markerPoint = 0;
+    let todate1 = pieChartList[0].date;
+    let fromdate1= "";
+    pieChartList = pieChartList.filter(function(dx, p) {
+        let tot_days = dateDifference(pieChartList[0].date, dx.date);
+        if (tot_days <= days) {
+            markerPoint = p;
+            todate1 = dx.date;
+        }
+        return tot_days <= days;
+    });
+    let categories_pie = calculatedTotals(pieChartList);
+    console.log(fromdate1,todate1,markerPoint);
+    console.log(pieChartList);
+    console.log(categories_pie);
+    console.log("-------------------------------");
+
+    let barChartList1 = null;
+    let barChartList1Filter = null;
+    let categories_bar1 = null;
+    let fromdate2 = "";
+    let todate2 = "";
+    if (days >= 60) {
+        barChartList1 = all_chart_data.slice(0);
+        barChartList1 = barChartList1.splice(markerPoint + 1);
+        console.log("MarkerPoint:"+(markerPoint + 1));
+        console.log(barChartList1);
+        todate2 = barChartList1[0].date;
+        barChartList1Filter = barChartList1.filter(function(dx, p) {
+            let tot_days = dateDifference(barChartList1[0].date, dx.date);
+            if (tot_days <= 30) {
+                markerPoint = p;
+                fromdate2 = dx.date;
+            }
+            return tot_days <= days;
+        });
+        categories_bar1 = calculatedTotals(barChartList1Filter);
+        console.log(fromdate2,todate2);
+        console.log(barChartList1Filter);
+        console.log(categories_bar1);
+        console.log("-------------------------------");
+    }
+    
+
+    let barChartList2Filter = null;
+    let categories_bar2 = null;
+    let fromdate3 = "";
+    let todate3 = "";
+    if (days == 90) {
+        barChartList2Filter = barChartList1.splice(markerPoint + 1);
+        todate3 = barChartList2Filter[0].date;
+        console.log("MarkerPoint:"+(markerPoint + 1));
+        console.log(barChartList2Filter);
+        barChartList2Filter = barChartList2Filter.filter(function(dx, p) {
+            let tot_days = dateDifference(barChartList2Filter[0].date, dx.date);
+            if (tot_days <= 30) {
+                fromdate3 = dx.date;
+            }
+            return tot_days <= 30;
+        });
+        categories_bar2 = calculatedTotals(barChartList2Filter);
+        console.log(fromdate3,todate3);
+        console.log(barChartList2Filter);
+        console.log(categories_bar2);
+        console.log("-------------------------------");
+    }
+
+    
+
+
+    let piechartdata = [
+        ['Category', 'Total Amount(Rs)'],
+        ['Fuel', categories_pie.fuel],
+        ['Entertainment', categories_pie.entertainment],
+        ['Food/Restaurant', categories_pie.food],
+        ['Lodging', categories_pie.lodging],
+        ['Transportation', categories_pie.transport],
+        ['Others', categories_pie.other]
+    ];
+
+
+    let from_to = showDayMonth(fromdate1) + "-" + showDayMonth(todate1);
+    let barchartdata = [
+        ['Category', 'Fuel', 'Entertainment', 'Food/Restaurant', 'Lodging',
+            'Transportation', 'Others', { role: 'annotation' }
+        ],
+        [from_to, categories_pie.fuel, categories_pie.entertainment, categories_pie.food, categories_pie.lodging, categories_pie.transport, categories_pie.other, '']
+    ];
+    if (categories_bar1) {
+        from_to = showDayMonth(fromdate2) + "-" + showDayMonth(todate2);
+        barchartdata.push([from_to, categories_bar1.fuel, categories_bar1.entertainment, categories_bar1.food, categories_bar1.lodging, categories_bar1.transport, categories_bar1.other, ''])
+    }
+
+    if (categories_bar2) {
+        from_to = showDayMonth(fromdate3) + "-" + showDayMonth(todate3);
+        barchartdata.push([from_to, categories_bar2.fuel, categories_bar2.entertainment, categories_bar2.food, categories_bar2.lodging, categories_bar2.transport, categories_bar2.other, ''])
+    }
+
+    drawBillsChart("piechart", piechartdata, `Last ${days} days Expenses`);
+    drawBillsChart("barchart", barchartdata, `Last ${days} days Expenses`, false);
+    drawBillsChart("barchartstacked", barchartdata, `Last ${days} days Expenses`, true);
+}
+
+
+function dateDifference(date1, date2) {
+    let d1 = new Date(date1.split('/')[2], date1.split('/')[1] - 1, date1.split('/')[0]);
+    let d2 = new Date(date2.split('/')[2], date2.split('/')[1] - 1, date2.split('/')[0]);
+    let timeDiff = Math.abs(d2.getTime() - d1.getTime());
+    let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return diffDays;
+}
+
+function calculatedTotals(vals) {
+    let categories = {
+        entertainment: 0,
+        fuel: 0,
+        transport: 0,
+        food: 0,
+        lodging: 0,
+        other: 0,
+    };
+
+    vals.forEach(function(dat) {
+        categories[dat.category] = categories[dat.category] + dat.total;
+    });
+    return categories;
+}
+
+function showDayMonth(d){
+    let _date = d.split("/").splice(0,2);    
+    return _date.join("/");
+}
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------------------
+
+logOutBtn.addEventListener("click", function() {
+    sessionStorage.clear();
+    location.replace("/")
+});
+
 
 function initLoad() {
     billshomeBtn.click();
+    $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
     let accountchangeUser = localStorage.getItem("accountchange") || "";
     if (accountchangeUser != "") {
         localStorage.clear();
-        let atype = accountchangeUser == "team" ? "Business/Team Account" : "Personal Account";
+        let atype = accountchangeUser == "team" ? "Project/Team Account" : "Personal Account";
         let logmsg = "You are now logged into your " + atype;
         alert(logmsg);
     }

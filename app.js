@@ -52,12 +52,12 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         title: String,
         user_email: String,
         role: String,
-        default:String,
+        default: String,
         created: String,
         lastlogin: String,
-        approver:String,
-        logs:[],
-        bills: [{ billid: String, encr_img: String, data: String, submitdate: String, status: String, logs:[] }]
+        approver: String,
+        logs: [],
+        bills: [{ billid: String, encr_img: String, data: String, submitdate: String, status: String, logs: [] }]
 
     }));
 }).catch(function(err) {
@@ -102,7 +102,7 @@ function sendActivationMail(toEmail, code, resp) {
     });
 }
 
-function addUserToDB(e_mail, actCode) {    
+function addUserToDB(e_mail, actCode) {
     const users = new Users({
         email: e_mail,
         activation: actCode,
@@ -110,7 +110,7 @@ function addUserToDB(e_mail, actCode) {
         browser: "",
         name: "",
         photo: "",
-        default: "personal",        
+        default: "personal",
         created: getIndDate(),
         lastlogin: "",
         personal: new mongoose.Schema({
@@ -391,7 +391,7 @@ function loadSettingsData(pskey, agent, email) {
                 user_photo: doc.photo,
                 user_default: doc.default,
             };
-            
+
             obj.user_email = email;
             let objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
             return new Promise((resolve, rej) => resolve({ data: objdata }));
@@ -423,6 +423,28 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
     })
 }
 
+function loadChartsData(pskey, agent, email, acc_setting, perMode) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+         if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        }else{
+            if(doc.default == "personal"){
+                let datas = [];
+                doc.personal.bills.forEach(function(bill){
+                    datas.push({data:bill.data, date:bill.submitdate})
+                });
+                let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+                return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
+            }else{
+                console.log("load chart for Team")
+            }
+        }
+    }).catch(function() {
+        return new Promise((resolve, rej) => rej());
+    })
+
+}
+
 function loadUserBills(pskey, agent, email) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
 
@@ -430,16 +452,18 @@ function loadUserBills(pskey, agent, email) {
             return new Promise((resolve, rej) => rej());
         } else {
             let obj = {};
-            obj.user_bills = doc.personal.bills.map(function(bill) {
-                return {
-                    img: bill.encr_img,
-                    data: bill.data,
-                    id: bill.billid,
-                    lastdate: bill.submitdate
-                }
-            });
-
-            return new Promise((resolve, rej) => resolve({ data: obj }));
+            obj.account = doc.default;
+            if(doc.default == "personal"){
+               obj.user_bills = doc.personal.bills.map(function(bill) {
+                    return {
+                        img: bill.encr_img,
+                        data: bill.data,
+                        id: bill.billid,
+                        lastdate: bill.submitdate
+                    }
+                });
+                return new Promise((resolve, rej) => resolve({ data: obj })); 
+            }
 
         }
 
@@ -543,11 +567,11 @@ function getIndDate() {
 
 function idRandomise(idfor) {
     let rnd = ``;
-    if(idfor == "bill"){
+    if (idfor == "bill") {
         for (let i = 0; i < 20; i++) {
             rnd = `${rnd}${Math.floor(Math.random()*10)}`;
         }
-    }else{
+    } else {
         let chars = "zxcvbnmlkjhgfdsaqwertyuiopQWERTYUIOPLKJHGFDSAZXCVBNM0987654321";
         for (let j = 0; j < 30; j++) {
             rnd = `${rnd}${chars.substr(Math.floor(Math.random()*chars.length),1)}`;
@@ -565,6 +589,19 @@ app.get("/home", (req, res) => {
 
 });
 
+
+
+app.post("/processimage", (req, res) => {
+    console.log("Image processing...");
+    scanBill(req.body.img).then(function(data) {
+        console.log(data);
+        res.json({ status: data });
+    }).catch(function(err) {
+        res.json({ status: err });
+    });
+
+});
+
 app.post("/emailreq", (req, res) => {
     let email = req.body.email.toLowerCase();
     let mode = req.body.mode;
@@ -577,7 +614,6 @@ app.post("/emailreq", (req, res) => {
                 res.json({ status: "require_pswd", e_mail: email })
             }
         }).catch(function(s) {
-            console.log("date error 1");
             if (s.error == "email") {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
@@ -753,18 +789,20 @@ app.post("/settingsave", (req, res) => {
 
 });
 
-
-
-app.post("/processimage", (req, res) => {
-    console.log("Image processing...");
-    scanBill(req.body.img).then(function(data) {
-        console.log(data);
-        res.json({ status: data });
-    }).catch(function(err) {
-        res.json({ status: err });
-    });
+app.post("/chartsload", (req, res) => {
+    const pwdkey = req.body.key_serv;
+    const useragent = req.body.agent;
+    const email = req.body.em.toLowerCase();
+    const personal_team = req.body.persTeam;
+    loadChartsData(pwdkey, useragent, email, personal_team).then(function(c) {
+        res.json({ status: "done", chartdata: c.chartdata })
+    }).catch(function() {
+        console.log("cannot load charts data");
+        res.json({ status: "invalid" });
+    })
 
 });
+
 
 
 

@@ -60,8 +60,7 @@ loginBtn.addEventListener("click", function() {
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "email_none") {
-                    showStatus("Email Address not registered.",3000);
-                    console.log(res.datelog)
+                    showStatus("Email Address not registered.",3000);                    
                 }
                 if (res.status == "invalid") {
                     showStatus("Invalid Email Address",3000);

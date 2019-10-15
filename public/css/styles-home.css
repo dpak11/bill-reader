@@ -161,8 +161,25 @@ header {
 
 #chartsBlock {
     z-index: 10;
+    width: 100%;
+    background: #fff;
 }
-
+#chartdaysFilter{
+    padding: 10px;
+    border-radius: 5px;
+    background: #dfe4ea;
+    margin: 5px;
+}
+.chart-filter-day{
+    background-color: #fff
+}
+#imageuploader + section{
+    width: 100%
+}
+.lds-roller{
+    display: block;
+    margin: auto
+}
 
 
 header img {
@@ -275,13 +292,11 @@ p.tip-info {
 }
 
 .table-head {
-    align-self: flex-start;
     padding: 5px 10px;
     margin-bottom: 15px;
-    background: #ba94b4;
-    color: aliceblue;
-    letter-spacing: 1px;
+    color: #3f5467;
     font-size: large;
+    font-weight: bold;
 
 }
 
@@ -423,6 +438,9 @@ p {
     font-size: 1.2em;
     font-weight: bold;
     padding: 10px 0;
+}
+div#ui-datepicker-div{
+    z-index: 7 !important;
 }
 
 
