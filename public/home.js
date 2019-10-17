@@ -13,7 +13,8 @@ let saveBillBtn = document.getElementById("savebill");
 let deleteBillBtn = document.getElementById("deletebill");
 let exitBillBtn = document.getElementById("exitbill");
 let updateBillBtn = document.getElementById("updatebill");
-let logOutBtn = document.getElementById("logout");
+let preloader = document.querySelector(".lds-roller");
+
 
 
 billshomeBtn.addEventListener("click", function() {
@@ -21,7 +22,7 @@ billshomeBtn.addEventListener("click", function() {
         console.log("fetching..");
         fetchBills();
         currentPage = "bills";
-        document.querySelector('.lds-roller').classList.remove("hide");
+        preloader.classList.remove("hide");
         billshomeBtn.classList.add("nav-selected");
         chartsBtn.classList.remove("nav-selected");
         settingsBtn.classList.remove("nav-selected");
@@ -34,9 +35,11 @@ billshomeBtn.addEventListener("click", function() {
 
 captureImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
-        alert("Please wait for your previous Bill receipt to get processed.");
+        //alert("Please wait for your previous Bill receipt to get processed.");
+        showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
-        alert("You have not saved the current Bill Receipt");
+        //alert("You have not saved the current Bill Receipt");
+        showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
         imageProcess(captureImg.files[0]);
     }
@@ -46,9 +49,11 @@ captureImg.addEventListener('change', () => {
 
 fileImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
-        alert("Please wait for your previous Bill receipt to get processed.");
+        //alert("Please wait for your previous Bill receipt to get processed.");
+        showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
-        alert("You have not saved the current Bill Receipt");
+        // alert("You have not saved the current Bill Receipt");
+        showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
         imageProcess(fileImg.files[0]);
     }
@@ -56,45 +61,165 @@ fileImg.addEventListener('change', () => {
 });
 
 
-
 function imageProcess(imgfile) {
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 2) {
             currentUploadStatus = "";
-            alert("File size is too Large.\nYour Bill Receipt must be less than 2 MB");
+            //alert("File size is too Large.\nYour Bill Receipt must be less than 2 MB");
+            showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 2 MB", "OK", null, false)
             return;
         }
+
         currentUploadStatus = "progress";
-        let img = document.querySelector('.previewimg img');
-        document.querySelector('.lds-roller').classList.remove("hide");
+
+        preloader.classList.remove("hide");
         let fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent) {
-            let srcData = fileLoadedEvent.target.result; // <--- data: base64            
-            img.src = srcData;
-            console.log("Init processing....\n" + srcData);
-            document.querySelector('.lds-roller').classList.remove("hide");
-            fetch("../processimage/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ img: srcData, em: atob(sessionStorage.getItem("em")) }) })
-                .then(data => data.json())
-                .then(function(json) {
-                    imageProcessDone(json.status);
-                }).catch(function(s) {
-                    imageProcessDone({});
-                    alert("Problem reading your Receipt data.\nThis may be due to unsupported camera settings, or unexpected image format");
-                });
+            let srcData = fileLoadedEvent.target.result; // <--- data: base64          
+            document.querySelector('.previewimg img').src = srcData;
+            console.log("Init processing....\n");
+            getOrientation(imgfile, function(orient) {
+                console.log("got orientation val:" + orient);                
+                let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
+                if (byteSize < 1.5 && orient <= 0) {
+                    console.log("No compression: "+byteSize+"MB");
+                    BillImgProcessing(srcData);
+                } else {
+                    console.log("To compress: "+byteSize+"MB");
+                    resetOrientation(srcData, orient, function(newImgData) {
+                        showAlertBox("Unsupported pixel settings in Image data.\nDo you want to process anyway?", "Yes, continue", "No, I will enter Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
+
+                    });
+                }
+            });
+
         }
+
         fileReader.readAsDataURL(imgfile);
 
     } else if (imgfile.type.indexOf("audio/") > -1) {
-        alert("Expecting an Image file")
+        alert("Expecting an Image file");
     } else if (imgfile.type.indexOf("video/") > -1) {
         alert("Expecting an Image file")
     }
 
 }
 
+function BillImgProcessing(imgdata) {
+    fetch("../processimage/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ img: imgdata, em: atob(sessionStorage.getItem("em")) }) })
+        .then(data => data.json())
+        .then(function(json) {
+            document.querySelector('.previewimg img').src = imgdata;
+            imageProcessDone(json.status);
+        }).catch(function(s) {
+            document.querySelector('.previewimg img').src = imgdata;
+            imageProcessDone({});
+            showAlertBox("Failed to read Receipt data.\nThis may be due to unsupported image or camera settings", "OK", null, false);
+            //alert("Failed to read Receipt data.\nThis may be due to unsupported image or camera settings");
+        });
+}
+
+
+function getOrientation(file, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+
+        var view = new DataView(e.target.result);
+        if (view.getUint16(0, false) != 0xFFD8) {
+            return callback(-2);
+        }
+        var length = view.byteLength,
+            offset = 2;
+        while (offset < length) {
+            if (view.getUint16(offset + 2, false) <= 8) return callback(-1);
+            var marker = view.getUint16(offset, false);
+            offset += 2;
+            if (marker == 0xFFE1) {
+                if (view.getUint32(offset += 2, false) != 0x45786966) {
+                    return callback(-1);
+                }
+
+                var little = view.getUint16(offset += 6, false) == 0x4949;
+                offset += view.getUint32(offset + 4, little);
+                var tags = view.getUint16(offset, little);
+                offset += 2;
+                for (var i = 0; i < tags; i++) {
+                    if (view.getUint16(offset + (i * 12), little) == 0x0112) {
+                        return callback(view.getUint16(offset + (i * 12) + 8, little));
+                    }
+                }
+            } else if ((marker & 0xFF00) != 0xFF00) {
+                break;
+            } else {
+                offset += view.getUint16(offset, false);
+            }
+        }
+        return callback(-1);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+
+function resetOrientation(srcBase64, srcOrientation, callback) {
+    console.log("reset orientation");
+    let img = new Image();
+    img.onload = function() {
+        console.log("reset orientation img onload");
+        let width = img.width,
+            height = img.height,
+            canvas = document.createElement('canvas'),
+            ctx = canvas.getContext("2d");
+
+        // set proper canvas dimensions before transform & export
+        if (4 < srcOrientation && srcOrientation < 9) {
+            canvas.width = height;
+            canvas.height = width;
+        } else {
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        console.log("reset orientation img onload");
+
+        // transform context before drawing image
+        switch (srcOrientation) {
+            case 2:
+                ctx.transform(-1, 0, 0, 1, width, 0);
+                break;
+            case 3:
+                ctx.transform(-1, 0, 0, -1, width, height);
+                break;
+            case 4:
+                ctx.transform(1, 0, 0, -1, 0, height);
+                break;
+            case 5:
+                ctx.transform(0, 1, 1, 0, 0, 0);
+                break;
+            case 6:
+                ctx.transform(0, 1, -1, 0, height, 0);
+                break;
+            case 7:
+                ctx.transform(0, -1, -1, 0, height, width);
+                break;
+            case 8:
+                ctx.transform(0, -1, 1, 0, 0, width);
+                break;
+            default:
+                break;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        callback(canvas.toDataURL("image/jpeg", 0.7));
+
+    };
+    img.src = srcBase64;
+};
+
+
+
 function imageProcessDone(imgdata) {
-    document.querySelector(".lds-roller").classList.add("hide");
+    preloader.classList.add("hide");
     document.getElementById("billThumbnails").classList.add("hide");
     exitBillBtn.classList.remove("hide");
     deleteBillBtn.classList.add("hide");
@@ -104,6 +229,16 @@ function imageProcessDone(imgdata) {
     currentUploadStatus = "unsaved";
     billMode = "save";
 }
+
+function detectDeviceCam(callback) {
+    let md = navigator.mediaDevices;
+    if (!md || !md.enumerateDevices) return callback(false);
+    md.enumerateDevices().then(devices => {
+        callback(devices.some(device => 'videoinput' === device.kind));
+    })
+}
+
+
 
 
 function fetchBills() {
@@ -118,19 +253,23 @@ function fetchBills() {
                 if (res.status == "invalid") {
                     console.log("load.2");
                     sessionStorage.clear();
-                    document.querySelector('.lds-roller').classList.add("hide");
+                    preloader.classList.add("hide");
                 }
                 if (res.status == "done") {
-                    //console.log(res.user_data);
-                    document.querySelector('.lds-roller').classList.add("hide");
+                    detectDeviceCam(function(hascam) {
+                        if (hascam) { document.getElementById("cameraDevice").classList.remove("hide") }
+                    })
+                    document.getElementById("imageuploader").classList.remove("hide");
+                    preloader.classList.add("hide");
                     userAcType = res.user_data.account;
                     allBillsData = res.user_data;
                     displayBillThumbnails();
 
                 }
-            }).catch(function() {
+            }).catch(function(e) {
                 console.log("load failed");
-                document.querySelector('.lds-roller').classList.add("hide");
+                console.log(e);
+                preloader.classList.add("hide");
             });
     }
 }
@@ -197,17 +336,28 @@ function displayBillThumbnails() {
 
 }
 
+function tidyAmount(amount){
+    let amt = Number(amount.trim());
+    if(isNaN(amt) || amt == ""){
+        return 0;
+    }
+    if(amt<1 || amt > 9999999 || amt == ""){
+        return 0;
+    }
+    return amt;
+}
+
 
 function updateBill() {
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
     const date = document.getElementById("date_field").value;
-    const merchant = document.getElementById("merchant_field").value;
-    const amt = document.getElementById("amount_field").value;
+    const merchant = document.getElementById("merchant_field").value;    
     const descr = document.getElementById("descr_field").value;
     const billType = document.getElementById("billtype").value;
-
+    const amt = tidyAmount(document.getElementById("amount_field").value);
+    
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     let encodedBill = "";
     if (userAcType == "personal") {
@@ -234,7 +384,8 @@ function updateBill() {
             updateBillBtn.classList.remove("saving-state");
             deleteBillBtn.classList.remove("hide");
             exitBillBtn.classList.remove("hide");
-            alert("Opps! Server timed out");
+            showAlertBox("Opps! Server timed out", "OK", null, false);
+            //alert("Opps! Server timed out");
         });
 
 }
@@ -262,7 +413,8 @@ function deleteBill() {
             deleteBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
             updateBillBtn.classList.remove("hide");
-            alert("Opps! Server timed out");
+            //alert("Opps! Server timed out");
+            showAlertBox("Opps! Server timed out", "OK", null, false);
         });
 
 }
@@ -280,7 +432,8 @@ function saveBill(bill, email, serv) {
                 saveBillBtn.innerText = "Save";
                 saveBillBtn.classList.remove("saving-state");
                 exitBillBtn.classList.remove("hide");
-                alert("Sorry, can not Save.\nA Similar Bill already exists");
+                //alert("Sorry, can not Save.\nThis Bill already exists");
+                showAlertBox("Sorry, can not Save.\nThis Bill already exists", "OK", null, false);
             }
             if (res.status == "saved") {
                 exitBillBtn.click();
@@ -291,11 +444,12 @@ function saveBill(bill, email, serv) {
                 location.reload();
             }
         }).catch(function() {
-            document.querySelector('.lds-roller').classList.add("hide");
+            preloader.classList.add("hide");
             saveBillBtn.innerText = "Save";
             saveBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
-            alert("Opps! Server timed out");
+            //alert("Opps! Server timed out");
+            showAlertBox("Opps! Server timed out", "OK", null, false);
         });
 }
 
@@ -305,11 +459,11 @@ function saveBill(bill, email, serv) {
 
 saveBillBtn.addEventListener("click", function() {
     const date = document.getElementById("date_field").value;
-    const merchant = document.getElementById("merchant_field").value;
-    const amt = document.getElementById("amount_field").value;
+    const merchant = document.getElementById("merchant_field").value;    
     const descr = document.getElementById("descr_field").value;
     const billType = document.getElementById("billtype").value;
-
+    const amt = tidyAmount(document.getElementById("amount_field").value);
+    
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     const client = sessionStorage.getItem("ckey") || "";
     const serv = sessionStorage.getItem("skey") || "";
@@ -356,7 +510,7 @@ exitBillBtn.addEventListener("click", function() {
     document.getElementById("merchant_field").value = "";
     document.getElementById("amount_field").value = "";
     document.querySelector('.previewimg img').setAttribute("src", "");
-    document.querySelector('.lds-roller').classList.add("hide");
+    preloader.classList.add("hide");
     document.querySelector('.previewimg').classList.add("hide");
     currentUploadStatus = "";
     if (billMode == "update") {
@@ -382,6 +536,7 @@ let userSettingLink = document.getElementById("user_setting_link");
 let teamSettingLink = document.getElementById("team_setting_link");
 let createNewTeamBtn = document.getElementById("createNewTeam");
 let addNewMemberBtn = document.getElementById("addNewMember");
+let enableAddNewMember = false;
 let isProfilePicModified = false;
 let saveSettingEnabled = false;
 let initAccountVals = { name: "", type: "" };
@@ -415,7 +570,8 @@ function attachProfileImage(imgfile) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 1) {
             currentUploadStatus = "";
-            alert("Your photo size must be less than 1 MB");
+            // alert("Your photo size must be less than 1 MB");
+            showAlertBox("Your photo size must be less than 1 MB", "OK", null, false);
             return;
         }
 
@@ -518,9 +674,56 @@ function loadAccountSettings() {
 
         }).catch(function(s) {
             document.querySelector('.settingloadstatus').classList.add("hide");
-            alert("Opps! Server timed out");
+            // alert("Opps! Server timed out");
+            showAlertBox("Opps! Server timed out", "OK", null, false);
 
         });
+
+}
+
+function addMemberToProject(member, role, aprover) {
+    fetch("../addNewMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), member: member, role: role, approver: approver }) })
+        .then(data => data.json())
+        .then(function(setting) {
+            if (setting.status == "invalid") {
+                sessionStorage.clear();
+            }
+            if (setting.status == "added") {
+                newMemberInsertFields();
+                addNewMember.innerText = "Add Member to Project";
+                addNewMember.classList.remove("saving-state");
+                addNewMember.classList.add("btn");
+                enableAddNewMember = true;
+            }
+
+        }).catch(function(s) {
+            enableAddNewMember = true;
+            addNewMember.innerText = "Add Member to Project";
+            addNewMember.classList.remove("saving-state");
+            addNewMember.classList.add("btn");
+            //alert("Opps! Server timed out");
+            showAlertBox("Opps! Server timed out", "OK", null, false);
+
+        });
+
+}
+
+function newMemberInsertFields() {
+    let div = document.createElement("div");
+    div.setAttribute("class", "newuserGroup");
+    div.innerHTML = `   
+        <span><input class="member-email-field" type="text" placeholder="Member's Email"></span>
+        <span>
+            <select class="select-roles-control">
+                <option value="none">-Select Role-</option>
+                <option value="member">Member</option>
+                <option value="manager">Manager</option>
+            </select>
+        </span>
+        <span>
+           <input type="text" class="approver-email-field" placeholder="Approver's Email">
+        </span>`;
+    document.getElementById("newMemberPanelBody").appendChild(div);
 
 }
 
@@ -548,33 +751,39 @@ teamSettingLink.addEventListener("click", function() {
 createNewTeamBtn.addEventListener("click", function() {
     document.getElementById("createNewTeam").classList.add("hide");
     document.getElementById("teamDetailsSection").classList.remove("hide");
+    enableAddNewMember = true;
 });
 
 addNewMemberBtn.addEventListener("click", function() {
+    if (!enableAddNewMember) {
+        return false;
+    }
+    enableAddNewMember = false;
     document.getElementById("addUserPanel").classList.remove("hide");
     let newMemberPanel = document.querySelector("#newMemberPanelBody .newuserGroup") || null;
     if (!newMemberPanel) {
         document.getElementById("addUserPanel").appendChild(addNewMemberBtn);
         let rolesPara = document.querySelector("#addUserPanel p");
         document.getElementById("addUserPanel").appendChild(rolesPara);
+        newMemberInsertFields();
+    } else {
+
+        let nodes = document.querySelectorAll(".newuserGroup");
+        let lastGroup = nodes[nodes.length - 1];
+        let memb_email = lastGroup.querySelector(".member-email-field").value;
+        let memb_roles = lastGroup.querySelector(".select-roles-control").value;
+        let appr_email = lastGroup.querySelector(".approver-email-field").value;
+        if (memb_roles == "none") {
+            //alert("Please select Role");
+            showAlertBox("Please select a role", "OK", null, false);
+            return;
+        }
+        addNewMember.innerText = "Adding...";
+        addNewMember.classList.add("saving-state");
+        addNewMember.classList.remove("btn");
+        addMemberToProject(memb_email, memb_roles, appr_email);
     }
-    let div = document.createElement("div");
-    div.setAttribute("class", "newuserGroup");
-    div.innerHTML = `   
-        <span><input type="text" placeholder="Member Email"></span>
-        <span>
-            <select>
-                <option value="none">-Select Role-</option>
-                <option value="member">Member</option>
-                <option value="manager">Manager</option>
-            </select>
-        </span>
-        <span>
-            <select>
-                <option value="none">-Select Approver-</option>
-            </select>
-        </span>`;
-    document.getElementById("newMemberPanelBody").appendChild(div);
+
 
 });
 
@@ -590,9 +799,7 @@ cancelsettingsBtn.addEventListener("click", function() {
 //-------------------------------------------------------------------------
 
 // Charts
-let chartsBtn = document.getElementById("charts");
-let chartsFilterSelect = document.getElementById("chartdaysFilter");
-let all_chart_data = [];
+
 
 /*let piechartdata = [
     ['Task', 'Hours per Day'],
@@ -611,6 +818,11 @@ let barchartdata = [
     ['Aug', 28, 19, 29, 30, 12, 550, '']
 ];
 */
+
+
+let chartsBtn = document.getElementById("charts");
+let chartsFilterSelect = document.getElementById("chartdaysFilter");
+let all_chart_data = [];
 
 function drawBillsChart(chartElem, chartdata, title, stacked) {
     let charts = {
@@ -670,8 +882,7 @@ chartsBtn.addEventListener("click", function() {
         document.getElementById("billThumbnails").classList.add("hide");
         document.getElementById("chartsBlock").classList.remove("hide");
         document.getElementById("chartdaysFilter").classList.add("hide");
-        document.querySelector('.lds-roller').classList.remove("hide");
-
+        preloader.classList.remove("hide");
         loadCharts("personal");
 
     }
@@ -683,7 +894,7 @@ function loadCharts(type) {
         .then(data => data.json())
         .then(function(c) {
             if (c.status == "done") {
-                document.querySelector(".lds-roller").classList.add("hide");
+                preloader.classList.add("hide");
                 document.getElementById("chartdaysFilter").classList.remove("hide");
                 const bData = JSON.parse(atob(c.chartdata));
                 console.log(bData);
@@ -725,7 +936,7 @@ function filterChart(days) {
     let pieChartList = all_chart_data.slice(0);
     let markerPoint = 0;
     let todate1 = pieChartList[0].date;
-    let fromdate1= "";
+    let fromdate1 = "";
     pieChartList = pieChartList.filter(function(dx, p) {
         let tot_days = dateDifference(pieChartList[0].date, dx.date);
         if (tot_days <= days) {
@@ -735,7 +946,7 @@ function filterChart(days) {
         return tot_days <= days;
     });
     let categories_pie = calculatedTotals(pieChartList);
-    console.log(fromdate1,todate1,markerPoint);
+    console.log(fromdate1, todate1, markerPoint);
     console.log(pieChartList);
     console.log(categories_pie);
     console.log("-------------------------------");
@@ -748,9 +959,9 @@ function filterChart(days) {
     if (days >= 60) {
         barChartList1 = all_chart_data.slice(0);
         barChartList1 = barChartList1.splice(markerPoint + 1);
-        console.log("MarkerPoint:"+(markerPoint + 1));
+        console.log("MarkerPoint:" + (markerPoint + 1));
         console.log(barChartList1);
-        todate2 = barChartList1.length>0 ? barChartList1[0].date : "";
+        todate2 = barChartList1.length > 0 ? barChartList1[0].date : "";
         barChartList1Filter = barChartList1.filter(function(dx, p) {
             let tot_days = dateDifference(barChartList1[0].date, dx.date);
             if (tot_days <= 30) {
@@ -760,12 +971,12 @@ function filterChart(days) {
             return tot_days <= days;
         });
         categories_bar1 = calculatedTotals(barChartList1Filter);
-        console.log(fromdate2,todate2);
+        console.log(fromdate2, todate2);
         console.log(barChartList1Filter);
         console.log(categories_bar1);
         console.log("-------------------------------");
     }
-    
+
 
     let barChartList2Filter = null;
     let categories_bar2 = null;
@@ -773,8 +984,8 @@ function filterChart(days) {
     let todate3 = "";
     if (days == 90) {
         barChartList2Filter = barChartList1.splice(markerPoint + 1);
-        todate3 = barChartList2Filter.length>0 ? barChartList2Filter[0].date : "";
-        console.log("MarkerPoint:"+(markerPoint + 1));
+        todate3 = barChartList2Filter.length > 0 ? barChartList2Filter[0].date : "";
+        console.log("MarkerPoint:" + (markerPoint + 1));
         console.log(barChartList2Filter);
         barChartList2Filter = barChartList2Filter.filter(function(dx, p) {
             let tot_days = dateDifference(barChartList2Filter[0].date, dx.date);
@@ -784,13 +995,13 @@ function filterChart(days) {
             return tot_days <= 30;
         });
         categories_bar2 = calculatedTotals(barChartList2Filter);
-        console.log(fromdate3,todate3);
+        console.log(fromdate3, todate3);
         console.log(barChartList2Filter);
         console.log(categories_bar2);
         console.log("-------------------------------");
     }
 
-    
+
 
 
     let piechartdata = [
@@ -851,8 +1062,8 @@ function calculatedTotals(vals) {
     return categories;
 }
 
-function showDayMonth(d){
-    let _date = d.split("/").splice(0,2);    
+function showDayMonth(d) {
+    let _date = d.split("/").splice(0, 2);
     return _date.join("/");
 }
 
@@ -863,6 +1074,68 @@ function showDayMonth(d){
 
 
 //---------------------------------------------------------------------------------------
+
+let logOutBtn = document.getElementById("logout");
+let alertBoxWindow = document.getElementById("alertBoxWindow");
+let mainStatusOK = document.getElementById("mainStatusOK");
+let mainStatusCancel = document.getElementById("mainStatusCancel");
+let mainStatusMsg = document.querySelector("#alertBoxWindow h4");
+
+let callbackConfirm = {
+    yes: {
+        arg: null,
+        method: null
+    },
+    no: {
+        arg: null,
+        method: null
+    }
+};
+
+
+function clearCallbacks() {
+    setTimeout(() => {
+        callbackConfirm.yes.method = null;
+        callbackConfirm.yes.arg = null;
+        callbackConfirm.no.method = null;
+        callbackConfirm.no.arg = null;
+    }, 1000);
+
+}
+
+mainStatusCancel.addEventListener("click", function() {
+    alertBoxWindow.classList.add("hide");
+    if (callbackConfirm.no.method !== null) {
+        callbackConfirm.no.method(callbackConfirm.no.arg);
+    }
+    clearCallbacks();
+
+});
+
+mainStatusOK.addEventListener("click", function() {
+    alertBoxWindow.classList.add("hide");
+    if (callbackConfirm.yes.method !== null) {
+        callbackConfirm.yes.method(callbackConfirm.yes.arg);
+    }
+    clearCallbacks();
+});
+
+function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okparams, cancelcallback, cancelparams) {
+    alertBoxWindow.classList.remove("hide");
+    mainStatusMsg.innerText = msg;
+    mainStatusOK.innerText = oktext;
+    if (isConfirmType) {
+        mainStatusCancel.innerText = canceltext;
+        mainStatusCancel.classList.remove("hide");
+        callbackConfirm.yes.method = okcallback;
+        callbackConfirm.yes.arg = okparams;
+        callbackConfirm.no.method = cancelcallback;
+        callbackConfirm.no.arg = cancelparams;
+    } else {
+        mainStatusCancel.classList.add("hide")
+    }
+}
+
 
 logOutBtn.addEventListener("click", function() {
     sessionStorage.clear();
@@ -878,7 +1151,8 @@ function initLoad() {
         localStorage.clear();
         let atype = accountchangeUser == "team" ? "Project/Team Account" : "Personal Account";
         let logmsg = "You are now logged into your " + atype;
-        alert(logmsg);
+        showAlertBox(logmsg, "OK", null, false);
+        //alert(logmsg);
     }
 }
 
