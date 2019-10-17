@@ -1,20 +1,20 @@
 /*jshint esversion: 6*/
 
 const express = require("express");
-const app = express();
+
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const Tesseract = require("tesseract.js");
 const { TesseractWorker } = Tesseract;
-
+const app = express();
 
 const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
 const KEYS_DATA = require("./keys");
 
 app.use(express.static(__dirname + "/public"));
-app.use(bodyParser.json({ limit: '2mb' })); // support json encoded bodies
+app.use(bodyParser.json({ limit: '5mb' })); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -453,7 +453,7 @@ function loadUserBills(pskey, agent, email) {
         } else {
             let obj = {};
             obj.account = doc.default;
-            if(doc.default == "personal"){
+           // if(doc.default == "personal"){
                obj.user_bills = doc.personal.bills.map(function(bill) {
                     return {
                         img: bill.encr_img,
@@ -462,8 +462,9 @@ function loadUserBills(pskey, agent, email) {
                         lastdate: bill.submitdate
                     }
                 });
+               console.log("user bills...");
                 return new Promise((resolve, rej) => resolve({ data: obj })); 
-            }
+            //}
 
         }
 
@@ -593,6 +594,7 @@ app.get("/home", (req, res) => {
 
 app.post("/processimage", (req, res) => {
     console.log("Image processing...");
+    
     scanBill(req.body.img).then(function(data) {
         console.log(data);
         res.json({ status: data });
@@ -701,10 +703,10 @@ app.post("/loadBills", (req, res) => {
     const useragent = req.body.agent;
     const email = req.body.em.toLowerCase();
     loadUserBills(pwdkey, useragent, email).then(function(d) {
-        console.log("loaded");
+        console.log("loaded bills");
         res.json({ status: "done", user_data: d.data });
     }).catch(function() {
-        console.log("load fail");
+        console.log("bill load fail");
         res.json({ status: "invalid" });
     })
 
@@ -786,6 +788,11 @@ app.post("/settingsave", (req, res) => {
         console.log("cannot save settings");
         res.json({ status: "invalid" });
     })
+
+});
+
+app.post("/addNewMember", (req, res) => {
+    
 
 });
 

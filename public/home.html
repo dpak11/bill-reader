@@ -26,8 +26,8 @@
                 <p id="logout"><span>Log Out</span><img src="images/logout.png"></p>
             </section>
             <section class="main">
-                <section id="imageuploader">
-                    <div style="margin-right: 10px">
+                <section id="imageuploader" class="hide">
+                    <div id="cameraDevice" class="hide">
                         <input class="input-image" type="file" id="captureImg" accept="image/*" capture />
                         <label for="captureImg">Capture Bill</label>
                     </div>
@@ -124,8 +124,8 @@
                     </div>
                     <div id="teamSettingsPage" class="profile_info hide">
                         <p id="user_setting_link">Go to User Settings</p>
-                        <h2>Team Settings</h2>
-                        <span class="btn" id="createNewTeam" style="margin-right: 20px">Create Team</span>
+                        <h2>Project Settings</h2>
+                        <span class="btn" id="createNewTeam" style="margin-right: 20px">Create Project</span>
                         <div id="teamDetailsSection" class="hide">
                             <div class="team-sub-setting">
                                 <p><img id="teamlogoImg" src="images/user.png"><br>
@@ -133,7 +133,7 @@
                                     <label for="team_img_browse">Upload Logo</label>
                                 </p>
                                 <p>
-                                    <label for="displayteamname">Team/Project Name</label>
+                                    <label for="displayteamname">Project Name</label>
                                     <input type="text" id="displayteamname">
                                 </p>
                             </div>
@@ -141,20 +141,27 @@
                                 <div id="newMemberPanelBody"></div>
                                 <p>
                                     <b>Roles:</b><br>
-                                    - A Manager can Add or Delete a member from the Team. Can modify the Roles of other members in the team<br>
-                                    - An Admin can Add or Delete Members and Managers from the Team. Can modify the Roles of Managers and Members. Admin also has rights to modify the Logo and Name of the Team.<br>
-                                    - Members do not have access to any of the above.
+                                    - A Manager can Add or Delete a member from the Team. A manager can approve Bills of a Member or other Managers<br>
+                                    - An Admin can Add or Delete Members and Managers from the Team. Admin can modify the Roles of Managers and Members. Admin alone has access to modify the Logo and Name of the Team.<br>
+                                    - Members can submit their Bills to their respective Managers for approval.
                                 </p>
                             </div>
                             <div>
-                                <span class="btn" id="addNewMember" style="margin-right: 20px">Add Member to Team</span>
+                                <span class="btn" id="addNewMember" style="margin-right: 20px">Add Member to Project</span>
                             </div>
                         </div>
                     </div>
                 </section>
-                
             </section>
+            <div id="alertBoxWindow" class="hide">
+            <div>
+                <h4>Unexpected Image file</h4>
+                    <p id="mainStatusOK" class="btn">OK</p>
+                    <p id="mainStatusCancel" class="btn">Cancel</p>
+                </div>
+            </div>
         </div>
+        
     </div>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
