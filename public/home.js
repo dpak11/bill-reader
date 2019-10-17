@@ -115,7 +115,7 @@ function BillImgProcessing(imgdata) {
         }).catch(function(s) {
             document.querySelector('.previewimg img').src = imgdata;
             imageProcessDone({});
-            showAlertBox("Failed to read Receipt data.\nThis may be due to unsupported image or camera settings", "OK", null, false);
+            showAlertBox("Unable to read Receipt data due to unsupported image or camera settings", "OK", null, false);
             //alert("Failed to read Receipt data.\nThis may be due to unsupported image or camera settings");
         });
 }
@@ -305,12 +305,13 @@ function displayBillThumbnails() {
         let thumbs = `<div class="amount-thumb">&#8377;${billData.total}</div>
             <div class="thumb-img">
                 <img src="${billImg}">                
-            </div> 
-            <div class="thumb-title-bill">${billData.title}</div>
-            <div class="thumb-type-bill"><img src="${typeImg}"></div>
-            <div class="thumb-date-submit">Submitted: ${submit_date}</div>
-            <div class="thumb-date-bill">Bill Date: ${billData.date}</div>
-            `;
+            </div>
+            <div>
+                <div class="thumb-title-bill">${billData.title}</div>
+                <div class="thumb-type-bill"><img src="${typeImg}"></div>
+                <div class="thumb-date-submit">Submitted: ${submit_date}</div>
+                <div class="thumb-date-bill">Bill Date: ${billData.date}</div>
+            </div> `;
         let div = document.createElement("div");
         div.className = "thumbnail";
         div.setAttribute("id", "thumb_" + bill.id);
