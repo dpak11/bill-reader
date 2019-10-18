@@ -411,12 +411,13 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
             doc.photo = settings.profile_img;
             doc.name = settings.displayname;
             doc.default = settings.account;
-
-            return doc.save().then(function() {
-                return new Promise((resolve, rej) => resolve());
-            }).catch(function() {
-                return new Promise((resolve, rej) => rej());
-            })
+            if(settings.account == "personal"){
+                return doc.save().then(function() {
+                    return new Promise((resolve, rej) => resolve());
+                }).catch(function() {
+                    return new Promise((resolve, rej) => rej());
+                })
+            }
 
         }
 

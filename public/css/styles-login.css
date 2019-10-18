@@ -105,5 +105,8 @@ input {
      header img{
         margin: 6px 0 0 5px;
     }
+    .loginbox{
+        width: 50%
+    }
     
 }

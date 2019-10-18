@@ -7,6 +7,7 @@ let billMode = "save";
 let currentUploadStatus = "";
 let currentPage = "";
 let userAcType = "";
+let remPreviousActiveTab = "";
 
 let billshomeBtn = document.getElementById("billshome");
 let saveBillBtn = document.getElementById("savebill");
@@ -495,14 +496,12 @@ updateBillBtn.addEventListener("click", function() {
     updateBill();
 });
 
-deleteBillBtn.addEventListener("click", function() {
-    //if (billMode == "update") {
+deleteBillBtn.addEventListener("click", function() {    
     deleteBillBtn.innerText = "Deleting...";
     deleteBillBtn.classList.add("saving-state");
     updateBillBtn.classList.add("hide");
     exitBillBtn.classList.add("hide");
-    deleteBill();
-    //}
+    deleteBill();    
 });
 
 exitBillBtn.addEventListener("click", function() {
@@ -545,6 +544,7 @@ let initAccountVals = { name: "", type: "" };
 
 settingsBtn.addEventListener("click", function() {
     if (currentPage !== "settings" && userAcType !== "") {
+        remPreviousActiveTab = currentPage;
         currentPage = "settings";
         billshomeBtn.classList.remove("nav-selected");
         chartsBtn.classList.remove("nav-selected");
@@ -589,6 +589,7 @@ function attachProfileImage(imgfile) {
 
 
 savesettingsBtn.addEventListener("click", function() {
+    
     if (!saveSettingEnabled) {
         return;
     }
@@ -596,6 +597,11 @@ savesettingsBtn.addEventListener("click", function() {
     let prof_img = document.getElementById("userprofilepic").getAttribute("src");
     let disp_name = document.getElementById("displayname_field").value;
     let acc_type = document.getElementById("user_account_field").value;
+
+    if(acc_type == "team"){
+        showAlertBox("Sorry, you do not have access to Business Account", "OK", null, false);
+        return;
+    }
 
     if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified) {
         saveSettingEnabled = false;
@@ -789,10 +795,18 @@ addNewMemberBtn.addEventListener("click", function() {
 });
 
 cancelsettingsBtn.addEventListener("click", function() {
-    currentPage = "bills";
     document.getElementById("settingsBlock").classList.add("hide");
     settingsBtn.classList.remove("nav-selected");
-    billshomeBtn.classList.add("nav-selected");
+    if(remPreviousActiveTab == "bills"){
+        billshomeBtn.classList.add("nav-selected");
+    }
+    if(remPreviousActiveTab == "charts"){
+        chartsBtn.classList.add("nav-selected");
+    }
+    currentPage = remPreviousActiveTab;   
+    
+    
+    
 });
 
 
@@ -942,7 +956,7 @@ function filterChart(days) {
         let tot_days = dateDifference(pieChartList[0].date, dx.date);
         if (tot_days <= days) {
             markerPoint = p;
-            todate1 = dx.date;
+            fromdate1 = dx.date;
         }
         return tot_days <= days;
     });
@@ -1016,7 +1030,7 @@ function filterChart(days) {
     ];
 
 
-    let from_to = showDayMonth(fromdate1) + "-" + showDayMonth(todate1);
+    let from_to = showDayMonth(fromdate1) + "-\n" + showDayMonth(todate1);
     let barchartdata = [
         ['Category', 'Fuel', 'Entertainment', 'Food/Restaurant', 'Lodging',
             'Transportation', 'Others', { role: 'annotation' }
@@ -1024,12 +1038,12 @@ function filterChart(days) {
         [from_to, categories_pie.fuel, categories_pie.entertainment, categories_pie.food, categories_pie.lodging, categories_pie.transport, categories_pie.other, '']
     ];
     if (categories_bar1) {
-        from_to = showDayMonth(fromdate2) + "-" + showDayMonth(todate2);
+        from_to = showDayMonth(fromdate2) + "-\n" + showDayMonth(todate2);
         barchartdata.push([from_to, categories_bar1.fuel, categories_bar1.entertainment, categories_bar1.food, categories_bar1.lodging, categories_bar1.transport, categories_bar1.other, ''])
     }
 
     if (categories_bar2) {
-        from_to = showDayMonth(fromdate3) + "-" + showDayMonth(todate3);
+        from_to = showDayMonth(fromdate3) + "-\n" + showDayMonth(todate3);
         barchartdata.push([from_to, categories_bar2.fuel, categories_bar2.entertainment, categories_bar2.food, categories_bar2.lodging, categories_bar2.transport, categories_bar2.other, ''])
     }
 
