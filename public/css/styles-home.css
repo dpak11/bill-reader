@@ -270,9 +270,9 @@ section.main {
     height: 350px;
     align-items: center;
     box-shadow: 1px 1px 8px 1px #372f2f;
-    background: #d5bad1;
+    background: #c3c3e5;
     margin-top: 20px;
-    margin-left: 10px;
+   /*  margin-left: 10px; */
 }
 
 #billTable input {
@@ -411,8 +411,7 @@ p {
 
 .input-image+label {
     font-size: 1.1em;
-    /* font-weight: 700; */
-    color: white;
+    color: #e6e6f1;
     background-color: #5d6b9d;
     display: inline-block;
     padding: 10px;
@@ -495,7 +494,7 @@ div#ui-datepicker-div{
     }
 
     #billTable select {
-        width: 94%;
+        width: 95%;
     }
 
 }
