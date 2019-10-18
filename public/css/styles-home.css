@@ -387,10 +387,10 @@ p {
     width: 20%
 }
 #alertBoxWindow h4{
-    
+    font-weight: normal;
 }
 #alertBoxWindow p{
-
+   font-size: .9em;
 }
 
 .previewimg>img {
@@ -445,7 +445,7 @@ p {
     margin-bottom: 25px;
     box-shadow: 0px 0px 8px 2px rgba(0, 0, 0, 0.69);
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 0;
     cursor: pointer
 }
 .thumbnail .thumb-img + div {
@@ -537,6 +537,9 @@ div#ui-datepicker-div{
     }
     #alertBoxWindow div{
         width: 50%
+    }
+    .profile_info{
+        font-size: .8em
     }
 
     #billTable {
