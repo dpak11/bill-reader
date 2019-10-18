@@ -372,6 +372,7 @@ p {
 #alertBoxWindow{
     display: flex;
     position: fixed;
+    top:0;
     width: 100%;
     height: 100vh;
     background: rgba(0, 0, 0, 0.7);
@@ -384,7 +385,7 @@ p {
     padding: 20px 40px;
     background: rgba(182, 178, 203, 0.8);
     text-align: center;
-    width: 20%
+    width: 25%
 }
 #alertBoxWindow h4{
     font-weight: normal;
@@ -495,6 +496,13 @@ div#ui-datepicker-div{
 
     #billTable select {
         width: 94%;
+    }
+
+}
+
+@media (max-width:768px) {
+    #alertBoxWindow div{
+        width: 40%
     }
 
 }
