@@ -411,7 +411,7 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
             doc.photo = settings.profile_img;
             doc.name = settings.displayname;
             doc.default = settings.account;
-            if(settings.account == "personal"){
+            if (settings.account == "personal") {
                 return doc.save().then(function() {
                     return new Promise((resolve, rej) => resolve());
                 }).catch(function() {
@@ -426,17 +426,17 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
 
 function loadChartsData(pskey, agent, email, acc_setting, perMode) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
-         if (doc == null) {
+        if (doc == null) {
             return new Promise((resolve, rej) => rej());
-        }else{
-            if(doc.default == "personal"){
+        } else {
+            if (doc.default == "personal") {
                 let datas = [];
-                doc.personal.bills.forEach(function(bill){
-                    datas.push({data:bill.data, date:bill.submitdate})
+                doc.personal.bills.forEach(function(bill) {
+                    datas.push({ data: bill.data, date: bill.submitdate })
                 });
                 let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
                 return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
-            }else{
+            } else {
                 console.log("load chart for Team")
             }
         }
@@ -454,17 +454,17 @@ function loadUserBills(pskey, agent, email) {
         } else {
             let obj = {};
             obj.account = doc.default;
-           // if(doc.default == "personal"){
-               obj.user_bills = doc.personal.bills.map(function(bill) {
-                    return {
-                        img: bill.encr_img,
-                        data: bill.data,
-                        id: bill.billid,
-                        lastdate: bill.submitdate
-                    }
-                });
-               console.log("user bills...");
-                return new Promise((resolve, rej) => resolve({ data: obj })); 
+            // if(doc.default == "personal"){
+            obj.user_bills = doc.personal.bills.map(function(bill) {
+                return {
+                    img: bill.encr_img,
+                    data: bill.data,
+                    id: bill.billid,
+                    lastdate: bill.submitdate
+                }
+            });
+            console.log("user bills...");
+            return new Promise((resolve, rej) => resolve({ data: obj }));
             //}
 
         }
@@ -583,11 +583,19 @@ function idRandomise(idfor) {
 }
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/public/index.html");
+    if (req.secure) {
+        res.sendFile(__dirname + "/public/index.html");
+    } else {
+        res.redirect("https://billvault.herokuapp.com" + req.url);
+    }
 
 });
 app.get("/home", (req, res) => {
-    res.sendFile(__dirname + "/public/home.html");
+    if (req.secure) {
+        res.sendFile(__dirname + "/public/index.html");
+    } else {
+        res.sendFile(__dirname + "/public/home.html");
+    }
 
 });
 
@@ -595,7 +603,7 @@ app.get("/home", (req, res) => {
 
 app.post("/processimage", (req, res) => {
     console.log("Image processing...");
-    
+
     scanBill(req.body.img).then(function(data) {
         console.log(data);
         res.json({ status: data });
@@ -793,7 +801,7 @@ app.post("/settingsave", (req, res) => {
 });
 
 app.post("/addNewMember", (req, res) => {
-    
+
 
 });
 
@@ -811,7 +819,10 @@ app.post("/chartsload", (req, res) => {
 
 });
 
+app.get("/*", (req, res) => {
+     res.redirect("https://" + req.headers.host + "/404.html");
 
+});
 
 
 http.listen(port, () => {
