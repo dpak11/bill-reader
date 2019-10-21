@@ -3,8 +3,8 @@
   "short_name": "BillVault",
   "start_url": "/login.html",
   "display": "standalone",
-  "background_color": "#FFE9D2",
-  "theme_color": "#FFE1C4",
+  "background_color": "#CEDFE5",
+  "theme_color": "#850689",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -1,6 +1,8 @@
 const staticCacheName = 'site-static-v5';
 const dynamicCacheName = 'site-dynamic-v4';
-const assets = [  
+const assets = [ 
+  '/',
+  '/home', 
   '/css/styles-home.css',
   '/css/styles-login.css',
   '/css/spinner.css',
