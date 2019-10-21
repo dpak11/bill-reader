@@ -584,31 +584,31 @@ function idRandomise(idfor) {
 
 app.get("/", (req, res) => {
     console.log("root directory");
-    if (req.headers.host.indexOf("localhost") == -1) {
+    /*if (req.headers.host.indexOf("localhost") == -1) {
         if (req.secure) {
-            console.log("secure");
+            console.log("secure");*/
             res.sendFile(__dirname + "/public/login.html");
-        } else {
+        /*} else {
             console.log("not secure ");
             res.redirect("https://" + req.headers.host + req.url);
         }
     } else {
         res.sendFile(__dirname + "/public/login.html");
-    }
+    }*/
 
 
 });
 app.get("/home", (req, res) => {
     console.log("home directory");
-    if (req.headers.host.indexOf("localhost") == -1) {
-        if (req.secure) {
+    /*if (req.headers.host.indexOf("localhost") == -1) {
+        if (req.secure) {*/
             res.sendFile(__dirname + "/public/home.html");
-        } else {
+        /*} else {
             res.redirect("https://" + req.headers.host + req.url);
         }
     } else {
         res.sendFile(__dirname + "/public/home.html");
-    }
+    }*/
 
 });
 
