@@ -5,7 +5,7 @@ const assets = [
   '/css/styles-login.css',
   '/css/spinner.css',
   '/css/resets.css',
-  '/index.html',
+  '/login.html',
   '/home.html',
   '/auth.js',
   '/crypts.js',

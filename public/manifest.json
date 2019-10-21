@@ -1,7 +1,7 @@
 {
-  "name": "BillVault",
+  "name": "Bill Vault",
   "short_name": "BillVault",
-  "start_url": "/index.html",
+  "start_url": "/login.html",
   "display": "standalone",
   "background_color": "#FFE9D2",
   "theme_color": "#FFE1C4",

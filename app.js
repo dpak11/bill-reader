@@ -583,16 +583,29 @@ function idRandomise(idfor) {
 }
 
 app.get("/", (req, res) => {
-    if (req.secure) {
-        res.sendFile(__dirname + "/public/index.html");
+    console.log("root directory");
+    if (req.headers.host.indexOf("localhost") == -1) {
+        if (req.secure) {
+            console.log("secure");
+            res.sendFile(__dirname + "/public/login.html");
+        } else {
+            console.log("not secure ");
+            res.redirect("https://" + req.headers.host + req.url);
+        }
     } else {
-        res.redirect("https://billvault.herokuapp.com" + req.url);
+        res.sendFile(__dirname + "/public/login.html");
     }
+
 
 });
 app.get("/home", (req, res) => {
-    if (req.secure) {
-        res.sendFile(__dirname + "/public/index.html");
+    console.log("home directory");
+    if (req.headers.host.indexOf("localhost") == -1) {
+        if (req.secure) {
+            res.sendFile(__dirname + "/public/home.html");
+        } else {
+            res.redirect("https://" + req.headers.host + req.url);
+        }
     } else {
         res.sendFile(__dirname + "/public/home.html");
     }
@@ -820,7 +833,7 @@ app.post("/chartsload", (req, res) => {
 });
 
 app.get("/*", (req, res) => {
-     res.redirect("https://" + req.headers.host + "/404.html");
+    res.redirect("https://" + req.headers.host + "/404.html");
 
 });
 
