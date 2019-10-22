@@ -214,11 +214,7 @@ section.side-nav p {
 }
 
 
-section.side-nav p:hover {
-    background: rgba(224, 227, 235, 0.5);
-    color: #0e0e0e;
-    font-weight: bold;
-}
+
 
 section.side-nav span {
     display: inline-block;
@@ -479,6 +475,13 @@ div#ui-datepicker-div{
     z-index: 7 !important;
 }
 
+
+@media (min-width: 1024px){
+    section.side-nav p:hover {
+        background: rgba(224, 227, 235, 0.5);
+        color: #0e0e0e;
+    }
+}
 
 @media (max-width:920px) {
 
