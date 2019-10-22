@@ -20,7 +20,7 @@ let preloader = document.querySelector(".lds-roller");
 
 billshomeBtn.addEventListener("click", function() {
     if (currentPage !== "bills") {
-        console.log("fetching..");
+        console.log("fetching..");        
         fetchBills();
         currentPage = "bills";
         preloader.classList.remove("hide");
@@ -29,6 +29,7 @@ billshomeBtn.addEventListener("click", function() {
         settingsBtn.classList.remove("nav-selected");
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
+        document.querySelector("title").text = "Bills";
     }
 
 });
@@ -36,10 +37,9 @@ billshomeBtn.addEventListener("click", function() {
 
 captureImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
-        //alert("Please wait for your previous Bill receipt to get processed.");
         showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
-        //alert("You have not saved the current Bill Receipt");
+
         showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
         imageProcess(captureImg.files[0]);
@@ -50,10 +50,10 @@ captureImg.addEventListener('change', () => {
 
 fileImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
-        //alert("Please wait for your previous Bill receipt to get processed.");
+
         showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
-        // alert("You have not saved the current Bill Receipt");
+
         showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
         imageProcess(fileImg.files[0]);
@@ -65,10 +65,10 @@ fileImg.addEventListener('change', () => {
 function imageProcess(imgfile) {
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
-        if (imgsize > 2) {
+        if (imgsize > 3) {
             currentUploadStatus = "";
-            //alert("File size is too Large.\nYour Bill Receipt must be less than 2 MB");
-            showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 2 MB", "OK", null, false)
+
+            showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 3 MB", "OK", null, false)
             return;
         }
 
@@ -81,15 +81,19 @@ function imageProcess(imgfile) {
             document.querySelector('.previewimg img').src = srcData;
             console.log("Init processing....\n");
             getOrientation(imgfile, function(orient) {
-                console.log("got orientation val:" + orient);                
+                console.log("got orientation val:" + orient);
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
-                if (byteSize < 1.5 && orient <= 0) {
-                    console.log("No compression: "+byteSize+"MB");
+                if (byteSize < 2 && orient <= 0) {
+                    //console.log("No compression: " + byteSize + "MB");
                     BillImgProcessing(srcData);
-                } else {
-                    console.log("To compress: "+byteSize+"MB");
+                } else if (orient > 1 || byteSize >= 2) {
+                    //console.log("To compress: " + byteSize + "MB");
                     resetOrientation(srcData, orient, function(newImgData) {
-                        showAlertBox("Unsupported pixel settings in Image data.\nDo you want to process anyway?", "Yes, continue", "No, I will enter Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
+                        showAlertBox("Unsupported pixel settings.\nDo you want to process anyway?", "Yes, try", "I will enter Bill Details myself", true, BillImgProcessing, newImgData, imageProcessDone, {});
+                    });
+                } else {
+                    resetOrientation(srcData, orient, function(newImgData) {
+                        BillImgProcessing(newImgData);
 
                     });
                 }
@@ -116,8 +120,8 @@ function BillImgProcessing(imgdata) {
         }).catch(function(s) {
             document.querySelector('.previewimg img').src = imgdata;
             imageProcessDone({});
-            showAlertBox("Unable to read Receipt data due to unsupported image or camera settings", "OK", null, false);
-            //alert("Failed to read Receipt data.\nThis may be due to unsupported image or camera settings");
+            showAlertBox("Unable to read Receipt data due to poor pixels or unsupported Camera Settings. Please enter the Bill Details", "OK", null, false);
+
         });
 }
 
@@ -239,6 +243,41 @@ function detectDeviceCam(callback) {
     })
 }
 
+function addCategorySelectOptions() {
+    let categoriy_opts = [{
+        text: "Transportation",
+        val: "transport"
+    }, {
+        text: "Fuel",
+        val: "fuel"
+    }, {
+        text: "Restaurant/Food",
+        val: "food"
+    }, {
+        text: "Lodging",
+        val: "lodging"
+    }, {
+        text: "Entertainment",
+        val: "entertainment"
+    }];
+
+    if (userAcType == "personal") {
+        categoriy_opts.push({ text: "LifeStyle (Clothing/Footwear)", val: "lifestyle" });
+        categoriy_opts.push({ text: "Medical", val: "medical" });
+    }
+    categoriy_opts.push({ text: "Other expenses", val: "other" });
+
+    let billType_sel = document.getElementById("billtype");
+    billType_sel.innerHTML = "";
+    categoriy_opts.forEach(function(opt) {
+        let option = document.createElement("option");
+        option.text = opt.text;
+        option.value = opt.val;
+        billType_sel.appendChild(option);
+    });
+
+}
+
 
 
 
@@ -264,6 +303,7 @@ function fetchBills() {
                     preloader.classList.add("hide");
                     userAcType = res.user_data.account;
                     allBillsData = res.user_data;
+                    addCategorySelectOptions();
                     displayBillThumbnails();
 
                 }
@@ -338,12 +378,12 @@ function displayBillThumbnails() {
 
 }
 
-function tidyAmount(amount){
+function tidyAmount(amount) {
     let amt = Number(amount.trim());
-    if(isNaN(amt) || amt == ""){
+    if (isNaN(amt) || amt == "") {
         return 0;
     }
-    if(amt<1 || amt > 9999999 || amt == ""){
+    if (amt < 1 || amt > 9999999 || amt == "") {
         return 0;
     }
     return amt;
@@ -355,11 +395,11 @@ function updateBill() {
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
     const date = document.getElementById("date_field").value;
-    const merchant = document.getElementById("merchant_field").value;    
+    const merchant = document.getElementById("merchant_field").value;
     const descr = document.getElementById("descr_field").value;
     const billType = document.getElementById("billtype").value;
     const amt = tidyAmount(document.getElementById("amount_field").value);
-    
+
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     let encodedBill = "";
     if (userAcType == "personal") {
@@ -387,7 +427,7 @@ function updateBill() {
             deleteBillBtn.classList.remove("hide");
             exitBillBtn.classList.remove("hide");
             showAlertBox("Opps! Server timed out", "OK", null, false);
-            //alert("Opps! Server timed out");
+
         });
 
 }
@@ -415,7 +455,6 @@ function deleteBill() {
             deleteBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
             updateBillBtn.classList.remove("hide");
-            //alert("Opps! Server timed out");
             showAlertBox("Opps! Server timed out", "OK", null, false);
         });
 
@@ -434,7 +473,6 @@ function saveBill(bill, email, serv) {
                 saveBillBtn.innerText = "Save";
                 saveBillBtn.classList.remove("saving-state");
                 exitBillBtn.classList.remove("hide");
-                //alert("Sorry, can not Save.\nThis Bill already exists");
                 showAlertBox("Sorry, can not Save.\nThis Bill already exists", "OK", null, false);
             }
             if (res.status == "saved") {
@@ -450,7 +488,6 @@ function saveBill(bill, email, serv) {
             saveBillBtn.innerText = "Save";
             saveBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
-            //alert("Opps! Server timed out");
             showAlertBox("Opps! Server timed out", "OK", null, false);
         });
 }
@@ -461,11 +498,11 @@ function saveBill(bill, email, serv) {
 
 saveBillBtn.addEventListener("click", function() {
     const date = document.getElementById("date_field").value;
-    const merchant = document.getElementById("merchant_field").value;    
+    const merchant = document.getElementById("merchant_field").value;
     const descr = document.getElementById("descr_field").value;
     const billType = document.getElementById("billtype").value;
     const amt = tidyAmount(document.getElementById("amount_field").value);
-    
+
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     const client = sessionStorage.getItem("ckey") || "";
     const serv = sessionStorage.getItem("skey") || "";
@@ -496,12 +533,12 @@ updateBillBtn.addEventListener("click", function() {
     updateBill();
 });
 
-deleteBillBtn.addEventListener("click", function() {    
+deleteBillBtn.addEventListener("click", function() {
     deleteBillBtn.innerText = "Deleting...";
     deleteBillBtn.classList.add("saving-state");
     updateBillBtn.classList.add("hide");
     exitBillBtn.classList.add("hide");
-    deleteBill();    
+    deleteBill();
 });
 
 exitBillBtn.addEventListener("click", function() {
@@ -554,6 +591,7 @@ settingsBtn.addEventListener("click", function() {
         document.querySelector('.settingloadstatus').classList.remove("hide");
         saveSettingEnabled = false;
         loadAccountSettings();
+        document.querySelector("title").text = "Settings | Bill Vault";
     }
 });
 
@@ -571,7 +609,6 @@ function attachProfileImage(imgfile) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 1) {
             currentUploadStatus = "";
-            // alert("Your photo size must be less than 1 MB");
             showAlertBox("Your photo size must be less than 1 MB", "OK", null, false);
             return;
         }
@@ -589,7 +626,7 @@ function attachProfileImage(imgfile) {
 
 
 savesettingsBtn.addEventListener("click", function() {
-    
+
     if (!saveSettingEnabled) {
         return;
     }
@@ -598,7 +635,7 @@ savesettingsBtn.addEventListener("click", function() {
     let disp_name = document.getElementById("displayname_field").value;
     let acc_type = document.getElementById("user_account_field").value;
 
-    if(acc_type == "team"){
+    if (acc_type == "team") {
         showAlertBox("Sorry, you do not have access to Business Account", "OK", null, false);
         return;
     }
@@ -681,7 +718,6 @@ function loadAccountSettings() {
 
         }).catch(function(s) {
             document.querySelector('.settingloadstatus').classList.add("hide");
-            // alert("Opps! Server timed out");
             showAlertBox("Opps! Server timed out", "OK", null, false);
 
         });
@@ -708,7 +744,6 @@ function addMemberToProject(member, role, aprover) {
             addNewMember.innerText = "Add Member to Project";
             addNewMember.classList.remove("saving-state");
             addNewMember.classList.add("btn");
-            //alert("Opps! Server timed out");
             showAlertBox("Opps! Server timed out", "OK", null, false);
 
         });
@@ -781,7 +816,6 @@ addNewMemberBtn.addEventListener("click", function() {
         let memb_roles = lastGroup.querySelector(".select-roles-control").value;
         let appr_email = lastGroup.querySelector(".approver-email-field").value;
         if (memb_roles == "none") {
-            //alert("Please select Role");
             showAlertBox("Please select a role", "OK", null, false);
             return;
         }
@@ -797,16 +831,18 @@ addNewMemberBtn.addEventListener("click", function() {
 cancelsettingsBtn.addEventListener("click", function() {
     document.getElementById("settingsBlock").classList.add("hide");
     settingsBtn.classList.remove("nav-selected");
-    if(remPreviousActiveTab == "bills"){
+    if (remPreviousActiveTab == "bills") {
         billshomeBtn.classList.add("nav-selected");
+        document.querySelector("title").text = "Bills";
     }
-    if(remPreviousActiveTab == "charts"){
+    if (remPreviousActiveTab == "charts") {
         chartsBtn.classList.add("nav-selected");
+        document.querySelector("title").text = "Chart | Bill Vault";
     }
-    currentPage = remPreviousActiveTab;   
-    
-    
-    
+    currentPage = remPreviousActiveTab;
+
+
+
 });
 
 
@@ -899,6 +935,7 @@ chartsBtn.addEventListener("click", function() {
         document.getElementById("chartdaysFilter").classList.add("hide");
         preloader.classList.remove("hide");
         loadCharts("personal");
+        document.querySelector("title").text = "Chart | Bill Vault";
 
     }
 });
@@ -1017,17 +1054,20 @@ function filterChart(days) {
     }
 
 
-
-
     let piechartdata = [
         ['Category', 'Total Amount(Rs)'],
         ['Fuel', categories_pie.fuel],
         ['Entertainment', categories_pie.entertainment],
         ['Food/Restaurant', categories_pie.food],
         ['Lodging', categories_pie.lodging],
-        ['Transportation', categories_pie.transport],
-        ['Others', categories_pie.other]
+        ['Transportation', categories_pie.transport]
     ];
+
+    if (userAcType == "personal") {
+        piechartdata.push(['LifeStyle', categories_pie.lifestyle]);
+        piechartdata.push(['Medical', categories_pie.medical]);
+    }
+    piechartdata.push(['Others', categories_pie.other]);
 
 
     let from_to = showDayMonth(fromdate1) + "-\n" + showDayMonth(todate1);
@@ -1037,14 +1077,33 @@ function filterChart(days) {
         ],
         [from_to, categories_pie.fuel, categories_pie.entertainment, categories_pie.food, categories_pie.lodging, categories_pie.transport, categories_pie.other, '']
     ];
+    if (userAcType == "personal") {
+        barchartdata = [
+            ['Category', 'Fuel', 'Entertainment', 'Food/Restaurant', 'Lodging',
+                'Transportation', 'LifeStyle', 'Medical', 'Others', { role: 'annotation' }
+            ],
+            [from_to, categories_pie.fuel, categories_pie.entertainment, categories_pie.food, categories_pie.lodging, categories_pie.transport, categories_pie.lifestyle, categories_pie.medical, categories_pie.other, '']
+        ];
+
+    }
     if (categories_bar1) {
         from_to = showDayMonth(fromdate2) + "-\n" + showDayMonth(todate2);
-        barchartdata.push([from_to, categories_bar1.fuel, categories_bar1.entertainment, categories_bar1.food, categories_bar1.lodging, categories_bar1.transport, categories_bar1.other, ''])
+        if (userAcType == "personal") {
+            barchartdata.push([from_to, categories_bar1.fuel, categories_bar1.entertainment, categories_bar1.food, categories_bar1.lodging, categories_bar1.transport, categories_bar1.lifestyle, categories_bar1.medical, categories_bar1.other, '']);
+        } else {
+            barchartdata.push([from_to, categories_bar1.fuel, categories_bar1.entertainment, categories_bar1.food, categories_bar1.lodging, categories_bar1.transport, categories_bar1.other, '']);
+        }
+
     }
 
     if (categories_bar2) {
         from_to = showDayMonth(fromdate3) + "-\n" + showDayMonth(todate3);
-        barchartdata.push([from_to, categories_bar2.fuel, categories_bar2.entertainment, categories_bar2.food, categories_bar2.lodging, categories_bar2.transport, categories_bar2.other, ''])
+        if (userAcType == "personal") {
+            barchartdata.push([from_to, categories_bar2.fuel, categories_bar2.entertainment, categories_bar2.food, categories_bar2.lodging, categories_bar2.transport, categories_bar2.lifestyle, categories_bar2.medical, categories_bar2.other, '']);
+        } else {
+            barchartdata.push([from_to, categories_bar2.fuel, categories_bar2.entertainment, categories_bar2.food, categories_bar2.lodging, categories_bar2.transport, categories_bar2.other, '']);
+        }
+
     }
 
     drawBillsChart("piechart", piechartdata, `Last ${days} days Expenses`);
@@ -1068,8 +1127,13 @@ function calculatedTotals(vals) {
         transport: 0,
         food: 0,
         lodging: 0,
-        other: 0,
+        other: 0
     };
+    if (userAcType == "personal") {
+        categories.medical = 0;
+        categories.lifestyle = 0;
+    }
+
 
     vals.forEach(function(dat) {
         categories[dat.category] = categories[dat.category] + dat.total;
@@ -1167,7 +1231,7 @@ function initLoad() {
         let atype = accountchangeUser == "team" ? "Project/Team Account" : "Personal Account";
         let logmsg = "You are now logged into your " + atype;
         showAlertBox(logmsg, "OK", null, false);
-        //alert(logmsg);
+
     }
 }
 

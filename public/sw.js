@@ -1,5 +1,5 @@
-const staticCacheName = 'bv-static-v1';
-const dynamicCacheName = 'bv-dynamic-v1';
+const staticCacheName = 'bv-static-v0';
+const dynamicCacheName = 'bv-dynamic-v0';
 const assets = [ 
   '/',
   '/home', 
@@ -24,6 +24,9 @@ const assets = [
   '/images/other.png',
   '/images/settings.png',
   '/images/transport.png',
+  '/images/medical.png',
+  '/images/lifestyle.png',
+  '/images/favicon.png',
   '/images/user.png'
 ];
 

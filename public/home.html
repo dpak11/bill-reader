@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
     <title>Bill Vault</title>
     <link rel="stylesheet" href="css/resets.css">
     <link rel="stylesheet" href="css/spinner.css">
@@ -54,18 +55,13 @@
                     </div>
                 </section>
                 <section id="billTable" class="hide">
-                    <div class="table-head">Edit Bill Details</div>
+                    <div class="table-head">Enter Bill Details: </div>
                     <input type="text" placeholder="Merchant" id="merchant_field">
                     <input type="text" placeholder="Date" readonly id="date_field">
                     <input type="text" placeholder="Amount" id="amount_field">
                     <input type="text" placeholder="Description" id="descr_field">
                     <select name="billtype" id="billtype">
-                        <option value="transport">Transportation</option>
-                        <option value="fuel">Fuel</option>
-                        <option value="food">Restaurant/Food</option>
-                        <option value="lodging">Lodging</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="other">Other Expenses</option>
+                        
                     </select>
                     <div>
                         <span id="savebill">Save</span>
@@ -135,7 +131,7 @@
                             <div class="team-sub-setting">
                                 <p><img id="teamlogoImg" src="images/user.png"><br>
                                     <input class="input-image" type="file" id="team_img_browse" accept="image/*" />
-                                    <label for="team_img_browse">Upload Logo</label>
+                                    <label for="team_img_browse">Upload Image</label>
                                 </p>
                                 <p>
                                     <label for="displayteamname">Project Name</label>
