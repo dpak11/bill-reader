@@ -1,5 +1,4 @@
-let captureImg = document.getElementById('captureImg');
-let fileImg = document.getElementById('fileImg');
+
 let allBillsData = null;
 let billsObjRef = {};
 let selectedBillId = "";
@@ -15,6 +14,8 @@ let deleteBillBtn = document.getElementById("deletebill");
 let exitBillBtn = document.getElementById("exitbill");
 let updateBillBtn = document.getElementById("updatebill");
 let preloader = document.querySelector(".lds-roller");
+let captureImg = document.getElementById('captureImg');
+let fileImg = document.getElementById('fileImg');
 
 
 
@@ -29,7 +30,7 @@ billshomeBtn.addEventListener("click", function() {
         settingsBtn.classList.remove("nav-selected");
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
-        document.querySelector("title").text = "Bills";
+        document.querySelector("title").text = "Bill Vault";
     }
 
 });
@@ -89,7 +90,7 @@ function imageProcess(imgfile) {
                 } else if (orient > 1 || byteSize >= 2) {
                     //console.log("To compress: " + byteSize + "MB");
                     resetOrientation(srcData, orient, function(newImgData) {
-                        showAlertBox("Unsupported pixel settings.\nDo you want to process anyway?", "Yes, try", "I will enter Bill Details myself", true, BillImgProcessing, newImgData, imageProcessDone, {});
+                        showAlertBox("Unsupported resolution settings.\nDo you want to process anyway?", "Yes, try", "I will enter my Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
                     });
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
@@ -120,7 +121,7 @@ function BillImgProcessing(imgdata) {
         }).catch(function(s) {
             document.querySelector('.previewimg img').src = imgdata;
             imageProcessDone({});
-            showAlertBox("Unable to read Receipt data due to poor pixels or unsupported Camera Settings. Please enter the Bill Details", "OK", null, false);
+            showAlertBox("Unable to read Receipt data due to unsupported pixel resolution or Camera Settings. Please enter your Bill Details", "OK", null, false);
 
         });
 }
@@ -432,7 +433,11 @@ function updateBill() {
 
 }
 
-function deleteBill() {
+function deleteBill() {                    
+    deleteBillBtn.innerText = "Deleting...";
+    deleteBillBtn.classList.add("saving-state");
+    updateBillBtn.classList.add("hide");
+    exitBillBtn.classList.add("hide");
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
@@ -534,11 +539,8 @@ updateBillBtn.addEventListener("click", function() {
 });
 
 deleteBillBtn.addEventListener("click", function() {
-    deleteBillBtn.innerText = "Deleting...";
-    deleteBillBtn.classList.add("saving-state");
-    updateBillBtn.classList.add("hide");
-    exitBillBtn.classList.add("hide");
-    deleteBill();
+    showAlertBox("Are you sure you want to Delete this Bill?", "Yes", "No", true, deleteBill, null, null, null);   
+    
 });
 
 exitBillBtn.addEventListener("click", function() {
@@ -833,7 +835,7 @@ cancelsettingsBtn.addEventListener("click", function() {
     settingsBtn.classList.remove("nav-selected");
     if (remPreviousActiveTab == "bills") {
         billshomeBtn.classList.add("nav-selected");
-        document.querySelector("title").text = "Bills";
+        document.querySelector("title").text = "Bill Vault";
     }
     if (remPreviousActiveTab == "charts") {
         chartsBtn.classList.add("nav-selected");
