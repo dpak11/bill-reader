@@ -133,6 +133,10 @@ header {
 .newuserGroup {
     padding: 15px 5px;
 }
+.newuserGroup span{
+    padding-bottom: 10px;
+    display: inline-block;
+}
 
 #team_setting_link,
 #user_setting_link {
@@ -572,7 +576,9 @@ div#ui-datepicker-div {
     }
 
     section.main {
-        width: 90%
+        width: 90%;
+        padding-left: 12px;
+        padding-right: 12px;
     }
 
     #alertBoxWindow div {
