@@ -37,7 +37,7 @@ header {
 }
 
 .profile_info h2 {
-    border-bottom: 2px solid #b1b3b9;
+    border-bottom: 2px solid #c9cbd2;
     padding-bottom: 10px;
     padding-left: 10px;
     color: #850689;
@@ -49,13 +49,14 @@ header {
     color: black;
 
 }
-.team-sub-setting{
+
+.team-sub-setting {
     border: 1px solid #697b9c;
     padding: 20px;
     margin-bottom: 20px;
 }
 
-#addUserPanel > p{
+#addUserPanel>p {
     font-size: .9em;
     color: #6f6d6b;
     line-height: 1.6em;
@@ -66,16 +67,14 @@ header {
 
 
 .profile_info p:nth-child(3),
-.team-sub-setting:nth-child(1) > p:nth-child(1)
- {
+.team-sub-setting:nth-child(1)>p:nth-child(1) {
     margin-bottom: 50px;
     width: 270px;
     text-align: center;
 }
 
-.team-sub-setting:nth-child(1) > p:nth-child(1),
-.team-sub-setting:nth-child(1) > p:nth-child(2)
-{
+.team-sub-setting:nth-child(1)>p:nth-child(1),
+.team-sub-setting:nth-child(1)>p:nth-child(2) {
     width: 100%;
     text-align: center
 }
@@ -83,15 +82,20 @@ header {
 .profile_info label {
     display: inline-block;
     width: 200px;
+    padding-bottom: 5px;
+    color: #40484b;
 }
 
 .profile_info input,
 .profile_info select {
     padding: 5px;
     width: 200px;
+    background: #99D9F0;
+    box-shadow: inset 2px 2px 6px #787373;
+    color: #6e4d6e;
 }
 
-#profile_img_browse+label, 
+#profile_img_browse+label,
 #team_img_browse+label {
     padding: 5px;
     font-size: 1em;
@@ -104,14 +108,29 @@ header {
     cursor: default;
 }
 
-.settingloadstatus{
+.settingloadstatus {
     color: #a69e9e;
     font-size: .7em;
     font-weight: normal;
     padding-left: 20px;
+    animation: loadblinker .7s linear infinite;
 }
 
-.newuserGroup{
+@keyframes loadblinker {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.newuserGroup {
     padding: 15px 5px;
 }
 
@@ -124,7 +143,8 @@ header {
     cursor: pointer
 }
 
-#userprofilepic,#teamlogoImg {
+#userprofilepic,
+#teamlogoImg {
     border-radius: 50%;
     height: auto;
     max-width: 150px;
@@ -164,19 +184,23 @@ header {
     width: 100%;
     background: #fff;
 }
-#chartdaysFilter{
+
+#chartdaysFilter {
     padding: 10px;
     border-radius: 5px;
     background: #dfe4ea;
     margin: 5px;
 }
-.chart-filter-day{
+
+.chart-filter-day {
     background-color: #fff
 }
-#imageuploader + section{
+
+#imageuploader+section {
     width: 100%
 }
-.lds-roller{
+
+.lds-roller {
     display: block;
     margin: auto
 }
@@ -239,7 +263,7 @@ section.main {
 
 
 #imageuploader {
-    
+
     padding: 10px;
     width: 100%;
     height: 105px;
@@ -268,7 +292,7 @@ section.main {
     box-shadow: 1px 1px 8px 1px #372f2f;
     background: #c3c3e5;
     margin-top: 20px;
-   /*  margin-left: 10px; */
+    /*  margin-left: 10px; */
 }
 
 #billTable input {
@@ -353,7 +377,7 @@ p {
     font-size: 1.1em;
 }
 
-#cameraDevice{
+#cameraDevice {
     margin-right: 10px
 }
 
@@ -365,10 +389,10 @@ p {
     box-shadow: inset 2px 2px 10px 2px #4f4b4b;
 }
 
-#alertBoxWindow{
+#alertBoxWindow {
     display: flex;
     position: fixed;
-    top:0;
+    top: 0;
     width: 100%;
     height: 100vh;
     background: rgba(0, 0, 0, 0.7);
@@ -377,17 +401,19 @@ p {
     justify-content: center;
 }
 
-#alertBoxWindow div{
+#alertBoxWindow div {
     padding: 20px 40px;
     background: rgba(182, 178, 203, 0.8);
     text-align: center;
     width: 25%
 }
-#alertBoxWindow h4{
+
+#alertBoxWindow h4 {
     font-weight: normal;
 }
-#alertBoxWindow p{
-   font-size: .9em;
+
+#alertBoxWindow p {
+    font-size: .9em;
 }
 
 .previewimg>img {
@@ -444,7 +470,8 @@ p {
     padding: 10px 0;
     cursor: pointer
 }
-.thumbnail .thumb-img + div {
+
+.thumbnail .thumb-img+div {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -454,7 +481,8 @@ p {
 .thumb-title-bill {
     padding: 10px 0;
 }
-.thumb-date-bill{
+
+.thumb-date-bill {
     font-size: .8em;
     color: #565252;
 }
@@ -471,12 +499,13 @@ p {
     font-weight: bold;
     padding: 10px 0;
 }
-div#ui-datepicker-div{
+
+div#ui-datepicker-div {
     z-index: 7 !important;
 }
 
 
-@media (min-width: 1024px){
+@media (min-width: 1024px) {
     section.side-nav p:hover {
         background: rgba(224, 227, 235, 0.5);
         color: #0e0e0e;
@@ -503,7 +532,7 @@ div#ui-datepicker-div{
 }
 
 @media (max-width:768px) {
-    #alertBoxWindow div{
+    #alertBoxWindow div {
         width: 40%
     }
 
@@ -545,16 +574,19 @@ div#ui-datepicker-div{
     section.main {
         width: 90%
     }
-    #alertBoxWindow div{
+
+    #alertBoxWindow div {
         width: 50%
     }
-    .profile_info{
+
+    .profile_info {
         font-size: .8em
     }
 
     #billTable {
         font-size: .8em
     }
+
     .thumb-img img {
         width: 220px;
     }
