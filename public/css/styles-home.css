@@ -229,6 +229,7 @@ header img {
     font-size: 1em;
     font-family: arial;
     min-height: 86vh;
+    background: #CEDFE5;
 }
 
 section.side-nav {
