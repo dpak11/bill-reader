@@ -133,7 +133,8 @@ header {
 .newuserGroup {
     padding: 15px 5px;
 }
-.newuserGroup span{
+
+.newuserGroup span {
     padding-bottom: 10px;
     display: inline-block;
 }
@@ -181,6 +182,13 @@ header {
 #billTable,
 #billThumbnails {
     z-index: 5;
+}
+
+.prev-block.transparent,
+#billThumbnails.transparent,
+#chartsBlock.transparent,
+#billTable.transparent{
+    opacity: 0
 }
 
 #chartsBlock {
@@ -237,8 +245,8 @@ section.side-nav p {
 }
 
 .nav-selected {
-    background: #f6f6f6;
-    color: #111212;
+    background: #fff;
+    color: #111212
 }
 
 
@@ -251,7 +259,7 @@ section.side-nav span {
 
 section.side-nav img {
     display: none;
-    width: 25%;
+    width: 30%;
     height: auto;
 }
 
@@ -580,6 +588,55 @@ div#ui-datepicker-div {
         padding-left: 12px;
         padding-right: 12px;
     }
+
+
+    /* Top floater */
+    .topfloater section.side-nav {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        background: #e8bef6;
+
+    }
+
+    .topfloater section.main {
+        width: 95%;
+
+    }
+
+    .topfloater section.side-nav p {
+        box-shadow: none;
+        padding: 5px 26px;
+
+    }
+
+    .topfloater .content-box {
+        flex-direction: column
+    }
+
+    .topfloater .thumb-img img{
+        width:290px
+    }
+
+    .topfloater #settingsBlock{        
+        top: 135px;
+        box-shadow: 0px 0px 7px 1px rgba(0, 0, 0, 0.5);
+        width: 94%;
+    }
+    .topfloater section.side-nav img{
+        width:50%
+    }
+    .topfloater #logout img{
+        width:35%
+    }
+
+
+    .topfloater .nav-selected{
+         background: rgba(246, 246, 246, 0.5);
+        border-top: 2px solid white;
+    }
+
+    /* End top floater */
 
     #alertBoxWindow div {
         width: 50%

@@ -16,8 +16,18 @@ let updateBillBtn = document.getElementById("updatebill");
 let preloader = document.querySelector(".lds-roller");
 let captureImg = document.getElementById('captureImg');
 let fileImg = document.getElementById('fileImg');
+let header_layout = document.querySelector("header");
 
 
+header_layout.addEventListener("click", function() {
+    let containerdiv = document.querySelector(".container");
+    if(containerdiv.getAttribute("class").includes("topfloater")){
+        containerdiv.classList.remove("topfloater")
+    }else{
+        containerdiv.classList.add("topfloater")
+    }
+    
+});
 
 billshomeBtn.addEventListener("click", function() {
     if (currentPage !== "bills") {
@@ -31,6 +41,9 @@ billshomeBtn.addEventListener("click", function() {
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
         document.querySelector("title").text = "Bill Vault";
+        document.getElementById("billTable").classList.remove("transparent");
+        document.querySelector(".prev-block").classList.remove("transparent");
+        document.getElementById("billThumbnails").classList.remove("transparent");
     }
 
 });
@@ -591,6 +604,10 @@ settingsBtn.addEventListener("click", function() {
         document.getElementById("settingsBlock").classList.remove("hide");
         savesettingsBtn.classList.add("hide");
         document.querySelector('.settingloadstatus').classList.remove("hide");
+        document.getElementById("billTable").classList.add("transparent");
+        document.querySelector(".prev-block").classList.add("transparent");
+        document.getElementById("billThumbnails").classList.add("transparent");
+        document.getElementById("chartsBlock").classList.add("transparent");
         saveSettingEnabled = false;
         loadAccountSettings();
         document.querySelector("title").text = "Settings | Bill Vault";
@@ -832,6 +849,10 @@ addNewMemberBtn.addEventListener("click", function() {
 
 cancelsettingsBtn.addEventListener("click", function() {
     document.getElementById("settingsBlock").classList.add("hide");
+    document.getElementById("billTable").classList.remove("transparent");
+    document.querySelector(".prev-block").classList.remove("transparent");
+    document.getElementById("billThumbnails").classList.remove("transparent");
+    document.getElementById("chartsBlock").classList.remove("transparent");
     settingsBtn.classList.remove("nav-selected");
     if (remPreviousActiveTab == "bills") {
         billshomeBtn.classList.add("nav-selected");
@@ -933,8 +954,9 @@ chartsBtn.addEventListener("click", function() {
         document.getElementById("billTable").classList.add("hide");
         document.querySelector(".previewimg").classList.add("hide");
         document.getElementById("billThumbnails").classList.add("hide");
-        document.getElementById("chartsBlock").classList.remove("hide");
-        document.getElementById("chartdaysFilter").classList.add("hide");
+        document.getElementById("chartsBlock").classList.add("hide");        
+        //document.getElementById("chartdaysFilter").classList.add("hide");        
+        document.getElementById("chartsBlock").classList.remove("transparent");
         preloader.classList.remove("hide");
         loadCharts("personal");
         document.querySelector("title").text = "Chart | Bill Vault";
@@ -949,7 +971,8 @@ function loadCharts(type) {
         .then(function(c) {
             if (c.status == "done") {
                 preloader.classList.add("hide");
-                document.getElementById("chartdaysFilter").classList.remove("hide");
+                //document.getElementById("chartdaysFilter").classList.remove("hide");
+                document.getElementById("chartsBlock").classList.remove("hide");
                 const bData = JSON.parse(atob(c.chartdata));
                 console.log(bData);
                 const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
