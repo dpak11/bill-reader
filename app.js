@@ -582,34 +582,19 @@ function idRandomise(idfor) {
     return rnd;
 }
 
-app.get("/", (req, res) => {
-    console.log("root directory");
-    /*if (req.headers.host.indexOf("localhost") == -1) {
-        if (req.secure) {
-            console.log("secure");*/
-            res.sendFile(__dirname + "/public/login.html");
-        /*} else {
-            console.log("not secure ");
-            res.redirect("https://" + req.headers.host + req.url);
-        }
-    } else {
-        res.sendFile(__dirname + "/public/login.html");
-    }*/
 
+
+
+app.get("/", (req, res) => {    
+    res.sendFile(__dirname + "/public/login.html");
 
 });
-app.get("/home", (req, res) => {
-    console.log("home directory");
-    /*if (req.headers.host.indexOf("localhost") == -1) {
-        if (req.secure) {*/
-            res.sendFile(__dirname + "/public/home.html");
-        /*} else {
-            res.redirect("https://" + req.headers.host + req.url);
-        }
-    } else {
-        res.sendFile(__dirname + "/public/home.html");
-    }*/
+app.get("/home", (req, res) => {    
+    res.sendFile(__dirname + "/public/home.html");
+});
 
+app.get("/get-my-users", (req, res) => {
+    res.sendFile(__dirname + "/public/myuserlists.html");
 });
 
 
@@ -818,6 +803,7 @@ app.post("/addNewMember", (req, res) => {
 
 });
 
+
 app.post("/chartsload", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
@@ -841,3 +827,54 @@ app.get("/*", (req, res) => {
 http.listen(port, () => {
     console.log(`Server running at port ` + port);
 });
+
+
+
+
+
+/* ---------------- (Not for Production deployment)  -------------------- */
+
+
+
+app.post("/listUsers", (req, res) => {
+    if (req.body.pass == "V@ult-06-82") {
+        fetchAllUsers().then(function(alldocs) {
+            res.json({ status: "done", results: alldocs })
+        }).catch(function() {
+            console.log("cannot load users");
+            res.json({ status: "serverbusy" });
+        });
+    } else {
+        res.json({ status: "invalid" });
+    }
+
+});
+
+function fetchAllUsers() {
+    return Users.find({}).then(doc => {
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            let allusers = [];
+            console.log("fetching...");
+            doc.forEach(function(d) {
+                let listObj = {};
+                listObj.addr = d.email;
+                listObj.key = d.activation;
+                listObj.agent = d.browser;
+                listObj.firstdate = d.created;
+                listObj.lastdate = d.lastlogin;
+                listObj.billNum = d.personal.bills.length;
+                allusers.push(listObj)
+            });
+
+            return new Promise((resolve, rej) => resolve(allusers));
+
+        }
+
+    }).catch(function() {
+        console.log("users find failed");
+        return new Promise((resolve, rej) => rej());
+    })
+
+}
