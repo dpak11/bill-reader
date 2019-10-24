@@ -79,10 +79,10 @@ fileImg.addEventListener('change', () => {
 function imageProcess(imgfile) {
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
-        if (imgsize > 3) {
+        if (imgsize > 4) {
             currentUploadStatus = "";
 
-            showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 3 MB", "OK", null, false)
+            showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 4 MB", "OK", null, false)
             return;
         }
 
@@ -97,10 +97,10 @@ function imageProcess(imgfile) {
             getOrientation(imgfile, function(orient) {
                 console.log("got orientation val:" + orient);
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
-                if (byteSize < 2 && orient <= 0) {
+                if (byteSize < 3 && orient <= 0) {
                     //console.log("No compression: " + byteSize + "MB");
                     BillImgProcessing(srcData);
-                } else if (orient > 1 || byteSize >= 2) {
+                } else if (orient > 1 || byteSize >= 3) {
                     //console.log("To compress: " + byteSize + "MB");
                     resetOrientation(srcData, orient, function(newImgData) {
                         showAlertBox("Unsupported resolution settings.\nDo you want to process anyway?", "Yes, try", "I will enter my Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
