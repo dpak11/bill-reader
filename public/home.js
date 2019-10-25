@@ -103,7 +103,8 @@ function imageProcess(imgfile) {
                 } else if (orient > 1 || byteSize >= 3) {
                     //console.log("To compress: " + byteSize + "MB");
                     resetOrientation(srcData, orient, function(newImgData) {
-                        showAlertBox("Unsupported resolution settings.\nDo you want to process anyway?", "Yes, try", "I will enter my Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
+                        BillImgProcessing(newImgData);
+                        //showAlertBox("Unsupported resolution settings.\nDo you want to process anyway?", "Yes, try", "I will enter my Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
                     });
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
