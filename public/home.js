@@ -97,18 +97,13 @@ function imageProcess(imgfile) {
             getOrientation(imgfile, function(orient) {
                 console.log("got orientation val:" + orient);
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
-                if (byteSize < 3 && orient <= 0) {
+                if (byteSize < 3 && orient <= 1) {
                     //console.log("No compression: " + byteSize + "MB");
                     BillImgProcessing(srcData);
-                } else if (orient > 1 || byteSize >= 3) {
-                    //console.log("To compress: " + byteSize + "MB");
-                    resetOrientation(srcData, orient, function(newImgData) {
-                        BillImgProcessing(newImgData);
-                        //showAlertBox("Unsupported resolution settings.\nDo you want to process anyway?", "Yes, try", "I will enter my Bill Details", true, BillImgProcessing, newImgData, imageProcessDone, {});
-                    });
-                } else {
-                    resetOrientation(srcData, orient, function(newImgData) {
-                        BillImgProcessing(newImgData);
+                }  else {
+                    resetOrientation(srcData, orient, function(newImgData) { 
+                        document.querySelector('.previewimg img').src = newImgData;                       
+                        imageProcessDone({});
 
                     });
                 }
