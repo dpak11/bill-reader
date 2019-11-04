@@ -1,4 +1,3 @@
-
 let allBillsData = null;
 let billsObjRef = {};
 let selectedBillId = "";
@@ -6,7 +5,11 @@ let billMode = "save";
 let currentUploadStatus = "";
 let currentPage = "";
 let userAcType = "";
+let teamAcRights = "";
 let remPreviousActiveTab = "";
+let selectedProjectID = "";
+let projectMemberRole = "";
+let selectedProjectName = "";
 
 let billshomeBtn = document.getElementById("billshome");
 let saveBillBtn = document.getElementById("savebill");
@@ -17,22 +20,25 @@ let preloader = document.querySelector(".lds-roller");
 let captureImg = document.getElementById('captureImg');
 let fileImg = document.getElementById('fileImg');
 let header_layout = document.querySelector("header");
+let headerLogo = document.querySelector("header img");
+let projectNameHead = document.getElementById("projectNameHead");
 
 
 header_layout.addEventListener("click", function() {
     let containerdiv = document.querySelector(".container");
-    if(containerdiv.getAttribute("class").includes("topfloater")){
+    if (containerdiv.getAttribute("class").includes("topfloater")) {
         containerdiv.classList.remove("topfloater")
-    }else{
+    } else {
         containerdiv.classList.add("topfloater")
     }
-    
+
 });
 
 billshomeBtn.addEventListener("click", function() {
     if (currentPage !== "bills") {
-        console.log("fetching..");        
+        console.log("fetching..");
         fetchBills();
+        localStorage.removeItem("is_private_team");
         currentPage = "bills";
         preloader.classList.remove("hide");
         billshomeBtn.classList.add("nav-selected");
@@ -100,9 +106,9 @@ function imageProcess(imgfile) {
                 if (byteSize < 3 && orient <= 1) {
                     //console.log("No compression: " + byteSize + "MB");
                     BillImgProcessing(srcData);
-                }  else {
-                    resetOrientation(srcData, orient, function(newImgData) { 
-                        document.querySelector('.previewimg img').src = newImgData;                       
+                } else {
+                    resetOrientation(srcData, orient, function(newImgData) {
+                        document.querySelector('.previewimg img').src = newImgData;
                         imageProcessDone({});
 
                     });
@@ -295,30 +301,57 @@ function fetchBills() {
     let client = sessionStorage.getItem("ckey") || false;
     let serv = sessionStorage.getItem("skey") || false;
     let sessionemail = sessionStorage.getItem("em") || false;
+    let type = localStorage.getItem("is_private_team") || "private";
+
     if (client && serv && sessionemail) {
-        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv }) })
+        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, ptype: type, projid: selectedProjectID }) })
             .then(data => data.json())
             .then(function(res) {
                 console.log("loaded1");
                 if (res.status == "invalid") {
-                    console.log("load.2");
+                    console.log("invalid");
                     sessionStorage.clear();
+                    preloader.classList.add("hide");
+                }
+                if (res.status == "notinteam") {
+                    userAcType = res.user_data.account;
+                    teamAcRights = res.user_data.controls;
+                    showAlertBox("You are not in any Project", "OK", null, false);
                     preloader.classList.add("hide");
                 }
                 if (res.status == "done") {
                     detectDeviceCam(function(hascam) {
                         if (hascam) { document.getElementById("cameraDevice").classList.remove("hide") }
-                    })
-                    document.getElementById("imageuploader").classList.remove("hide");
-                    preloader.classList.add("hide");
+                    });
+
                     userAcType = res.user_data.account;
-                    allBillsData = res.user_data;
+                    teamAcRights = res.user_data.controls;
+                    if (userAcType == "team") {
+                        selectedProjectID = res.user_data.activeProjectID || "";
+                        projectMemberRole = res.user_data.role || "";
+                        let header_logo_img = res.user_data.logo || "";
+                        headerLogo.src = (header_logo_img == "") ? "images/logo-sq.png" : header_logo_img;
+                        selectedProjectName = res.user_data.projname || "";
+                        projectNameHead.innerHTML = "<b>Project:</b>&nbsp;" + selectedProjectName;
+                        projectNameHead.style.display = "block";
+                        if (type == "team") {
+                            allBillsData = JSON.parse(res.user_data.allProjMembers);
+                        } else {
+                            allBillsData = res.user_data.user_bills;
+                        }
+
+                    } else {
+                        allBillsData = res.user_data.user_bills;
+                    }
+
                     addCategorySelectOptions();
                     displayBillThumbnails();
+                    document.getElementById("imageuploader").classList.remove("hide");
+                    preloader.classList.add("hide");
 
                 }
             }).catch(function(e) {
-                console.log("load failed");
+                showAlertBox("Server Busy!", "OK", null, false);
                 console.log(e);
                 preloader.classList.add("hide");
             });
@@ -336,13 +369,18 @@ function displayBillingTable(data) {
 
 }
 
+
+
 function displayBillThumbnails() {
     let thumbnails = document.getElementById("billThumbnails");
     thumbnails.classList.remove("hide");
     thumbnails.innerHTML = "";
-    allBillsData.user_bills.forEach(function(bill) {
+    allBillsData.forEach(function(bill) {
         let billImg = "";
         let billData = "";
+        let thumbnailAlign = "centered";
+        let thumbnailStatus = "hide";
+        let billstatus = "";
         if (userAcType == "personal") {
             const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
             billImg = decryptImg(bill.img, key);
@@ -350,10 +388,18 @@ function displayBillThumbnails() {
         } else {
             billImg = atob(bill.img);
             billData = JSON.parse(atob(bill.data));
+            thumbnailAlign = "spaced";
+            thumbnailStatus = "";
+            billstatus = "images/" + bill.status + ".png";
         }
         let typeImg = "images/" + billData.type + ".png";
         let submit_date = bill.lastdate.split(",")[0];
-        let thumbs = `<div class="amount-thumb">&#8377;${billData.total}</div>
+
+        let thumbs = `<div class="thumb-top-row ${thumbnailAlign}">
+                         <div class="amount-thumb">&#8377;${billData.total}
+                     </div>
+                <div class="bill-status ${thumbnailStatus}"><img src="${billstatus}"></div>
+            </div>
             <div class="thumb-img">
                 <img src="${billImg}">                
             </div>
@@ -368,6 +414,10 @@ function displayBillThumbnails() {
         div.setAttribute("id", "thumb_" + bill.id);
         div.innerHTML = thumbs;
         div.setAttribute("data-billvals", btoa(JSON.stringify(billData)));
+        if (userAcType == "team") {
+            div.setAttribute("data-billstatus", bill.status);
+            div.setAttribute("data-billapprover", bill.approver);
+        }
         billsObjRef[bill.id] = billImg;
         thumbnails.appendChild(div);
         div.addEventListener("click", function(ev) {
@@ -375,15 +425,36 @@ function displayBillThumbnails() {
             document.getElementById("imageuploader").classList.add("hide");
             document.getElementById("billThumbnails").classList.add("hide");
             saveBillBtn.classList.add("hide");
-            updateBillBtn.classList.remove("hide");
             exitBillBtn.classList.remove("hide");
+            updateBillBtn.classList.remove("hide");
             deleteBillBtn.classList.remove("hide");
             let values = ev.currentTarget.getAttribute("data-billvals");
             selectedBillId = ev.currentTarget.getAttribute("id").split("mb_")[1];
             console.log("Selected ID:" + selectedBillId);
             displayBillingTable(JSON.parse(atob(values)));
+            if (userAcType == "team") {
+                let _status = ev.currentTarget.getAttribute("data-billstatus");
+                let _approver = ev.currentTarget.getAttribute("data-billapprover");
+                document.querySelector(".bill-status-approval").classList.add(_status);
+                if (_status == "approved") {
+                    updateBillBtn.classList.add("hide");
+                    deleteBillBtn.classList.add("hide");
+                    saveBillBtn.classList.add("hide");
+                    resetTableFields("disable");
+
+                }
+                if (_status == "pending") {
+                    _status = " is <b>pending approval</b> from ";
+                } else {
+                    _status = " was <b>" + _status + "</b> by ";
+                }
+                document.getElementById("billTable").classList.add("teamTable");
+                document.querySelector(".bill-status-approval").classList.remove("hide");
+                document.querySelector(".bill-status-approval").innerHTML = `This Bill${_status}<span>${_approver}</span>`;
+            }
             document.querySelector('.previewimg img').setAttribute("src", billsObjRef[selectedBillId]);
-        })
+
+        });
     });
 
 }
@@ -397,6 +468,27 @@ function tidyAmount(amount) {
         return 0;
     }
     return amt;
+}
+
+function resetTableFields(state) {
+    let fields = ["merchant_field", "amount_field", "descr_field"];
+    fields.forEach(function(field) {
+        if (state == "disable") {
+            document.getElementById(field).style.color = "#b29898";
+            document.getElementById(field).setAttribute("readonly", true);
+        } else {
+            document.getElementById(field).style.color = "#000";
+            document.getElementById(field).removeAttribute("readonly");
+        }
+    });
+    if (state == "disable") {
+        document.getElementById("billtype").style.color = "#b29898";
+        document.getElementById("billtype").disabled = true;
+    } else {
+        document.getElementById("billtype").style.color = "#000";
+        document.getElementById("billtype").disabled = false;
+    }
+
 }
 
 
@@ -436,13 +528,13 @@ function updateBill() {
             updateBillBtn.classList.remove("saving-state");
             deleteBillBtn.classList.remove("hide");
             exitBillBtn.classList.remove("hide");
-            showAlertBox("Opps! Server timed out", "OK", null, false);
+            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
         });
 
 }
 
-function deleteBill() {                    
+function deleteBill() {
     deleteBillBtn.innerText = "Deleting...";
     deleteBillBtn.classList.add("saving-state");
     updateBillBtn.classList.add("hide");
@@ -469,7 +561,7 @@ function deleteBill() {
             deleteBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
             updateBillBtn.classList.remove("hide");
-            showAlertBox("Opps! Server timed out", "OK", null, false);
+            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
         });
 
 }
@@ -502,7 +594,7 @@ function saveBill(bill, email, serv) {
             saveBillBtn.innerText = "Save";
             saveBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
-            showAlertBox("Opps! Server timed out", "OK", null, false);
+            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
         });
 }
 
@@ -548,8 +640,8 @@ updateBillBtn.addEventListener("click", function() {
 });
 
 deleteBillBtn.addEventListener("click", function() {
-    showAlertBox("Are you sure you want to Delete this Bill?", "Yes", "No", true, deleteBill, null, null, null);   
-    
+    showAlertBox("Are you sure you want to Delete this Bill?", "Yes", "No", true, deleteBill, null, null, null);
+
 });
 
 exitBillBtn.addEventListener("click", function() {
@@ -558,8 +650,10 @@ exitBillBtn.addEventListener("click", function() {
     document.getElementById("merchant_field").value = "";
     document.getElementById("amount_field").value = "";
     document.querySelector('.previewimg img').setAttribute("src", "");
-    preloader.classList.add("hide");
     document.querySelector('.previewimg').classList.add("hide");
+    preloader.classList.add("hide");
+    resetTableFields("");
+
     currentUploadStatus = "";
     if (billMode == "update") {
         document.getElementById("imageuploader").classList.remove("hide");
@@ -577,17 +671,20 @@ exitBillBtn.addEventListener("click", function() {
 
 let settingsBtn = document.getElementById("settings");
 let profileImgBtn = document.getElementById("profile_img_browse");
+let teamImgBtn = document.getElementById("team_img_browse");
 let savesettingsBtn = document.getElementById("savesettings");
 let cancelsettingsBtn = document.getElementById("cancelsettings");
 let userAccField = document.getElementById("user_account_field");
 let userSettingLink = document.getElementById("user_setting_link");
 let teamSettingLink = document.getElementById("team_setting_link");
 let createNewTeamBtn = document.getElementById("createNewTeam");
-let addNewMemberBtn = document.getElementById("addNewMember");
+let addNewMemberProjBtn = document.getElementById("addNewMemberProj");
+let projectsListBlock = document.getElementById("projectsList");
+let myProjectSelect = document.getElementById("myProject_select");
 let enableAddNewMember = false;
 let isProfilePicModified = false;
 let saveSettingEnabled = false;
-let initAccountVals = { name: "", type: "" };
+let initAccountVals = { name: "", type: "", projchange: false };
 
 
 settingsBtn.addEventListener("click", function() {
@@ -599,6 +696,7 @@ settingsBtn.addEventListener("click", function() {
         settingsBtn.classList.add("nav-selected");
         document.getElementById("settingsBlock").classList.remove("hide");
         savesettingsBtn.classList.add("hide");
+        teamSettingLink.classList.add("hide");
         document.querySelector('.settingloadstatus').classList.remove("hide");
         document.getElementById("billTable").classList.add("transparent");
         document.querySelector(".prev-block").classList.add("transparent");
@@ -613,30 +711,58 @@ settingsBtn.addEventListener("click", function() {
 
 
 profileImgBtn.addEventListener('change', () => {
-    attachProfileImage(profileImgBtn.files[0]);
+    attachProfileImage(profileImgBtn.files[0], "userimage");
+
+});
+
+
+teamImgBtn.addEventListener('change', () => {
+    attachProfileImage(teamImgBtn.files[0], "logo");
 
 });
 
 
 
-function attachProfileImage(imgfile) {
+function attachProfileImage(imgfile, logoprofile) {
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 1) {
             currentUploadStatus = "";
-            showAlertBox("Your photo size must be less than 1 MB", "OK", null, false);
+            if (logoprofile == "userimage") {
+                showAlertBox("Your photo size must be less than 1 MB", "OK", null, false);
+            } else {
+                showAlertBox("Logo size must be less than 1 MB", "OK", null, false);
+            }
             return;
+        }
+        let tempImg = null;
+        let srcData = "";
+        if (logoprofile == "logo") {
+            tempImg = new Image();
+            tempImg.onload = function() {
+                console.log("width:" + tempImg.width + "/" + tempImg.naturalWidth);
+                if (tempImg.width > 196 || tempImg.heigth > 100 || tempImg.width < 150) {
+                    showAlertBox("Logo Dimension must be 196 X 100", "OK", null, false);
+                } else {
+                    document.getElementById("teamlogoImg").src = srcData;
+                }
+            }
         }
 
         let fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent) {
-            isProfilePicModified = true;
-            let srcData = fileLoadedEvent.target.result;
-            document.getElementById("userprofilepic").src = srcData;
+            srcData = fileLoadedEvent.target.result;
+            if (logoprofile == "userimage") {
+                isProfilePicModified = true;
+                document.getElementById("userprofilepic").src = srcData;
+            } else {
+                tempImg.src = srcData;
+            }
         }
         fileReader.readAsDataURL(imgfile);
     }
 }
+
 
 
 
@@ -650,12 +776,8 @@ savesettingsBtn.addEventListener("click", function() {
     let disp_name = document.getElementById("displayname_field").value;
     let acc_type = document.getElementById("user_account_field").value;
 
-    if (acc_type == "team") {
-        showAlertBox("Sorry, you do not have access to Business Account", "OK", null, false);
-        return;
-    }
 
-    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified) {
+    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange) {
         saveSettingEnabled = false;
         savesettingsBtn.innerText = "Saving...";
         savesettingsBtn.classList.add("saving-state");
@@ -664,8 +786,15 @@ savesettingsBtn.addEventListener("click", function() {
         let accountObj = {
             profile_img: prof_img,
             displayname: disp_name,
-            account: acc_type
+            account: acc_type,
+            isSwitchedProj: "no"
         }
+
+        if (initAccountVals.projchange) {
+            accountObj.isSwitchedProj = "yes";
+            accountObj.newProjectID = myProjectSelect.value;
+        }
+
 
         fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), usersetting: btoa(JSON.stringify(accountObj)) }) })
             .then(data => data.json())
@@ -679,6 +808,11 @@ savesettingsBtn.addEventListener("click", function() {
                             localStorage.setItem("accountchange", acc_type);
                             location.reload();
                         }, 1000);
+                    } else if (initAccountVals.projchange) {
+                        setTimeout(function() {
+                            localStorage.setItem("projectchange", "yes");
+                            location.reload();
+                        }, 1000);
                     } else {
                         isProfilePicModified = false;
                         savesettingsBtn.innerText = "Save";
@@ -686,6 +820,7 @@ savesettingsBtn.addEventListener("click", function() {
                         cancelsettingsBtn.classList.remove("hide");
                         initAccountVals.name = disp_name;
                         initAccountVals.type = acc_type;
+                        initAccountVals.projchange = false;
                         saveSettingEnabled = true;
                         cancelsettingsBtn.click();
                     }
@@ -700,8 +835,6 @@ savesettingsBtn.addEventListener("click", function() {
     } else {
         cancelsettingsBtn.click();
     }
-
-
 });
 
 function loadAccountSettings() {
@@ -717,53 +850,183 @@ function loadAccountSettings() {
                 document.querySelector('.settingloadstatus').classList.add("hide");
                 initAccountVals.name = settingdata.user_name;
                 initAccountVals.type = settingdata.user_default;
+
                 if (settingdata.user_photo != "" && settingdata.user_photo.length > 100) {
                     document.getElementById("userprofilepic").setAttribute("src", settingdata.user_photo);
                 }
                 if (initAccountVals.type == "team") {
+                    if (settingdata.teamlist.length > 0) {
+                        projectsListBlock.classList.remove("hide");
+                        let options = ``;
+                        settingdata.teamlist.forEach(tm => {
+                            options = `${options} <option value="${tm.id}">${tm.projname}</option>`;
+                        });
+                        myProjectSelect.innerHTML = options;
+                        setTimeout(() => {
+                            myProjectSelect.value = selectedProjectID
+                        }, 1000);
+                        initAccountVals.projchange = false;
+                    }
+                    teamSettingLink.classList.remove("hide");
                     document.querySelector(".user_role").classList.remove("hide");
+                    document.getElementById("userrole_field").value = projectMemberRole || "--";
+
+                    if (teamAcRights == "none") {
+                        if (projectMemberRole == "member") {
+                            document.querySelector("#addUserPanel p").remove();
+                        }
+                        document.querySelector('.team-sub-setting').remove();
+                        createNewTeamBtn.remove();
+                    }
+
+                } else {
+                    document.getElementById("teamSettingsPage").remove();
                 }
+
                 document.getElementById("user_account_field").value = initAccountVals.type;
                 document.getElementById("displayname_field").value = initAccountVals.name;
-                //document.getElementById("userrole_field").value = settingdata.user_role;
                 document.getElementById("myemail_field").value = settingdata.user_email;
                 savesettingsBtn.classList.remove("hide");
                 saveSettingEnabled = true;
             }
 
         }).catch(function(s) {
+            console.log(s);
             document.querySelector('.settingloadstatus').classList.add("hide");
-            showAlertBox("Opps! Server timed out", "OK", null, false);
+            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
         });
 
 }
 
-function addMemberToProject(member, role, aprover) {
-    fetch("../addNewMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), member: member, role: role, approver: approver }) })
+function addMemberToProject(member, role, approver) {
+    const refereshMemberFields = {
+        currentReset: function(memberFieldReset) {
+            addNewMemberProjBtn.innerText = "Add Member to Project";
+            addNewMemberProjBtn.classList.remove("saving-state");
+            addNewMemberProjBtn.classList.add("btn");
+            enableAddNewMember = true;
+            if (memberFieldReset) {
+                member.removeAttribute("readonly");
+                approver.removeAttribute("readonly");
+                role.disabled = false;
+                member.classList.remove("member-fields-disable");
+                approver.classList.remove("member-fields-disable");
+                role.classList.remove("member-fields-disable");
+            }
+        }
+    };
+    const new_projid = document.getElementById("teamSettingsPage").getAttribute("data-projectIDnew");
+    const new_projname = document.getElementById("teamSettingsPage").getAttribute("data-projectNewName");
+    const logosrc = document.getElementById("teamlogoImg").src;
+
+    fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), member: member.value, role: role.value, approver: approver.value, proj_id: new_projid, projname: new_projname, logo: logosrc }) })
         .then(data => data.json())
-        .then(function(setting) {
-            if (setting.status == "invalid") {
+        .then(function(projmem) {
+            if (projmem.status == "invalid") {
+                sessionStorage.clear();
+            } else if (projmem.status == "invalidEmail") {
+                showAlertBox(`You have entered Invalid Email`, "OK", null, false);
+                refereshMemberFields.currentReset(true);
+            } else if (projmem.status == "added") {
+                newMemberInsertFields();
+                refereshMemberFields.currentReset(false);
+            } else if (projmem.status && projmem.msg) {
+                refereshMemberFields.currentReset(true);
+                showAlertBox(projmem.msg, "OK", null, false);
+            }
+
+        }).catch(function(s) {
+            enableAddNewMember = true;
+            addNewMemberProjBtn.innerText = "Add Member to Project";
+            addNewMemberProjBtn.classList.remove("saving-state");
+            addNewMemberProjBtn.classList.add("btn");
+            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+
+        });
+}
+
+function createNewProject() {
+    let proj = document.getElementById("displayteamname").value.trim();
+    let allowed = "1234567890 mnbvcxzasdfghjklpoiuytrewq_QWERTYUIOPLKJHGFDSAZXCVBNM-";
+    if (proj.length < 3) {
+        showAlertBox("Project Name Invalid", "OK", null, false);
+        enableAddNewMember = true;
+        return false;
+    }
+    if (proj.length > 40) {
+        showAlertBox("Project Name can not exceed 40 Characters", "OK", null, false);
+        enableAddNewMember = true;
+        return false;
+    }
+
+    for (let i = 0; i < proj.length; i++) {
+        if (allowed.indexOf(proj.substr(i, 1)) == -1) {
+            showAlertBox("Project Name Invalid", "OK", null, false);
+            enableAddNewMember = true;
+            return false;
+        }
+    }
+
+    addNewMemberProjBtn.innerText = "Adding Project...";
+    addNewMemberProjBtn.classList.add("saving-state");
+    addNewMemberProjBtn.classList.remove("btn");
+    document.getElementById("displayteamname").classList.add("member-fields-disable");
+    document.getElementById("displayteamname").setAttribute("readonly", true);
+    createNewProjectName(proj);
+
+}
+
+function createNewProjectName(projname) {
+    let logosrc = document.getElementById("teamlogoImg").src;
+    if (logosrc.includes("images/user.png")) {
+        logosrc = "";
+    }
+    fetch("../addNewProject/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), project: projname, logo: logosrc }) })
+        .then(data => data.json())
+        .then(function(proj) {
+            if (proj.status == "invalid") {
                 sessionStorage.clear();
             }
-            if (setting.status == "added") {
+
+            if (proj.status == "limitreached") {
+                showAlertBox(`You have already reached Maximum limit of ${proj.max} Projects`, "OK", null, false);
+            }
+
+            if (proj.status == "duplicate") {
+                showAlertBox(`This Project Name is already taken. Please try a different Name`, "OK", null, false);
+                document.getElementById("displayteamname").classList.remove("member-fields-disable");
+                document.getElementById("displayteamname").removeAttribute("readonly");
+            }
+
+            if (proj.status == "created") {
+                document.getElementById("teamSettingsPage").setAttribute("data-projectIDnew", proj.projid);
+                document.getElementById("teamSettingsPage").setAttribute("data-projectNewName", projname);
+                document.getElementById("addUserPanel").appendChild(addNewMemberProjBtn);
+                document.getElementById("addUserPanel").classList.remove("hide");
+                let rolesPara = document.querySelector("#addUserPanel p");
+                document.getElementById("addUserPanel").appendChild(rolesPara);
                 newMemberInsertFields();
-                addNewMember.innerText = "Add Member to Project";
-                addNewMember.classList.remove("saving-state");
-                addNewMember.classList.add("btn");
+                document.querySelector("#team_img_browse+label").remove();
+                addNewMemberProjBtn.innerText = "Add Member to Project";
+                addNewMemberProjBtn.classList.remove("saving-state");
+                addNewMemberProjBtn.classList.add("btn");
                 enableAddNewMember = true;
             }
 
         }).catch(function(s) {
             enableAddNewMember = true;
-            addNewMember.innerText = "Add Member to Project";
-            addNewMember.classList.remove("saving-state");
-            addNewMember.classList.add("btn");
-            showAlertBox("Opps! Server timed out", "OK", null, false);
+            addNewMemberProjBtn.innerText = "Add Member to Project";
+            addNewMemberProjBtn.classList.remove("saving-state");
+            addNewMemberProjBtn.classList.add("btn");
+            document.getElementById("displayteamname").classList.remove("member-fields-disable");
+            document.getElementById("displayteamname").removeAttribute("readonly");
+            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
         });
-
 }
+
+
 
 function newMemberInsertFields() {
     let div = document.createElement("div");
@@ -795,6 +1058,12 @@ userAccField.addEventListener("change", function() {
     }
 });
 
+myProjectSelect.addEventListener("change", function() {
+    if (myProjectSelect.value != selectedProjectID) {
+        initAccountVals.projchange = true;
+    }
+})
+
 userSettingLink.addEventListener("click", function() {
     document.getElementById("teamSettingsPage").classList.add("hide");
     document.getElementById("userSettingsPage").classList.remove("hide");
@@ -811,35 +1080,44 @@ createNewTeamBtn.addEventListener("click", function() {
     enableAddNewMember = true;
 });
 
-addNewMemberBtn.addEventListener("click", function() {
+addNewMemberProjBtn.addEventListener("click", function() {
     if (!enableAddNewMember) {
         return false;
     }
     enableAddNewMember = false;
-    document.getElementById("addUserPanel").classList.remove("hide");
-    let newMemberPanel = document.querySelector("#newMemberPanelBody .newuserGroup") || null;
-    if (!newMemberPanel) {
-        document.getElementById("addUserPanel").appendChild(addNewMemberBtn);
-        let rolesPara = document.querySelector("#addUserPanel p");
-        document.getElementById("addUserPanel").appendChild(rolesPara);
-        newMemberInsertFields();
-    } else {
 
+    let newMemberPanel = document.querySelector("#newMemberPanelBody .newuserGroup") || null;
+    if (!newMemberPanel && teamAcRights == "all") {
+        createNewProject();
+    } else {
+        document.getElementById("addUserPanel").classList.remove("hide");
         let nodes = document.querySelectorAll(".newuserGroup");
         let lastGroup = nodes[nodes.length - 1];
-        let memb_email = lastGroup.querySelector(".member-email-field").value;
-        let memb_roles = lastGroup.querySelector(".select-roles-control").value;
-        let appr_email = lastGroup.querySelector(".approver-email-field").value;
-        if (memb_roles == "none") {
+        let memb_email = lastGroup.querySelector(".member-email-field");
+        let memb_roles = lastGroup.querySelector(".select-roles-control");
+        let appr_email = lastGroup.querySelector(".approver-email-field");
+
+        if (memb_roles.value == "none") {
             showAlertBox("Please select a role", "OK", null, false);
+            enableAddNewMember = true;
             return;
         }
-        addNewMember.innerText = "Adding...";
-        addNewMember.classList.add("saving-state");
-        addNewMember.classList.remove("btn");
+        if (memb_email.value.trim() == "" || appr_email.value.trim() == "") {
+            showAlertBox("Please enter email", "OK", null, false);
+            enableAddNewMember = true;
+            return;
+        }
+        memb_email.setAttribute("readonly", true);
+        appr_email.setAttribute("readonly", true);
+        memb_roles.disabled = true;
+        memb_email.classList.add("member-fields-disable");
+        appr_email.classList.add("member-fields-disable");
+        memb_roles.classList.add("member-fields-disable");
+        addNewMemberProjBtn.innerText = "Adding...";
+        addNewMemberProjBtn.classList.add("saving-state");
+        addNewMemberProjBtn.classList.remove("btn");
         addMemberToProject(memb_email, memb_roles, appr_email);
     }
-
 
 });
 
@@ -950,7 +1228,7 @@ chartsBtn.addEventListener("click", function() {
         document.getElementById("billTable").classList.add("hide");
         document.querySelector(".previewimg").classList.add("hide");
         document.getElementById("billThumbnails").classList.add("hide");
-        document.getElementById("chartsBlock").classList.add("hide");        
+        document.getElementById("chartsBlock").classList.add("hide");
         //document.getElementById("chartdaysFilter").classList.add("hide");        
         document.getElementById("chartsBlock").classList.remove("transparent");
         preloader.classList.remove("hide");
@@ -1247,12 +1525,15 @@ function initLoad() {
     billshomeBtn.click();
     $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
     let accountchangeUser = localStorage.getItem("accountchange") || "";
+    let projectchangeUser = localStorage.getItem("projectchange") || "";
     if (accountchangeUser != "") {
-        localStorage.clear();
+        localStorage.removeItem("accountchange");
         let atype = accountchangeUser == "team" ? "Project/Team Account" : "Personal Account";
         let logmsg = "You are now logged into your " + atype;
         showAlertBox(logmsg, "OK", null, false);
-
+    } else if (projectchangeUser == "yes") {
+        localStorage.removeItem("projectchange");
+        showAlertBox("Project Changed Successfuly", "OK", null, false);
     }
 }
 

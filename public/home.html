@@ -23,6 +23,7 @@
     <div class="container topfloater">
         <header>
             <img src="images/logo-sq.png" alt="Logo">
+            <p id="projectNameHead">Project:&nbsp; --</p>
         </header>
         <div class="content-box">
             <section class="side-nav">
@@ -63,6 +64,7 @@
                     <select name="billtype" id="billtype">
                         
                     </select>
+                    <div class="bill-status-approval hide"></div>
                     <div>
                         <span id="savebill">Save</span>
                         <span id="updatebill" class="hide">Update</span>
@@ -92,24 +94,21 @@
                 </section>
                 <section id="settingsBlock" class="hide">
                     <div id="userSettingsPage" class="profile_info">
-                        <p id="team_setting_link">Go to Team Settings</p>
+                        <p id="team_setting_link">Go to Project Settings</p>
                         <h2>User Settings <span class="settingloadstatus">(Loading...)</span></h2>
                         <p><img id="userprofilepic" src="images/user.png"><br>
                             <input class="input-image" type="file" id="profile_img_browse" accept="image/*" />
                             <label for="profile_img_browse">Upload Your Photo</label>
                         </p>
                         <p>
-                            <label for="displayname_field">Display Name</label>
-                            <input type="text" id="displayname_field">
+                            <label for="myemail_field">Registered Email</label>
+                            <input class="member-fields-disable" readonly type="text" id="myemail_field">
                         </p>
                         <p>
-                            <label for="myemail_field">Registered Email</label>
-                            <input class="inactive" readonly type="text" id="myemail_field">
-                        </p>
-                        <p class="user_role hide">
-                            <label for="userrole_field">Your Role</label>
-                            <input class="inactive" readonly type="text" id="userrole_field">
-                        </p>
+                            <label for="displayname_field">Display Name</label>
+                            <input type="text" id="displayname_field">
+                        </p>                        
+                        
                         <p>
                             <label for="user_account_field">Account Type</label>
                             <select name="user_account_field" id="user_account_field">
@@ -148,9 +147,23 @@
                                 </p>
                             </div>
                             <div>
-                                <span class="btn" id="addNewMember" style="margin-right: 20px">Add Member to Project</span>
+                                <span class="btn" id="addNewMemberProj" style="margin-right: 20px">Add Project</span>
                             </div>
+                            
                         </div>
+                        <div id="projectsList" class="hide">
+                                <p class="user_role hide">
+                                    <label for="userrole_field">Your Role</label>
+                                    <input class="member-fields-disable" readonly type="text" id="userrole_field">
+                                </p>
+                                
+                                <p style="text-align: left">
+                                    <label for="myProject_select">Select Default Project</label>
+                                    <select name="myProject_select" id="myProject_select">                                         
+                                    </select>
+                                </p>
+
+                            </div>
                     </div>
                 </section>
             </section>

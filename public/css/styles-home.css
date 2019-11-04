@@ -37,7 +37,7 @@ header {
 }
 
 .profile_info h2 {
-    border-bottom: 2px solid #c9cbd2;
+    border-bottom: 2px solid rgba(133, 6, 137, 0.3);
     padding-bottom: 10px;
     padding-left: 10px;
     color: #850689;
@@ -48,6 +48,22 @@ header {
     text-align: left;
     color: black;
 
+}
+#projectNameHead{
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    font-size: .9em;
+    border: 1px solid #9095d5;
+    border-radius: 5px;
+    padding: 4px 8px;
+    color: #ccceeb;
+    text-align: right;
+    max-width: 165px;
+    display: none
+}
+#projectNameHead b{
+    color:#8883c5;
 }
 
 .team-sub-setting {
@@ -137,6 +153,10 @@ header {
 .newuserGroup span {
     padding-bottom: 10px;
     display: inline-block;
+}
+.member-fields-disable{
+    color: #a78ca7 !important;
+    background: #d3dee1 !important;
 }
 
 #team_setting_link,
@@ -316,6 +336,10 @@ section.main {
     box-shadow: inset 2px 2px 6px #908a8a;
 }
 
+#billTable.teamTable{
+    height: 390px;
+}
+
 p.tip-info {
     margin-top: 50px;
     color: #303c73;
@@ -339,6 +363,16 @@ p.tip-info {
     box-shadow: inset 2px 2px 6px #908a8a;
     margin-bottom: 10px;
 }
+#projectsList{
+    margin-top: 40px
+}
+
+#projectsList label{
+    display: inline-block;
+    width: 200px;
+    padding-bottom: 5px;
+    color: #40484b;
+}
 
 #exitbill,
 #savebill,
@@ -358,7 +392,7 @@ p.tip-info {
     margin-right: 15px
 }
 
-#addNewMember.saving-state,
+#addNewMemberProj.saving-state,
 #savebill.saving-state,
 #updatebill.saving-state,
 #savesettings.saving-state,
@@ -369,6 +403,10 @@ p.tip-info {
     background: none;
 }
 
+.bill-status-approval.hide,
+.bill-status.hide,
+#projectsList.hide,
+#user_setting_link.hide,
 #mainStatusCancel.hide,
 #alertBoxWindow.hide,
 #cameraDevice.hide,
@@ -510,7 +548,44 @@ p {
 .amount-thumb {
     font-size: 1.2em;
     font-weight: bold;
-    padding: 10px 0;
+    color: #3b48b4;
+    background: #edeef3;
+    border-radius: 50%;
+    padding: 10px;
+}
+.thumb-top-row{
+    display: flex;       
+    width: 90%;
+    padding-bottom: 10px;
+}
+.thumb-top-row.centered{
+    justify-content: center; 
+}
+.thumb-top-row.spaced{
+    justify-content: space-between; 
+}
+.bill-status img{
+    width: 30px;
+    height: auto;
+}
+
+.bill-status-approval{
+    width: 70%;
+    font-size: .8em;
+    padding: 5px 0 20px 0;
+}
+.bill-status-approval.pending{
+    color:#533c3c;
+}
+.bill-status-approval.rejected{
+    color:red;
+}
+.bill-status-approval.approved{
+    color:green;
+}
+.bill-status-approval span{
+    color: #4545f0;
+    text-decoration: underline;
 }
 
 div#ui-datepicker-div {
