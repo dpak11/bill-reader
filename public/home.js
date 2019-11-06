@@ -16,12 +16,12 @@ let saveBillBtn = document.getElementById("savebill");
 let deleteBillBtn = document.getElementById("deletebill");
 let exitBillBtn = document.getElementById("exitbill");
 let updateBillBtn = document.getElementById("updatebill");
-let preloader = document.querySelector(".lds-roller");
 let captureImg = document.getElementById('captureImg');
 let fileImg = document.getElementById('fileImg');
 let header_layout = document.querySelector("header");
+let preloader = document.querySelector(".lds-roller");
 let headerLogo = document.querySelector("header img");
-let projectNameHead = document.getElementById("projectNameHead");
+
 
 
 header_layout.addEventListener("click", function() {
@@ -34,19 +34,20 @@ header_layout.addEventListener("click", function() {
 
 });
 
+
+
 billshomeBtn.addEventListener("click", function() {
     if (currentPage !== "bills") {
         console.log("fetching..");
         fetchBills();
-        localStorage.removeItem("is_private_team");
         currentPage = "bills";
+        document.querySelector("title").text = "Bill Vault";
         preloader.classList.remove("hide");
         billshomeBtn.classList.add("nav-selected");
         chartsBtn.classList.remove("nav-selected");
         settingsBtn.classList.remove("nav-selected");
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
-        document.querySelector("title").text = "Bill Vault";
         document.getElementById("billTable").classList.remove("transparent");
         document.querySelector(".prev-block").classList.remove("transparent");
         document.getElementById("billThumbnails").classList.remove("transparent");
@@ -59,7 +60,6 @@ captureImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
         showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
-
         showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
         imageProcess(captureImg.files[0]);
@@ -104,12 +104,11 @@ function imageProcess(imgfile) {
                 console.log("got orientation val:" + orient);
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
                 if (byteSize < 3 && orient <= 1) {
-                    //console.log("No compression: " + byteSize + "MB");
                     BillImgProcessing(srcData);
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
-                        document.querySelector('.previewimg img').src = newImgData;
-                        imageProcessDone({});
+                        //document.querySelector('.previewimg img').src = newImgData;
+                        BillImgProcessing(newImgData);
 
                     });
                 }
@@ -128,17 +127,34 @@ function imageProcess(imgfile) {
 }
 
 function BillImgProcessing(imgdata) {
-    fetch("../processimage/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ img: imgdata, em: atob(sessionStorage.getItem("em")) }) })
+    let GCVRequest = {
+        requests: [{
+            image: {
+                content: imgdata.split(',')[1]
+            },
+            features: [{ type: 'TEXT_DETECTION' }]
+        }]
+    };
+
+    fetch("https://vision.googleapis.com/v1/images:annotate?key=AIzaSyC_hFS0j3giQJ-JsCAv1piBmYlsTdbHyMc", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(GCVRequest) })
         .then(data => data.json())
         .then(function(json) {
-            document.querySelector('.previewimg img').src = imgdata;
-            imageProcessDone(json.status);
-        }).catch(function(s) {
+            let imgTxtdata = json.responses[0].fullTextAnnotation.text.split("\n");
+            fetch("../processTextData/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imgtext: imgTxtdata, em: atob(sessionStorage.getItem("em")) }) })
+                .then(dat => dat.json())
+                .then(txtjson => {
+                    document.querySelector('.previewimg img').src = imgdata;
+                    imageProcessDone(txtjson.status);
+                }).catch(function(s) {
+                    document.querySelector('.previewimg img').src = imgdata;
+                    imageProcessDone({});
+                });
+        }).catch(function(err) {
             document.querySelector('.previewimg img').src = imgdata;
             imageProcessDone({});
-            showAlertBox("Unable to read Receipt data due to unsupported pixel resolution or Camera Settings. Please enter your Bill Details", "OK", null, false);
+            showAlertBox("Server Busy at the moment", "OK", null, false);
+        })
 
-        });
 }
 
 
@@ -301,7 +317,7 @@ function fetchBills() {
     let client = sessionStorage.getItem("ckey") || false;
     let serv = sessionStorage.getItem("skey") || false;
     let sessionemail = sessionStorage.getItem("em") || false;
-    let type = localStorage.getItem("is_private_team") || "private";
+    let type = sessionStorage.getItem("is_private_team") || "private";
 
     if (client && serv && sessionemail) {
         fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, ptype: type, projid: selectedProjectID }) })
@@ -334,9 +350,12 @@ function fetchBills() {
                         selectedProjectName = res.user_data.projname || "";
                         projectNameHead.innerHTML = "<b>Project:</b>&nbsp;" + selectedProjectName;
                         projectNameHead.style.display = "block";
+                        document.getElementById("mybillORall").style.display = "block";
                         if (type == "team") {
+                            myBill_allMembs.innerText = "Show My Bills Only";
                             allBillsData = JSON.parse(res.user_data.allProjMembers);
                         } else {
+                            myBill_allMembs.innerText = "Show Project Members Bills";
                             allBillsData = res.user_data.user_bills;
                         }
 
@@ -502,6 +521,11 @@ function updateBill() {
     const billType = document.getElementById("billtype").value;
     const amt = tidyAmount(document.getElementById("amount_field").value);
 
+    if (date == "" || merchant == "") {
+        showAlertBox("Please fill in the fields", "OK", null, false);
+        return;
+    }
+
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     let encodedBill = "";
     if (userAcType == "personal") {
@@ -608,7 +632,10 @@ saveBillBtn.addEventListener("click", function() {
     const descr = document.getElementById("descr_field").value;
     const billType = document.getElementById("billtype").value;
     const amt = tidyAmount(document.getElementById("amount_field").value);
-
+    if (date == "" || merchant == "") {
+        showAlertBox("Please fill in the fields", "OK", null, false);
+        return;
+    }
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     const client = sessionStorage.getItem("ckey") || "";
     const serv = sessionStorage.getItem("skey") || "";
@@ -681,10 +708,24 @@ let createNewTeamBtn = document.getElementById("createNewTeam");
 let addNewMemberProjBtn = document.getElementById("addNewMemberProj");
 let projectsListBlock = document.getElementById("projectsList");
 let myProjectSelect = document.getElementById("myProject_select");
+let projectNameHead = document.getElementById("projectNameHead");
+let myBill_allMembs = document.querySelector("#mybillORall p");
 let enableAddNewMember = false;
 let isProfilePicModified = false;
 let saveSettingEnabled = false;
 let initAccountVals = { name: "", type: "", projchange: false };
+
+
+
+myBill_allMembs.addEventListener("click", function() {
+    let pvt = sessionStorage.getItem("is_private_team");
+    if (!pvt || pvt == "private") {
+        sessionStorage.setItem("is_private_team", "team");
+    } else {
+        sessionStorage.setItem("is_private_team", "private");
+    }
+    location.reload();
+});
 
 
 settingsBtn.addEventListener("click", function() {
@@ -769,6 +810,12 @@ function attachProfileImage(imgfile, logoprofile) {
 savesettingsBtn.addEventListener("click", function() {
 
     if (!saveSettingEnabled) {
+        return;
+    }
+
+    isTempProj = localStorage.getItem("tempProjID") || "";
+    if(isTempProj != ""){
+        showAlertBox(`You forgot to assign Team Members for the Project: ${document.getElementById("displayteamname").value}`, "OK", null, false);
         return;
     }
 
@@ -918,7 +965,10 @@ function addMemberToProject(member, role, approver) {
     };
     const new_projid = document.getElementById("teamSettingsPage").getAttribute("data-projectIDnew");
     const new_projname = document.getElementById("teamSettingsPage").getAttribute("data-projectNewName");
-    const logosrc = document.getElementById("teamlogoImg").src;
+    let logosrc = document.getElementById("teamlogoImg").src;
+    if (logosrc.includes("images/user.png")) {
+        logosrc = "";
+    }
 
     fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), member: member.value, role: role.value, approver: approver.value, proj_id: new_projid, projname: new_projname, logo: logosrc }) })
         .then(data => data.json())
@@ -931,6 +981,7 @@ function addMemberToProject(member, role, approver) {
             } else if (projmem.status == "added") {
                 newMemberInsertFields();
                 refereshMemberFields.currentReset(false);
+                localStorage.removeItem("tempProjID");
             } else if (projmem.status && projmem.msg) {
                 refereshMemberFields.currentReset(true);
                 showAlertBox(projmem.msg, "OK", null, false);
@@ -991,6 +1042,7 @@ function createNewProjectName(projname) {
 
             if (proj.status == "limitreached") {
                 showAlertBox(`You have already reached Maximum limit of ${proj.max} Projects`, "OK", null, false);
+                document.getElementById("teamDetailsSection").remove();
             }
 
             if (proj.status == "duplicate") {
@@ -1012,6 +1064,7 @@ function createNewProjectName(projname) {
                 addNewMemberProjBtn.classList.remove("saving-state");
                 addNewMemberProjBtn.classList.add("btn");
                 enableAddNewMember = true;
+                localStorage.setItem("tempProjID", proj.projid);
             }
 
         }).catch(function(s) {
@@ -1047,12 +1100,26 @@ function newMemberInsertFields() {
 
 }
 
+
+function removeTempProject(pID) {
+    fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), proj: pID }) })
+        .then(data => data.json())
+        .then(function(s) {            
+            if(s.status == "removed"){
+                localStorage.removeItem("tempProjID");
+            }            
+        });
+}
+
 userAccField.addEventListener("change", function() {
     if (initAccountVals.type !== userAccField.value) {
         document.querySelector(".tip-info").classList.remove("hide");
         document.getElementById("active_account_txt").innerText = initAccountVals.type;
         document.getElementById("new_account_txt").innerText = userAccField.value;
-
+        if(userAccField.value == "team"){
+            showAlertBox("For Business Account, you must have Full Membership to Create New Projects. Please contact billvault.app@gmail.com", "OK", null, false);
+        }
+        
     } else {
         document.querySelector(".tip-info").classList.add("hide");
     }
@@ -1121,6 +1188,7 @@ addNewMemberProjBtn.addEventListener("click", function() {
 
 });
 
+
 cancelsettingsBtn.addEventListener("click", function() {
     document.getElementById("settingsBlock").classList.add("hide");
     document.getElementById("billTable").classList.remove("transparent");
@@ -1137,8 +1205,6 @@ cancelsettingsBtn.addEventListener("click", function() {
         document.querySelector("title").text = "Chart | Bill Vault";
     }
     currentPage = remPreviousActiveTab;
-
-
 
 });
 
@@ -1524,6 +1590,8 @@ logOutBtn.addEventListener("click", function() {
 function initLoad() {
     billshomeBtn.click();
     $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
+    let temp_projid = localStorage.getItem("tempProjID") || "";
+    if (temp_projid !== "") { removeTempProject(temp_projid) }
     let accountchangeUser = localStorage.getItem("accountchange") || "";
     let projectchangeUser = localStorage.getItem("projectchange") || "";
     if (accountchangeUser != "") {
