@@ -1,5 +1,5 @@
-const staticCacheName = 'bv-static-v7';
-const dynamicCacheName = 'bv-dynamic-v7';
+const staticCacheName = 'bv-static-v9';
+const dynamicCacheName = 'bv-dynamic-v9';
 const assets = [ 
   '/',
   '/home', 
@@ -27,7 +27,10 @@ const assets = [
   '/images/medical.png',
   '/images/lifestyle.png',
   '/images/favicon.png',
-  '/images/user.png'
+  '/images/user.png',
+  '/images/pending.png',
+  '/images/rejected.png',
+  '/images/approved.png'
 ];
 
 // install event
