@@ -5,8 +5,6 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
-const Tesseract = require("tesseract.js");
-const { TesseractWorker } = Tesseract;
 const app = express();
 
 const http = require('http').Server(app);
@@ -176,8 +174,7 @@ function processBillText(datarray) {
     let dateStr = dateSearch(arr);
     console.log(arr);
     arr = arr.filter(function(txt) {
-        console.log(txt);
-        return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("payable"));
+        return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("payable") || txt.includes("rate"));
     });
 
     return new Promise((resolve, reject) => {
@@ -195,10 +192,14 @@ function processBillText(datarray) {
 function dateSearch(lines) {
     let pattern1 = new RegExp("([0-9]){1,2}/([0-9]){1,2}/([0-9]){2,4}");
     let pattern2 = new RegExp("([0-9]){1,2}-([0-9]){1,2}-([0-9]){2,4}");
+    //let pattern3 = new RegExp("([0-9]){1,2}\.([0-9]){1,2}\.([0-9]){2,4}");
+    let pattern4 = new RegExp("([0-9]){1,2}-([a-z]){3}-([0-9]){2,4}");
+    let pattern5 = new RegExp("([0-9]){1,2} ([a-z]){3}, ([0-9]){2,4}");
     let dates = [];
-
+    
     let monthCheck = {
         vals: function(v) {
+            console.log(v);
             if (v[2].length == 2 || v[2].length == 4) {
                 if (Number(v[1]) > 12) {
                     let formattedMonth = `${v[1]}/${v[0]}/${v[2]}`;
@@ -208,6 +209,11 @@ function dateSearch(lines) {
                 }
             }
             return false;
+        },
+        monthNum: function(m) {
+            let month = "jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec";
+            let mlist = month.split(",");
+            return (mlist.indexOf(m) + 1);
         }
     };
 
@@ -215,15 +221,42 @@ function dateSearch(lines) {
 
         let l1 = line.match(pattern1);
         let l2 = line.match(pattern2);
+       // let l3 = line.match(pattern3);
+        let l4 = line.match(pattern4);
+        let l5 = line.match(pattern5);
         if (l1 != null && l1.length > 1) {
+            console.log("1st type date");
             let m1 = monthCheck.vals(l1[0].split("/"));
             if (m1) { dates.push(m1) }
         }
         if (l2 != null && l2.length > 1) {
-            let m2 = monthCheck.vals(l2[0].split("/"));
+            console.log("2nd type date");
+            let m2 = monthCheck.vals(l2[0].split("-"));
             if (m2) { dates.push(m2) }
         }
-    })
+        /*if (l3 != null && l3.length > 1) {
+            console.log("3rd type date");
+            console.log(l3[0]);
+            let m3 = monthCheck.vals(l3[0].split("."));
+            if (m3) { dates.push(m3) }
+        }*/
+        if (l4 != null && l4.length > 1) {
+            console.log("4th type date");
+            let dt = l4[0].split("-");
+            dt[1] = monthCheck.monthNum(dt[1]);
+            let m4 = monthCheck.vals(dt);
+            if (m4) { dates.push(m4) }
+        } //06 Jun, 2019
+        if (l5 != null && l5.length > 1) {
+            console.log("5th type date");
+            let dt1 = l5[0].split(","); //[06 Jun, 2019]
+            let dt2 = dt[0].split(" "); //[06,Jun]
+            let dt = `${dt2[0]},${dt2[1]},${dt1[1].trim()}`;
+            dt[1] = monthCheck.monthNum(dt.split(","));
+            let m5 = monthCheck.vals(dt);
+            if (m5) { dates.push(m5) }
+        }
+    });
     return dates[0]
 }
 
@@ -241,10 +274,11 @@ function extractTotalVal(totals) {
                 total.indexOf("payable") >= 0 ? total.split("payable")[1] :
                 total.indexOf("amount") >= 0 ? total.split("amount")[1] :
                 total.indexOf("amnt") >= 0 ? total.split("amnt")[1] :
+                total.indexOf("rate") >= 0 ? total.split("rate")[1] :
                 (subs == "" && total.indexOf("total") >= 0) ? total.split("total")[1] : "";
         }
     });
-    if (totalValue == "") {
+    if (totalValue == "" || totalValue == ":" || totalValue == " :") {
         return subs;
     }
     return totalValue;
@@ -523,17 +557,17 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
                             return new Promise((res, reject) => reject({ status: s2.state, msg: `${approver} is not yet registered.` }));
                         } else {
                             return Teams.findOne({ user_email: newMemberEmail, teamid: project }).exec().then(teamem1 => {
-                                if (teamem1 == null) {                                
-                                    if (adminUser != "admin") {                                  
+                                if (teamem1 == null) {
+                                    if (adminUser != "admin") {
                                         return addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver).then(() => {
-                                          
+
                                             return Teams.findOne({ user_email: approver, teamid: project }).exec().then(teamem2 => {
-                                                if (teamem2 == null) {                                                  
+                                                if (teamem2 == null) {
                                                     return addToTeam(project, logoimg, project_name, approver, "manager", email)
                                                         .then(() => new Promise((resolve, rej) => resolve()));
-                                                } else if (teamem2.role == "member") {                                                   
+                                                } else if (teamem2.role == "member") {
                                                     return new Promise((res, reject) => reject({ status: "declineMemberRole", msg: `Already assigned Member(${approver}) can not be re-assigned "Manager" Role` }));
-                                                } else {                                                    
+                                                } else {
                                                     teamem2.role = (teamem2.role == "admin") ? "admin" : "manager";
                                                     return teamem2.save().then(() => new Promise((resolve, rej) => resolve()))
 
@@ -544,31 +578,31 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
                                         return new Promise((res, reject) => reject({ status: "adminreject", msg: `Can not Add "${newMemberEmail}", who is an Admin to other project(s)` }))
                                     }
 
-                                } else if (teamem1.role == "manager") {                                 
-                                    if (memberRole == "member") {                                        
+                                } else if (teamem1.role == "manager") {
+                                    if (memberRole == "member") {
                                         return new Promise((res, reject) => reject({ status: "preassigned", msg: `Can not re-assign Manager "${newMemberEmail}" as a Member` }))
                                     } else {
                                         return Teams.findOne({ user_email: approver, teamid: project }).exec().then(tc => {
-                                            if (tc == null) {                                               
+                                            if (tc == null) {
                                                 return addToTeam(project, logoimg, project_name, approver, "manager", email)
                                                     .then(() => {
                                                         teamem1.approver = approver;
                                                         return teamem1.save().then(() => new Promise((resolve, rej) => resolve()))
                                                     });
-                                            } else if (tc.role == "manager" || tc.role == "admin") {                                               
-                                                if (teamem1.approver == approver) {                                                    
+                                            } else if (tc.role == "manager" || tc.role == "admin") {
+                                                if (teamem1.approver == approver) {
                                                     return new Promise((res, reject) => reject({ status: "preassigned", msg: `Error: Duplicate Assignment` }))
-                                                } else {                                                    
+                                                } else {
                                                     teamem1.approver = approver;
                                                     return teamem1.save().then(() => new Promise((resolve, rej) => resolve()))
                                                 }
-                                            } else {                                                
+                                            } else {
                                                 return new Promise((res, reject) => reject({ status: "preassigned", msg: `Can not re-assign Member "${approver}" as approver` }))
                                             }
                                         });
                                     }
 
-                                } else {                                    
+                                } else {
                                     return new Promise((res, reject) => reject({ status: "preassigned", msg: `${newMemberEmail} is already assigned to this Project` }))
                                 }
                             });
@@ -633,7 +667,7 @@ function setasDefaultTeam(user) {
 
 
 function removeProject(pwdkey, useragent, email, project) {
-    return Teams.deleteOne({ teamid: project }).exec().then((del) => {        
+    return Teams.deleteOne({ teamid: project }).exec().then((del) => {
         return new Promise((resolve, rej) => resolve());
     }).catch(err => new Promise((resolve, rej) => rej()))
 
