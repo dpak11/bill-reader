@@ -1300,7 +1300,7 @@ app.post("/listUsers", (req, res) => {
 
 
 app.post("/adminRights", (req, res) => {
-    if (req.body.pass == "@dmin-06") {
+    if (req.body.pass == KEYS_DATA.allowAdminRights) {
         adminPrivilegeController(req.body.mail, res)
     } else {
         res.json({ status: "invalid" });
