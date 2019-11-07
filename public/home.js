@@ -46,11 +46,9 @@ billshomeBtn.addEventListener("click", function() {
         billshomeBtn.classList.add("nav-selected");
         chartsBtn.classList.remove("nav-selected");
         settingsBtn.classList.remove("nav-selected");
+        document.querySelector(".container").classList.remove("settingMode");
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
-        document.getElementById("billTable").classList.remove("transparent");
-        document.querySelector(".prev-block").classList.remove("transparent");
-        document.getElementById("billThumbnails").classList.remove("transparent");
     }
 
 });
@@ -739,10 +737,7 @@ settingsBtn.addEventListener("click", function() {
         savesettingsBtn.classList.add("hide");
         teamSettingLink.classList.add("hide");
         document.querySelector('.settingloadstatus').classList.remove("hide");
-        document.getElementById("billTable").classList.add("transparent");
-        document.querySelector(".prev-block").classList.add("transparent");
-        document.getElementById("billThumbnails").classList.add("transparent");
-        document.getElementById("chartsBlock").classList.add("transparent");
+        document.querySelector(".container").classList.add("settingMode");
         saveSettingEnabled = false;
         loadAccountSettings();
         document.querySelector("title").text = "Settings | Bill Vault";
@@ -814,7 +809,7 @@ savesettingsBtn.addEventListener("click", function() {
     }
 
     isTempProj = localStorage.getItem("tempProjID") || "";
-    if(isTempProj != ""){
+    if (isTempProj != "") {
         showAlertBox(`You forgot to assign Team Members for the Project: ${document.getElementById("displayteamname").value}`, "OK", null, false);
         return;
     }
@@ -927,7 +922,10 @@ function loadAccountSettings() {
                     }
 
                 } else {
-                    document.getElementById("teamSettingsPage").remove();
+                    if (document.getElementById("teamSettingsPage")) {
+                        document.getElementById("teamSettingsPage").remove();
+                    }
+
                 }
 
                 document.getElementById("user_account_field").value = initAccountVals.type;
@@ -1104,10 +1102,10 @@ function newMemberInsertFields() {
 function removeTempProject(pID) {
     fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), proj: pID }) })
         .then(data => data.json())
-        .then(function(s) {            
-            if(s.status == "removed"){
+        .then(function(s) {
+            if (s.status == "removed") {
                 localStorage.removeItem("tempProjID");
-            }            
+            }
         });
 }
 
@@ -1116,10 +1114,10 @@ userAccField.addEventListener("change", function() {
         document.querySelector(".tip-info").classList.remove("hide");
         document.getElementById("active_account_txt").innerText = initAccountVals.type;
         document.getElementById("new_account_txt").innerText = userAccField.value;
-        if(userAccField.value == "team" && teamAcRights == "none"){
+        if (userAccField.value == "team" && teamAcRights == "none") {
             showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact billvault.app@gmail.com for Full Membership", "OK", null, false);
         }
-        
+
     } else {
         document.querySelector(".tip-info").classList.add("hide");
     }
@@ -1191,10 +1189,7 @@ addNewMemberProjBtn.addEventListener("click", function() {
 
 cancelsettingsBtn.addEventListener("click", function() {
     document.getElementById("settingsBlock").classList.add("hide");
-    document.getElementById("billTable").classList.remove("transparent");
-    document.querySelector(".prev-block").classList.remove("transparent");
-    document.getElementById("billThumbnails").classList.remove("transparent");
-    document.getElementById("chartsBlock").classList.remove("transparent");
+    document.querySelector(".container").classList.remove("settingMode");
     settingsBtn.classList.remove("nav-selected");
     if (remPreviousActiveTab == "bills") {
         billshomeBtn.classList.add("nav-selected");
@@ -1289,14 +1284,14 @@ chartsBtn.addEventListener("click", function() {
         billshomeBtn.classList.remove("nav-selected");
         settingsBtn.classList.remove("nav-selected");
         chartsBtn.classList.add("nav-selected");
+        document.querySelector(".container").classList.remove("settingMode");
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("imageuploader").classList.add("hide");
         document.getElementById("billTable").classList.add("hide");
         document.querySelector(".previewimg").classList.add("hide");
         document.getElementById("billThumbnails").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
-        //document.getElementById("chartdaysFilter").classList.add("hide");        
-        document.getElementById("chartsBlock").classList.remove("transparent");
+        //document.getElementById("chartdaysFilter").classList.add("hide"); 
         preloader.classList.remove("hide");
         loadCharts("personal");
         document.querySelector("title").text = "Chart | Bill Vault";

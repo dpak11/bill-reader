@@ -207,12 +207,6 @@ header {
     z-index: 5;
 }
 
-.prev-block.transparent,
-#billThumbnails.transparent,
-#chartsBlock.transparent,
-#billTable.transparent{
-    opacity: 0
-}
 
 #chartsBlock {
     z-index: 10;
@@ -618,6 +612,13 @@ p {
 
 div#ui-datepicker-div {
     z-index: 7 !important;
+}
+
+.settingMode #billTable,
+.settingMode #billThumbnails,
+.settingMode #chartsBlock,
+.settingMode .prev-block {
+    display: none
 }
 
 
