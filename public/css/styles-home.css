@@ -555,6 +555,10 @@ p {
 .thumb-title-bill {
     padding: 10px 0;
 }
+.thumb-title-bill {
+    max-width: 82%;
+    text-align: center;
+}
 
 .thumb-date-bill {
     font-size: .8em;

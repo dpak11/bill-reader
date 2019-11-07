@@ -1116,8 +1116,8 @@ userAccField.addEventListener("change", function() {
         document.querySelector(".tip-info").classList.remove("hide");
         document.getElementById("active_account_txt").innerText = initAccountVals.type;
         document.getElementById("new_account_txt").innerText = userAccField.value;
-        if(userAccField.value == "team"){
-            showAlertBox("For Business Account, you must have Full Membership to Create New Projects. Please contact billvault.app@gmail.com", "OK", null, false);
+        if(userAccField.value == "team" && teamAcRights == "none"){
+            showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact billvault.app@gmail.com for Full Membership", "OK", null, false);
         }
         
     } else {
@@ -1596,7 +1596,7 @@ function initLoad() {
     let projectchangeUser = localStorage.getItem("projectchange") || "";
     if (accountchangeUser != "") {
         localStorage.removeItem("accountchange");
-        let atype = accountchangeUser == "team" ? "Project/Team Account" : "Personal Account";
+        let atype = accountchangeUser == "team" ? "Business Account" : "Personal Account";
         let logmsg = "You are now logged into your " + atype;
         showAlertBox(logmsg, "OK", null, false);
     } else if (projectchangeUser == "yes") {
