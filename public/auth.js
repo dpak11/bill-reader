@@ -3,7 +3,7 @@ function user_validate() {
     let serv = sessionStorage.getItem("skey") || false;
     let sessionemail = sessionStorage.getItem("em") || false;
     if (client && serv && sessionemail) {
-        return fetch("../userAuth/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv }) })
+        return fetch("../userAuth/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: sessionemail, agent: btoa(navigator.userAgent), key_serv: serv }) })
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "invalid") {

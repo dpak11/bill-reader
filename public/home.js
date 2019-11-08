@@ -22,6 +22,15 @@ let header_layout = document.querySelector("header");
 let preloader = document.querySelector(".lds-roller");
 let headerLogo = document.querySelector("header img");
 
+const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
+const bodyParams = (params) => {
+    let paramObj = authVars;
+    params.forEach(function(p) {
+        paramObj[Object.keys(p)[0]] = Object.values(p)[0];
+    });
+    return paramObj;
+}
+
 
 
 header_layout.addEventListener("click", function() {
@@ -68,7 +77,6 @@ captureImg.addEventListener('change', () => {
 
 fileImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
-
         showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
 
@@ -318,7 +326,8 @@ function fetchBills() {
     let type = sessionStorage.getItem("is_private_team") || "private";
 
     if (client && serv && sessionemail) {
-        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, ptype: type, projid: selectedProjectID }) })
+        authVars
+        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ ptype: type }, { projid: selectedProjectID }])) })
             .then(data => data.json())
             .then(function(res) {
                 console.log("loaded1");
@@ -524,6 +533,7 @@ function updateBill() {
         return;
     }
 
+
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     let encodedBill = "";
     if (userAcType == "personal") {
@@ -531,7 +541,7 @@ function updateBill() {
     } else {
         encodedBill = btoa(JSON.stringify(billdata));
     }
-    fetch("../updateBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, receiptid: selectedBillId, bdata: encodedBill }) })
+    fetch("../updateBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ receiptid: selectedBillId }, { bdata: encodedBill }])) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -564,7 +574,7 @@ function deleteBill() {
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
-    fetch("../deleteBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionemail), agent: btoa(navigator.userAgent), key_serv: serv, receiptid: selectedBillId }) })
+    fetch("../deleteBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ receiptid: selectedBillId }])) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -591,7 +601,7 @@ function deleteBill() {
 
 
 function saveBill(bill, email, serv) {
-    fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(email), agent: btoa(navigator.userAgent), key_serv: serv, receipt: bill }) })
+    fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ receipt: bill }])) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -632,6 +642,10 @@ saveBillBtn.addEventListener("click", function() {
     const amt = tidyAmount(document.getElementById("amount_field").value);
     if (date == "" || merchant == "") {
         showAlertBox("Please fill in the fields", "OK", null, false);
+        return;
+    }
+    if(billType == ""){
+        showAlertBox("Please select a Category", "OK", null, false);
         return;
     }
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
@@ -838,7 +852,7 @@ savesettingsBtn.addEventListener("click", function() {
         }
 
 
-        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), usersetting: btoa(JSON.stringify(accountObj)) }) })
+        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ usersetting: btoa(JSON.stringify(accountObj)) }])) })
             .then(data => data.json())
             .then(function(setting) {
                 if (setting.status == "invalid") {
@@ -880,7 +894,7 @@ savesettingsBtn.addEventListener("click", function() {
 });
 
 function loadAccountSettings() {
-    fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") }) })
+    fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([])) })
         .then(data => data.json())
         .then(function(setting) {
             if (setting.status == "invalid") {
@@ -968,7 +982,7 @@ function addMemberToProject(member, role, approver) {
         logosrc = "";
     }
 
-    fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), member: member.value, role: role.value, approver: approver.value, proj_id: new_projid, projname: new_projname, logo: logosrc }) })
+    fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ member: member.value }, { role: role.value }, { approver: approver.value }, { proj_id: new_projid }, { projname: new_projname }, { logo: logosrc }])) })
         .then(data => data.json())
         .then(function(projmem) {
             if (projmem.status == "invalid") {
@@ -1003,6 +1017,11 @@ function createNewProject() {
         enableAddNewMember = true;
         return false;
     }
+    if(!/[a-z0-9]/gi.test(proj)){
+        showAlertBox("Project Name Invalid", "OK", null, false);
+        enableAddNewMember = true;
+        return false;
+    }
     if (proj.length > 40) {
         showAlertBox("Project Name can not exceed 40 Characters", "OK", null, false);
         enableAddNewMember = true;
@@ -1031,7 +1050,7 @@ function createNewProjectName(projname) {
     if (logosrc.includes("images/user.png")) {
         logosrc = "";
     }
-    fetch("../addNewProject/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), project: projname, logo: logosrc }) })
+    fetch("../addNewProject/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: projname }, { logo: logosrc }])) })
         .then(data => data.json())
         .then(function(proj) {
             if (proj.status == "invalid") {
@@ -1100,7 +1119,7 @@ function newMemberInsertFields() {
 
 
 function removeTempProject(pID) {
-    fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), proj: pID }) })
+    fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ proj: pID }])) })
         .then(data => data.json())
         .then(function(s) {
             if (s.status == "removed") {
@@ -1301,7 +1320,7 @@ chartsBtn.addEventListener("click", function() {
 
 
 function loadCharts(type) {
-    fetch("../chartsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey"), persTeam: type }) })
+    fetch("../chartsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ persTeam: type }])) })
         .then(data => data.json())
         .then(function(c) {
             if (c.status == "done") {

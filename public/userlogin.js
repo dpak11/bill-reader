@@ -11,16 +11,16 @@ let user_mode = "";
 
 registerBtn.addEventListener("click", function() {
     if (buttonsActive) {
-        buttonsActive = false;        
+        buttonsActive = false;
         statusBox.innerText = "please wait a moment...";
         statusBox.classList.remove("hidden");
         loginBtn.classList.add("inactive");
         registerBtn.classList.add("inactive");
-        fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.value, mode: "register" }) })
+        fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: btoa(email.value), mode: "register" }) })
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "activation_code") {
-                    showStatus("Sent Activation Code to your email. Please check your inbox or spam folder.",5000);
+                    showStatus("Sent Activation Code to your email. Please check your inbox or spam folder.", 5000);
                     user_mode = "register";
                     buttonsActive = true;
                     password.classList.remove("hidden");
@@ -33,16 +33,16 @@ registerBtn.addEventListener("click", function() {
                     sessionStorage.setItem("em", btoa(res.e_mail));
                 }
                 if (res.status == "email_send_fail") {
-                    showStatus("Oops! Unable to send activation code to your email. Please try again.",5000);
+                    showStatus("Oops! Unable to send activation code to your email. Please try again.", 5000);
                 }
                 if (res.status == "email_exists") {
-                    showStatus("This Email is already registered",3000);
+                    showStatus("This Email is already registered", 3000);
                 }
                 if (res.status == "busy") {
-                    showStatus("Server Busy",3000);
+                    showStatus("Server Busy", 3000);
                 }
                 if (res.status == "invalid") {
-                    showStatus("Invalid Email Address",3000);
+                    showStatus("Invalid Email Address", 3000);
                 }
             });
     }
@@ -51,22 +51,22 @@ registerBtn.addEventListener("click", function() {
 
 loginBtn.addEventListener("click", function() {
     if (buttonsActive) {
-        buttonsActive = false;        
+        buttonsActive = false;
         loginBtn.classList.add("inactive");
         registerBtn.classList.add("inactive");
         statusBox.innerText = "checking...";
         statusBox.classList.remove("hidden");
-        fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.value, mode: "login" }) })
+        fetch("../emailreq/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: btoa(email.value), mode: "login" }) })
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "email_none") {
-                    showStatus("Email Address not registered.",3000);                    
+                    showStatus("Email Address not registered.", 3000);
                 }
                 if (res.status == "invalid") {
-                    showStatus("Invalid Email Address",3000);
+                    showStatus("Invalid Email Address", 3000);
                 }
                 if (res.status == "busy") {
-                    showStatus("Server Busy",3000);
+                    showStatus("Server Busy", 3000);
                 }
                 if (res.status == "require_pswd") {
                     user_mode = "login";
@@ -87,23 +87,23 @@ loginBtn.addEventListener("click", function() {
 submitBtn.addEventListener("click", function() {
     if (buttonsActive) {
         buttonsActive = false;
-        submitBtn.classList.add("inactive");  
+        submitBtn.classList.add("inactive");
         statusBox.innerText = "Signing in...";
-        statusBox.classList.remove("hidden");      
+        statusBox.classList.remove("hidden");
         if (user_mode == "login") {
-            fetch("../login/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")) }) })
+            fetch("../login/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: sessionStorage.getItem("em") }) })
                 .then(data => data.json())
                 .then(function(res) {
                     if (res.status == "email_ok") {
                         verifyPswdKeyDB(res.serv_em_key);
                     }
                     if (res.status == "email_invalid") {
-                        showStatus("Unable to LogIn",3000);                        
+                        showStatus("Unable to LogIn", 3000);
                     }
                 });
         } else if (password.value === confirm.value) {
             if (passwordStrength(password.value)) {
-                fetch("../register/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")), a_code: activation.value }) })
+                fetch("../register/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: sessionStorage.getItem("em"), a_code: activation.value }) })
                     .then(data => data.json())
                     .then(function(res) {
                         if (res.status == "activation_verified") {
@@ -111,15 +111,15 @@ submitBtn.addEventListener("click", function() {
 
                         }
                         if (res.status == "code_invalid") {
-                            showStatus("Invalid Activation Code",3000);
+                            showStatus("Invalid Activation Code", 3000);
                         }
                     });
-            }else{
+            } else {
                 console.log("Invalid Password");
             }
 
         } else {
-            showStatus("Passwords do not Match.",3000);
+            showStatus("Passwords do not Match.", 3000);
         }
     }
 
@@ -128,7 +128,7 @@ submitBtn.addEventListener("click", function() {
 
 function saveKeyToDB(em_key) {
     let _key = generatePasswordKey(password.value, em_key);
-    fetch("../storekey/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), serv_copy: _key.serv }) })
+    fetch("../storekey/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), serv_copy: _key.serv }) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "registered") {
@@ -137,7 +137,7 @@ function saveKeyToDB(em_key) {
                 location.replace("/home")
             }
             if (res.status == "server_error") {
-                showStatus("Server Busy",3000);
+                showStatus("Server Busy", 3000);
             }
         })
 
@@ -145,7 +145,7 @@ function saveKeyToDB(em_key) {
 
 function verifyPswdKeyDB(em_key) {
     let _key = generatePasswordKey(password.value, em_key);
-    fetch("../checkloginkey/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: atob(sessionStorage.getItem("em")), agent: btoa(navigator.userAgent), serv_copy: _key.serv }) })
+    fetch("../checkloginkey/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), serv_copy: _key.serv }) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "verified") {
@@ -154,38 +154,41 @@ function verifyPswdKeyDB(em_key) {
                 location.replace("/home")
             }
             if (res.status == "invalid") {
-                showStatus("Invalid credentials",3000);
+                showStatus("Invalid credentials", 3000);
             }
         })
 
 }
 
 function passwordStrength(pswd) {
+    let errorlog = "";
     if (pswd.length < 10) {
-        showStatus("Password must have atleast 10 characters.",5000);
-        return false;
+        errorlog = "10 characters, ";
     }
     let re = new RegExp("[0-9]");
     if (!re.test(pswd)) {
-        showStatus("Password must contain at least 1 number.",5000);
-        return false;
+        errorlog = errorlog + "1 number, ";
     }
-   
+
     re = new RegExp("[a-z]");
     if (!re.test(pswd)) {
-        showStatus("Password must contain at least 1 lowercase letter.",5000);
-        return false;
+        errorlog = errorlog + "1 lowercase letter, ";
     }
-   
+
     re = new RegExp("[A-Z]");
     if (!re.test(pswd)) {
-        showStatus("Password must contain at least 1 uppercase letter.",5000);
+        errorlog = errorlog + "1 uppercase letter,";
+    }
+    if (errorlog != "") {
+        let err = errorlog.split(",");
+        err.pop();
+        showStatus("Password must contain at least " +err.join(",") , 5000);
         return false;
     }
     return true;
 }
 
-function showStatus(msg,duration) {
+function showStatus(msg, duration) {
     statusBox.innerText = msg;
     statusBox.classList.remove("hidden");
     loginBtn.classList.add("inactive");
@@ -206,7 +209,7 @@ user_validate().then(function(status) {
     }
 }).catch(function(s) {
     if (s == "Server_error") {
-        showStatus("Server Busy",3000);
+        showStatus("Server Busy", 3000);
     }
-    
+
 });
