@@ -13,7 +13,7 @@ function alertMissingFeatures() {
     let htmlclasses = htmlclassAttr.split(" ");
     let missingfeatureList = htmlclasses.filter((cls) => cls.indexOf("no-") == 0);
     if (missingfeatureList.length > 0) {
-        let ignorelist = missingfeatureList.filter((minor) => (minor != "no-capture" && minor != "no-userselect" && minor != "no-todataurlwebp" && minor != "no-todataurlpng" && minor != "no-todataurljpeg"));
+        let ignorelist = missingfeatureList.filter((minor) => (minor != "no-cssvhunit" && "no-capture" && minor != "no-userselect" && minor != "no-todataurlwebp" && minor != "no-todataurlpng" && minor != "no-todataurljpeg"));
         if (ignorelist.length > 0) {
             document.querySelector(".container").style.display = "none";
             fetch("../missingfeature/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nofeature: missingfeatureList.join(","), agent: btoa(navigator.userAgent) }) })
