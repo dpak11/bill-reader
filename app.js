@@ -192,11 +192,13 @@ function processBillText(datarray) {
 function dateSearch(lines) {
     let pattern1 = new RegExp("([0-9]){1,2}/([0-9]){1,2}/([0-9]){2,4}");
     let pattern2 = new RegExp("([0-9]){1,2}-([0-9]){1,2}-([0-9]){2,4}");
-    //let pattern3 = new RegExp("([0-9]){1,2}\.([0-9]){1,2}\.([0-9]){2,4}");
+    let pattern3 = new RegExp("([0-9]){1,2}[\.]([0-9]){1,2}[\.]([0-9]){2,4}");
     let pattern4 = new RegExp("([0-9]){1,2}-([a-z]){3}-([0-9]){2,4}");
     let pattern5 = new RegExp("([0-9]){1,2} ([a-z]){3}, ([0-9]){2,4}");
     let dates = [];
-    
+
+    // date: nov 11, 2011
+
     let monthCheck = {
         vals: function(v) {
             console.log(v);
@@ -218,10 +220,9 @@ function dateSearch(lines) {
     };
 
     lines.forEach(function(line) {
-
         let l1 = line.match(pattern1);
         let l2 = line.match(pattern2);
-       // let l3 = line.match(pattern3);
+        let l3 = line.match(pattern3);
         let l4 = line.match(pattern4);
         let l5 = line.match(pattern5);
         if (l1 != null && l1.length > 1) {
@@ -234,26 +235,21 @@ function dateSearch(lines) {
             let m2 = monthCheck.vals(l2[0].split("-"));
             if (m2) { dates.push(m2) }
         }
-        /*if (l3 != null && l3.length > 1) {
-            console.log("3rd type date");
-            console.log(l3[0]);
+        if (l3 != null && l3.length > 1) {
             let m3 = monthCheck.vals(l3[0].split("."));
             if (m3) { dates.push(m3) }
-        }*/
+        }
         if (l4 != null && l4.length > 1) {
-            console.log("4th type date");
             let dt = l4[0].split("-");
             dt[1] = monthCheck.monthNum(dt[1]);
             let m4 = monthCheck.vals(dt);
             if (m4) { dates.push(m4) }
         } //06 Jun, 2019
         if (l5 != null && l5.length > 1) {
-            console.log("5th type date");
             let dt1 = l5[0].split(","); //[06 Jun, 2019]
-            let dt2 = dt[0].split(" "); //[06,Jun]
-            let dt = `${dt2[0]},${dt2[1]},${dt1[1].trim()}`;
-            dt[1] = monthCheck.monthNum(dt.split(","));
-            let m5 = monthCheck.vals(dt);
+            let dt2 = dt1[0].split(" "); //[06,Jun]
+            let dt = `${dt2[0]},${monthCheck.monthNum(dt2[1])},${dt1[1].trim()}`;
+            let m5 = monthCheck.vals(dt.split(","));
             if (m5) { dates.push(m5) }
         }
     });
@@ -429,6 +425,7 @@ function loadSettingsData(pskey, agent, email) {
     })
 
 }
+
 
 function saveSettingsData(pskey, agent, email, acc_setting) {
 
@@ -952,6 +949,11 @@ function idRandomise(idfor) {
     return rnd;
 }
 
+function getEmail(email) {
+    let em = Buffer.from(email, "base64").toString('ascii');
+    return em.toLowerCase();
+}
+
 
 
 
@@ -968,19 +970,6 @@ app.get("/get-my-users", (req, res) => {
 });
 
 
-/*
-app.post("/processimage", (req, res) => {
-    console.log("Image processing...");
-
-    scanBill(req.body.img).then(function(data) {
-        console.log(data);
-        res.json({ status: data });
-    }).catch(function(err) {
-        res.json({ status: err });
-    });
-
-});
-*/
 app.post("/processTextData", (req, res) => {
     console.log("Text processing...");
 
@@ -994,9 +983,8 @@ app.post("/processTextData", (req, res) => {
 });
 
 app.post("/emailreq", (req, res) => {
-    let email = req.body.email.toLowerCase();
+    let email = getEmail(req.body.email);
     let mode = req.body.mode;
-
     if (isValidEmail(email)) {
         emailDBcheck(email, mode).then(function() {
             if (mode == "register") {
@@ -1024,7 +1012,7 @@ app.post("/emailreq", (req, res) => {
 
 
 app.post("/register", (req, res) => {
-    const email = req.body.email.toLowerCase();
+    const email = getEmail(req.body.email);
     const code = req.body.a_code;
     activation_code_verify(email, code).then(function() {
         let key = generateEmailConstantKey(email);
@@ -1035,7 +1023,7 @@ app.post("/register", (req, res) => {
 
 });
 app.post("/login", (req, res) => {
-    const email = req.body.email.toLowerCase();
+    const email = getEmail(req.body.email);
     emailDBcheck(email, "login").then(function() {
         let key = generateEmailConstantKey(email);
         res.json({ status: "email_ok", serv_em_key: key })
@@ -1052,7 +1040,7 @@ app.post("/login", (req, res) => {
 app.post("/storekey", (req, res) => {
     const pwdkey = req.body.serv_copy;
     const useragent = req.body.agent;
-    const email = req.body.email.toLowerCase();
+    const email = getEmail(req.body.email);
     saveRegisterationDB(pwdkey, useragent, email).then(function() {
         res.json({ status: "registered" });
     }).catch(function() {
@@ -1065,7 +1053,7 @@ app.post("/storekey", (req, res) => {
 app.post("/checkloginkey", (req, res) => {
     const pwdkey = req.body.serv_copy;
     const useragent = req.body.agent;
-    const email = req.body.email.toLowerCase();
+    const email = getEmail(req.body.email);
     userAuthenticate(pwdkey, useragent, email, "login").then(function() {
         res.json({ status: "verified" });
     }).catch(function() {
@@ -1077,7 +1065,7 @@ app.post("/checkloginkey", (req, res) => {
 app.post("/userAuth", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
+    const email = getEmail(req.body.em);
     userAuthenticate(pwdkey, useragent, email, "auto").then(function() {
         res.json({ status: "verified" });
     }).catch(function() {
@@ -1087,12 +1075,8 @@ app.post("/userAuth", (req, res) => {
 });
 
 app.post("/loadBills", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const mode = req.body.ptype;
-    const projid = req.body.projid;
-    loadUserBills(pwdkey, useragent, email, mode, projid).then(function(d) {
+    const { em, agent, key_serv, mode, ptype, projid } = req.body;
+    loadUserBills(key_serv, agent, getEmail(em), ptype, projid).then(d => {
         console.log("loaded bills");
         res.json({ status: "done", user_data: d.data });
     }).catch(function(s) {
@@ -1107,12 +1091,8 @@ app.post("/loadBills", (req, res) => {
 });
 
 app.post("/saveBill", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const bill = req.body.receipt;
-
-    saveUserBill(pwdkey, useragent, email, bill).then(function() {
+    const { em, agent, key_serv, receipt } = req.body;
+    saveUserBill(key_serv, agent, getEmail(em), receipt).then(() => {
         console.log("saved 2");
         res.json({ status: "saved" });
     }).catch(function(s) {
@@ -1126,12 +1106,8 @@ app.post("/saveBill", (req, res) => {
 });
 
 app.post("/deleteBill", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const billid = req.body.receiptid;
-
-    deleteUserBill(pwdkey, useragent, email, billid).then(function() {
+    const { em, agent, key_serv, receiptid } = req.body;
+    deleteUserBill(key_serv, agent, getEmail(em), receiptid).then(() => {
         console.log("deleted 2");
         res.json({ status: "deleted" });
     }).catch(function() {
@@ -1142,13 +1118,8 @@ app.post("/deleteBill", (req, res) => {
 });
 
 app.post("/updateBill", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const billid = req.body.receiptid;
-    const billdata = req.body.bdata;
-
-    updateUserBill(pwdkey, useragent, email, billid, billdata).then(function() {
+    const { em, agent, key_serv, receiptid, bdata } = req.body;
+    updateUserBill(key_serv, agent, getEmail(em), receiptid, bdata).then(() => {
         console.log("updated 2");
         res.json({ status: "updated" });
     }).catch(function() {
@@ -1159,11 +1130,8 @@ app.post("/updateBill", (req, res) => {
 });
 
 app.post("/settingsload", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    //const projectid = req.body.proj;
-    loadSettingsData(pwdkey, useragent, email).then(function(d) {
+    const { em, agent, key_serv } = req.body;
+    loadSettingsData(key_serv, agent, getEmail(em)).then(d => {
         res.json({ status: "done", accdata: d.data })
     }).catch(function() {
         console.log("cannot load settings");
@@ -1173,11 +1141,8 @@ app.post("/settingsload", (req, res) => {
 });
 
 app.post("/settingsave", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const setting = req.body.usersetting;
-    saveSettingsData(pwdkey, useragent, email, setting).then(function(d) {
+    const { em, agent, key_serv, usersetting } = req.body;
+    saveSettingsData(key_serv, agent, getEmail(em), usersetting).then(() => {
         res.json({ status: "saved" })
     }).catch(function() {
         console.log("cannot save settings");
@@ -1187,17 +1152,9 @@ app.post("/settingsave", (req, res) => {
 });
 
 app.post("/addNewProjMember", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const newMemberEmail = req.body.member;
-    const memberRole = req.body.role;
-    const approver = req.body.approver;
-    const project = req.body.proj_id;
-    const projname = req.body.projname;
-    const logo = req.body.logo;
-    if (isValidEmail(newMemberEmail) && isValidEmail(approver)) {
-        addMemberToProject(pwdkey, useragent, email, newMemberEmail, memberRole, approver, project, projname, logo).then(function() {
+    const { em, agent, key_serv, member, role, approver, proj_id, projname, logo } = req.body;
+    if (isValidEmail(member) && isValidEmail(approver)) {
+        addMemberToProject(key_serv, agent, getEmail(em), member, role, approver, proj_id, projname, logo).then(() => {
             res.json({ status: "added" });
         }).catch(function(s) {
             console.log("cannot add Member to proj");
@@ -1215,12 +1172,8 @@ app.post("/addNewProjMember", (req, res) => {
 });
 
 app.post("/addNewProject", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const project = req.body.project;
-    const logo = req.body.logo;
-    createNewProject(pwdkey, useragent, email, project, logo).then(function(projid) {
+    const { em, agent, key_serv, project, logo } = req.body;
+    createNewProject(key_serv, agent, getEmail(em), project, logo).then(projid => {
         res.json({ status: "created", projid: projid })
     }).catch(function(s) {
         console.log("cannot create project");
@@ -1237,12 +1190,8 @@ app.post("/addNewProject", (req, res) => {
 });
 
 app.post("/removeTempProj", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const project = req.body.proj;
-    removeProject(pwdkey, useragent, email, project).then(function() {
-        console.log("deleted");
+    const { em, agent, key_serv, proj } = req.body;
+    removeProject(key_serv, agent, getEmail(em), proj).then(() => {
         res.json({ status: "removed" })
     })
 
@@ -1250,16 +1199,38 @@ app.post("/removeTempProj", (req, res) => {
 
 
 app.post("/chartsload", (req, res) => {
-    const pwdkey = req.body.key_serv;
-    const useragent = req.body.agent;
-    const email = req.body.em.toLowerCase();
-    const personal_team = req.body.persTeam;
-    loadChartsData(pwdkey, useragent, email, personal_team).then(function(c) {
+    const { em, agent, key_serv, persTeam } = req.body;
+    loadChartsData(key_serv, agent, getEmail(em), persTeam).then(c => {
         res.json({ status: "done", chartdata: c.chartdata })
     }).catch(function() {
         console.log("cannot load charts data");
         res.json({ status: "invalid" });
     })
+
+});
+
+app.post("/missingfeature", (req, res) => {
+    console.log("no feature mailing...");
+    let mailOptions = {
+        from: KEYS_DATA.email,
+        to: KEYS_DATA.notificationBox,
+        subject: "Browser Missing features",
+        html: `<h3>Features missing:</h3>
+
+            <h4>${req.body.nofeature}</h4>
+         -----------------------------------
+            ${Buffer.from(req.body.agent, "base64").toString('ascii')}
+        `
+    };
+    transporter.sendMail(mailOptions, function(err, data) {
+        if (err) {
+            console.log(err)
+            res.json({ status: "??" });
+        } else {
+            console.log("sent nofeature");
+            res.json({ status: "OK" });
+        }
+    });
 
 });
 
@@ -1273,4 +1244,3 @@ http.listen(port, () => {
     console.log(`Server running at port ` + port);
 
 });
-
