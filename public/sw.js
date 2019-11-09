@@ -1,5 +1,5 @@
-const staticCacheName = 'bv-static-v12';
-const dynamicCacheName = 'bv-dynamic-v12';
+const staticCacheName = 'bv-static-v13';
+const dynamicCacheName = 'bv-dynamic-v13';
 const assets = [ 
   '/',
   '/home', 
