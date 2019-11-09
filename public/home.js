@@ -385,11 +385,28 @@ function fetchBills() {
 }
 
 function displayBillingTable(data) {
+    let totalamount = data.total || "";
+    if (typeof totalamount != "string" && typeof totalamount != "number") {
+        let amtvals = [];
+        totalamount.forEach(amt => {
+            let rounded = Math.round(amt);
+            if (amtvals.indexOf(rounded) == -1) {
+                amtvals.push(rounded);
+            }
+        });
+        if (amtvals.length == 1) {
+            document.getElementById("amount_field").value = amtvals[0];
+        }else{
+            ConfirmAmountBox(amtvals.slice(0, 2)); 
+        }
+               
+    }else{
+        document.getElementById("amount_field").value = totalamount;
+    }
     document.querySelector('.previewimg').classList.remove("hide");
     document.getElementById("billTable").classList.remove("hide");
     document.getElementById("date_field").value = data.date || "";
     document.getElementById("merchant_field").value = data.title || "";
-    document.getElementById("amount_field").value = data.total || "";
     document.getElementById("descr_field").value = data.descr || "";
     document.getElementById("billtype").value = data.type || "";
 
@@ -644,7 +661,7 @@ saveBillBtn.addEventListener("click", function() {
         showAlertBox("Please fill in the fields", "OK", null, false);
         return;
     }
-    if(billType == ""){
+    if (billType == "") {
         showAlertBox("Please select a Category", "OK", null, false);
         return;
     }
@@ -1017,7 +1034,7 @@ function createNewProject() {
         enableAddNewMember = true;
         return false;
     }
-    if(!/[a-z0-9]/gi.test(proj)){
+    if (!/[a-z0-9]/gi.test(proj)) {
         showAlertBox("Project Name Invalid", "OK", null, false);
         enableAddNewMember = true;
         return false;
@@ -1535,9 +1552,11 @@ function showDayMonth(d) {
 
 let logOutBtn = document.getElementById("logout");
 let alertBoxWindow = document.getElementById("alertBoxWindow");
+let confirmAmountWindow = document.getElementById("confirmAmountWindow");
 let mainStatusOK = document.getElementById("mainStatusOK");
 let mainStatusCancel = document.getElementById("mainStatusCancel");
 let mainStatusMsg = document.querySelector("#alertBoxWindow h4");
+let amountStatusSkip = document.getElementById("amountStatusSkip");
 
 let callbackConfirm = {
     yes: {
@@ -1578,6 +1597,11 @@ mainStatusOK.addEventListener("click", function() {
     clearCallbacks();
 });
 
+amountStatusSkip.addEventListener("click", function() {
+    confirmAmountWindow.classList.add("hide");
+
+});
+
 function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okparams, cancelcallback, cancelparams) {
     alertBoxWindow.classList.remove("hide");
     mainStatusMsg.innerText = msg;
@@ -1592,6 +1616,24 @@ function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okpara
     } else {
         mainStatusCancel.classList.add("hide")
     }
+}
+
+function ConfirmAmountBox(amountList) {
+    confirmAmountWindow.classList.remove("hide");
+    let chooseAmt = document.getElementById("chooseAmount");
+    chooseAmt.innerHTML = "";
+    amountList.forEach((amt) => {
+        let span = document.createElement("span");
+        span.innerText = "Rs."+Math.round(amt);
+        span.className = "pick-amount";
+        chooseAmt.appendChild(span);
+        span.addEventListener("click", function(ev) {
+            document.getElementById("amount_field").value = ev.currentTarget.innerText.split("Rs.")[1];
+            confirmAmountWindow.classList.add("hide");
+
+        });
+
+    });
 }
 
 
