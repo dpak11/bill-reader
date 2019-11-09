@@ -406,6 +406,7 @@ p.tip-info {
 #user_setting_link.hide,
 #mainStatusCancel.hide,
 #alertBoxWindow.hide,
+#confirmAmountWindow.hide,
 #cameraDevice.hide,
 #exitbill.hide,
 #deletebill.hide,
@@ -437,7 +438,19 @@ p {
     box-shadow: 0px 1px 6px 2px rgba(0, 0, 0, 0.6);
 }
 
-#alertBoxWindow {
+#chooseAmount{
+    display: flex;
+    justify-content: space-evenly;
+}
+span.pick-amount{
+    padding: 5px 8px;
+    background: #283fa4;
+    border-radius: 6px;
+    color: #d5cadd;
+    cursor: pointer;
+}
+
+#alertBoxWindow,#confirmAmountWindow{
     display: flex;
     position: fixed;
     top: 0;
@@ -449,18 +462,18 @@ p {
     justify-content: center;
 }
 
-#alertBoxWindow div {
+#alertBoxWindow div, #confirmAmountWindow > div {
     padding: 20px 40px;
     background: rgba(182, 178, 203, 0.8);
     text-align: center;
     width: 25%
 }
 
-#alertBoxWindow h4 {
+#alertBoxWindow h4, #confirmAmountWindow h4 {
     font-weight: normal;
 }
 
-#alertBoxWindow p {
+#alertBoxWindow p, #confirmAmountWindow p {
     font-size: .9em;
 }
 
@@ -649,7 +662,7 @@ div#ui-datepicker-div {
 }
 
 @media (max-width:768px) {
-    #alertBoxWindow div {
+    #alertBoxWindow div, #confirmAmountWindow > div {
         width: 40%
     }
 
@@ -743,7 +756,7 @@ div#ui-datepicker-div {
 
     /* End top floater */
 
-    #alertBoxWindow div {
+    #alertBoxWindow div, #confirmAmountWindow > div {
         width: 50%
     }
 

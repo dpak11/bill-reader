@@ -169,23 +169,20 @@ function generateEmailConstantKey(email) {
 }
 
 function processBillText(datarray) {
-    let receiptTitle = sanitiser(datarray[0], false) + " " + sanitiser(datarray[1], false);
-    let arr = datarray.join("-|||||-").toLowerCase().split("-|||||-");
+    let receiptTitle = sanitiser(datarray[0],false) + " " + sanitiser(datarray[1],false);
+    let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
-    console.log(arr);
-    arr = arr.filter(function(txt) {
+    let totalsList = arr.filter(function(txt) {
         return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("payable") || txt.includes("rate"));
     });
 
-    return new Promise((resolve, reject) => {
-        if (arr.length > 0) {
-            let get_total = sanitiser(extractTotalVal(arr), true);
-            resolve({ title: receiptTitle, total: get_total, date: dateStr });
-        } else {
-            reject("No Total Found")
-        }
+    let get_total = null;
+    if (totalsList.length > 0) {
+        let totals = extractTotalVal(totalsList, arr);
+        get_total = (totals.found == "string") ? sanitiser(totals.value, true) : totals.value;
+    }
+    return { title: receiptTitle, total: get_total, date: dateStr };
 
-    });
 
 }
 
@@ -197,11 +194,8 @@ function dateSearch(lines) {
     let pattern5 = new RegExp("([0-9]){1,2} ([a-z]){3}, ([0-9]){2,4}");
     let dates = [];
 
-    // date: nov 11, 2011
-
     let monthCheck = {
         vals: function(v) {
-            console.log(v);
             if (v[2].length == 2 || v[2].length == 4) {
                 if (Number(v[1]) > 12) {
                     let formattedMonth = `${v[1]}/${v[0]}/${v[2]}`;
@@ -256,34 +250,85 @@ function dateSearch(lines) {
     return dates[0]
 }
 
-function extractTotalVal(totals) {
+function extractTotalVal(totals, alltexts) {
     let totalValue = "";
     let subs = "";
     totals.forEach(function(_total) {
-        if (totalValue == "") {
-            let total = _total.trim();
-            subs = total.indexOf("subtotal") >= 0 ? total.split("subtotal")[1] :
-                total.indexOf("sub total") >= 0 ? total.split("sub total")[1] : "";
-            totalValue = total.indexOf("amount payable") >= 0 ? total.split("amount payable")[1] :
-                total.indexOf("payable amount") == 0 ? total.split("payable amount")[1] :
-                total.indexOf("total amount") >= 0 ? total.split("total amount")[1] :
-                total.indexOf("payable") >= 0 ? total.split("payable")[1] :
-                total.indexOf("amount") >= 0 ? total.split("amount")[1] :
-                total.indexOf("amnt") >= 0 ? total.split("amnt")[1] :
-                total.indexOf("rate") >= 0 ? total.split("rate")[1] :
-                (subs == "" && total.indexOf("total") >= 0) ? total.split("total")[1] : "";
+        let total = _total.trim();
+        if (total.indexOf("subtotal") >= 0) {
+            subs = total.split("subtotal")[1];
+        } else {
+            if (total.indexOf("sub total") >= 0) {
+                subs = total.split("sub total")[1];
+            }
+        }
+
+        if (total.indexOf("total") >= 0) {
+            totalValue = total.split("total")[1];
+        }
+
+        if (total.indexOf("rate") >= 0) {
+            totalValue = total.split("rate")[1];
+        }
+        if (total.indexOf("amnt") >= 0) {
+            totalValue = total.split("amnt")[1];
+        }
+        if (total.indexOf("amount") >= 0) {
+            totalValue = total.split("amount")[1];
+        }
+        if (total.indexOf("payable") >= 0) {
+            totalValue = total.split("payable")[1];
+        }
+        if (total.indexOf("total amount") >= 0) {
+            totalValue = total.split("total amount")[1];
+        }
+        if (total.indexOf("payable amount") == 0) {
+            totalValue = total.split("payable amount")[1];
+        }
+        if (total.indexOf("amount payable") >= 0) {
+            totalValue = total.split("amount payable")[1];
         }
     });
-    if (totalValue == "" || totalValue == ":" || totalValue == " :") {
-        return subs;
+
+    if (totalValue.indexOf(",") > 0) {
+        totalValue = totalValue.split(",").join("");
     }
-    return totalValue;
+
+    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitiser(totalValue, true))) {
+        let newlist = null;
+        if (totalValue.indexOf(":") >= 0) {
+            totalValue = totalValue.split(":")[1].trim();
+            if (totalValue.indexOf(" ") > 0) {
+                totalValue = totalValue.split(" ")[0];
+            }
+            if (!isNaN(totalValue) && totalValue != "") {
+                return { found: "string", value: totalValue };
+            } else if (isNaN(sanitiser(totalValue, true))) {
+                if (subs.trim() != "") {
+                    return { found: "string", value: subs };
+                } else {
+                    newlist = alltexts.filter(txt => !isNaN(txt.trim()));
+                    newlist.sort(function(a, b) { return b - a });
+                    return { found: "list", value: newlist }
+                }
+
+            }
+        }
+        newlist = alltexts.filter(txt => !isNaN(txt.trim()));
+        newlist.sort(function(a, b) { return b - a });
+        return { found: "list", value: newlist }
+
+
+    }
+    if (totalValue == "" && subs != "") {
+        return { found: "string", value: subs };
+    }
+    return { found: "string", value: totalValue };
 }
 
 function sanitiser(str, isNumber) {
     let chars = isNumber ? "0123456789." : "0123456789qwertyuioplkjhgfdsazxcvbnm &QWERTYUIOPLKJHGFDSAZXCVBNM-";
     let newchar = "";
-    console.log("################# \n" + str);
     for (let i = 0; i < str.length; i++) {
         let txt = str.substr(i, 1);
         if (chars.indexOf(txt) >= 0) {
@@ -972,13 +1017,7 @@ app.get("/get-my-users", (req, res) => {
 
 app.post("/processTextData", (req, res) => {
     console.log("Text processing...");
-
-    processBillText(req.body.imgtext).then(function(data) {
-        console.log(data);
-        res.json({ status: data });
-    }).catch(function(err) {
-        res.json({ status: err });
-    });
+    res.json({ status: processBillText(req.body.imgtext) });
 
 });
 
