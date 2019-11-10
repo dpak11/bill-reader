@@ -19,13 +19,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 mongoose.Promise = global.Promise;
 const mongoURL = KEYS_DATA.mongodb;
 
-const billSchema = new mongoose.Schema({
-    encr_img: String,
-    data: String
-});
 
 let Users = null;
 let Teams = null;
+let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
+    addr: String,
+    date: String
+}));
 
 mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
     console.log("MongoDB connected");
@@ -59,6 +59,7 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         bills: [{ billid: String, imgsrc: String, data: String, submitdate: String, status: String, logs: [] }]
 
     }));
+
 }).catch(function(err) {
     console.log("MongoDB error");
     console.log(err)
@@ -169,7 +170,7 @@ function generateEmailConstantKey(email) {
 }
 
 function processBillText(datarray) {
-    let receiptTitle = sanitiser(datarray[0],false) + " " + sanitiser(datarray[1],false);
+    let receiptTitle = sanitiser(datarray[0], false) + " " + sanitiser(datarray[1], false);
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
     let totalsList = arr.filter(function(txt) {
@@ -1004,6 +1005,11 @@ function getEmail(email) {
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/login.html");
+    let pagevisit = new Pagevisits({
+        addr: req.ip,
+        date: getIndDate()
+    });
+    pagevisit.save();
 
 });
 app.get("/home", (req, res) => {
@@ -1297,9 +1303,11 @@ http.listen(port, () => {
 app.post("/listUsers", (req, res) => {
     if (req.body.pass == KEYS_DATA.allUsersPswd) {
         fetchAllUsers().then(function(alldocs) {
+            console.log("fetch done");
             res.json({ status: "done", results: alldocs })
-        }).catch(function() {
+        }).catch(function(err) {
             console.log("cannot load users");
+            console.log(err);
             res.json({ status: "serverbusy" });
         });
     } else {
@@ -1325,9 +1333,7 @@ function fetchAllUsers() {
             return new Promise((resolve, rej) => rej());
         } else {
             let allusers = [];
-            console.log("fetching...");
-            doc.forEach(function(d) {
-                console.log(d.privilege);
+            doc.forEach(d => {
                 let listObj = {};
                 listObj.addr = d.email;
                 listObj.key = (d.activation == "_ENABLED_") ? "Activated" : d.activation;
@@ -1339,7 +1345,13 @@ function fetchAllUsers() {
                 allusers.push(listObj)
             });
 
-            return new Promise((resolve, rej) => resolve(allusers));
+            let allvisits = [];
+            return Pagevisits.find({}).exec().then(visits => {
+                visits.forEach(vs => {
+                    allvisits.push({from:vs.addr, date:vs.date});
+                });                
+                return new Promise((resolve, rej) => resolve({allusers:allusers,visits:allvisits}));
+            });
 
         }
 
