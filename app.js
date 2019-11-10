@@ -19,13 +19,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 mongoose.Promise = global.Promise;
 const mongoURL = KEYS_DATA.mongodb;
 
-const billSchema = new mongoose.Schema({
-    encr_img: String,
-    data: String
-});
 
 let Users = null;
 let Teams = null;
+let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
+    addr: String,
+    date: String
+}));
 
 mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
     console.log("MongoDB connected");
@@ -59,6 +59,7 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         bills: [{ billid: String, imgsrc: String, data: String, submitdate: String, status: String, logs: [] }]
 
     }));
+
 }).catch(function(err) {
     console.log("MongoDB error");
     console.log(err)
@@ -169,7 +170,7 @@ function generateEmailConstantKey(email) {
 }
 
 function processBillText(datarray) {
-    let receiptTitle = sanitiser(datarray[0],false) + " " + sanitiser(datarray[1],false);
+    let receiptTitle = sanitiser(datarray[0], false) + " " + sanitiser(datarray[1], false);
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
     let totalsList = arr.filter(function(txt) {
@@ -1004,6 +1005,11 @@ function getEmail(email) {
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/login.html");
+    let pagevisit = new Pagevisits({
+        addr: req.ip,
+        date: getIndDate()
+    });
+    pagevisit.save();
 
 });
 app.get("/home", (req, res) => {

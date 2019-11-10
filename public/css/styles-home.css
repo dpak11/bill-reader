@@ -14,6 +14,7 @@ header {
     display: block;
     background: #850689;
     border-bottom: solid 4px #adaceb;
+
 }
 
 .hide {
@@ -70,8 +71,8 @@ header {
     /* border: 1px solid #697b9c; */
     padding: 20px;
     margin-bottom: 20px;
-    background: #dbe0ff;
-    box-shadow: 0px 0px 7px #0000007d;
+    background: #d5dbff;
+    box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.3);
     border-radius: 8px;
 }
 
@@ -109,7 +110,7 @@ header {
 .profile_info select {
     padding: 5px;
     width: 200px;
-    background: #99D9F0;
+    background: #c8ebf8;
     box-shadow: inset 2px 2px 6px #787373;
     color: #6e4d6e;
 }
@@ -159,7 +160,7 @@ header {
 }
 .member-fields-disable{
     color: #a78ca7 !important;
-    background: #d3dee1 !important;
+    background: #b0cfd8 !important;
 }
 
 #team_setting_link,
@@ -193,7 +194,7 @@ header {
     z-index: 10;
     position: absolute;
     top: 110px;
-    background: #CEDFE5;
+    background: #8bd7f1;
     width: 80%;
     min-height: 90vh;
     box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.6);
@@ -252,14 +253,14 @@ header img {
 section.side-nav {
     width: 15%;
     min-width: 100px;
-    background: #ADACEB;
+    background: #61a2fc;
 }
 
 section.side-nav p {
     padding: 50px 0;
     margin: 0;
     cursor: pointer;
-    box-shadow: inset 0px 0px 7px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
 .nav-selected {
@@ -320,9 +321,8 @@ section.main {
     height: 350px;
     align-items: center;
     box-shadow: 1px 1px 8px 1px #372f2f;
-    background: #c3c3e5;
+    background: #8bd7f1;
     margin-top: 20px;
-    /*  margin-left: 10px; */
 }
 
 #billTable input {
@@ -709,11 +709,14 @@ div#ui-datepicker-div {
 
 
     /* Top floater */
+    .topfloater header{
+        border-bottom: none
+    }
     .topfloater section.side-nav {
         display: flex;
         justify-content: space-between;
         width: 100%;
-        background: #e8bef6;
+        /* background: #e8bef6; */
 
     }
 
@@ -750,8 +753,8 @@ div#ui-datepicker-div {
 
 
     .topfloater .nav-selected{
-         background: rgba(246, 246, 246, 0.5);
-        border-top: 2px solid white;
+        background: rgba(246, 246, 246, 0.7);
+        border-top: 2px solid #fff;
     }
 
     /* End top floater */
