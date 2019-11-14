@@ -129,7 +129,7 @@ header {
 }
 
 .settingloadstatus {
-    color: #a69e9e;
+    color: red;
     font-size: .7em;
     font-weight: normal;
     padding-left: 20px;
@@ -334,7 +334,7 @@ section.main {
 }
 
 #billTable.teamTable{
-    height: 390px;
+    height: 410px;
 }
 
 p.tip-info {
@@ -350,6 +350,14 @@ p.tip-info {
     font-size: large;
     font-weight: bold;
 
+}
+.table-head span{
+    font-weight: normal;
+    color: #5e6756;
+    font-size: small;
+    background: #bddeea;
+    padding: 2px 5px;
+    border: 1px solid rgba(94, 103, 86, 0.45);
 }
 
 #billtype {
@@ -374,6 +382,8 @@ p.tip-info {
 #exitbill,
 #savebill,
 #updatebill,
+#rejectbill,
+#approvebill,
 #deletebill {
     display: inline-block;
     border-bottom: 1px solid blue;
@@ -385,6 +395,8 @@ p.tip-info {
 
 #savebill,
 #updatebill,
+#rejectbill,
+#approvebill,
 #deletebill {
     margin-right: 15px
 }
@@ -393,6 +405,8 @@ p.tip-info {
 #savebill.saving-state,
 #updatebill.saving-state,
 #savesettings.saving-state,
+#rejectbill.saving-state,
+#approvebill.saving-state,
 #deletebill.saving-state {
     color: #716c6c;
     border-bottom: none;
@@ -406,12 +420,15 @@ p.tip-info {
 #user_setting_link.hide,
 #mainStatusCancel.hide,
 #alertBoxWindow.hide,
+#infoTipBox.hide,
 #confirmAmountWindow.hide,
 #cameraDevice.hide,
 #exitbill.hide,
 #deletebill.hide,
 #savebill.hide,
 #updatebill.hide,
+#rejectbill.hide,
+#approvebill.hide,
 #imageuploader.hide,
 #billThumbnails.hide,
 #billTable.hide,
@@ -424,6 +441,12 @@ p {
     text-align: center;
     color: #f8fbff;
     font-size: 1.1em;
+}
+
+#infocontent{
+    font-size: .9em;
+    text-align: left;
+    color: #2e2e3a;
 }
 
 #cameraDevice {
@@ -450,7 +473,7 @@ span.pick-amount{
     cursor: pointer;
 }
 
-#alertBoxWindow,#confirmAmountWindow{
+#alertBoxWindow, #confirmAmountWindow, #infoTipBox{
     display: flex;
     position: fixed;
     top: 0;
@@ -462,7 +485,7 @@ span.pick-amount{
     justify-content: center;
 }
 
-#alertBoxWindow div, #confirmAmountWindow > div {
+#alertBoxWindow div, #infoTipBox div, #confirmAmountWindow > div {
     padding: 20px 40px;
     background: rgba(182, 178, 203, 0.8);
     text-align: center;
@@ -473,27 +496,32 @@ span.pick-amount{
     font-weight: normal;
 }
 
-#alertBoxWindow p, #confirmAmountWindow p {
+#alertBoxWindow p, #infotipclose, #confirmAmountWindow p {
     font-size: .9em;
+}
+
+.settingMode #mybillORall{
+    display: none !important
 }
 
 #mybillORall{
     position: fixed;
-    bottom: 5px;
-    right: 10px;
-    background: #9c9ae8;
+    bottom: 3px;
+    right: 5px;
+    background: #f2f2f5;
     padding: 1px 10px;
     line-height: .5px;
     font-size: 1em;
     border-radius: 8px;
-    display: none;
     z-index: 12;
     cursor: pointer;
+    border-bottom: 2px solid #79797d;
+    display: none
 }
 #mybillORall p{
-    font-size: 1.2em;
+    font-size: .9em;
     padding: 0;
-    color: #fff;
+    color: #000;
     font-family: monospace;
 }
 
@@ -606,7 +634,7 @@ span.pick-amount{
 
 .bill-status-approval{
     width: 70%;
-    font-size: .8em;
+    font-size: .9em;
     padding: 5px 0 20px 0;
 }
 .bill-status-approval.pending{
@@ -623,6 +651,19 @@ span.pick-amount{
     text-decoration: underline;
 }
 
+.bill-status-approval i{
+    margin-left: 5px;
+    display: inline-block;
+    background: url(../images/history.png);
+    width: 25px;
+    height: auto;
+    padding: 2px 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+}
+
 div#ui-datepicker-div {
     z-index: 7 !important;
 }
@@ -632,6 +673,12 @@ div#ui-datepicker-div {
 .settingMode #chartsBlock,
 .settingMode .prev-block {
     display: none
+}
+
+#saveCloseSetting{
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid #4b70a9;
 }
 
 
@@ -662,7 +709,7 @@ div#ui-datepicker-div {
 }
 
 @media (max-width:768px) {
-    #alertBoxWindow div, #confirmAmountWindow > div {
+    #alertBoxWindow div, #infoTipBox div, #confirmAmountWindow > div {
         width: 40%
     }
 
@@ -759,7 +806,7 @@ div#ui-datepicker-div {
 
     /* End top floater */
 
-    #alertBoxWindow div, #confirmAmountWindow > div {
+    #alertBoxWindow div, #infoTipBox div, #confirmAmountWindow > div {
         width: 50%
     }
 
