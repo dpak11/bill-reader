@@ -1,5 +1,5 @@
-const staticCacheName = 'billvault-static-v13';
-const dynamicCacheName = 'billvault-dynamic-v13';
+const staticCacheName = 'billvault-static-v02';
+const dynamicCacheName = 'billvault-dynamic-v02';
 const assets = [ 
   '/',
   '/home', 
@@ -30,7 +30,8 @@ const assets = [
   '/images/user.png',
   '/images/pending.png',
   '/images/rejected.png',
-  '/images/approved.png'
+  '/images/approved.png',
+  '/images/history.png'
 ];
 
 // install event

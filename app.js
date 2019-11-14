@@ -23,7 +23,6 @@ const mongoURL = KEYS_DATA.mongodb;
 let Users = null;
 let Teams = null;
 let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
-    addr: String,
     date: String
 }));
 
@@ -193,6 +192,7 @@ function dateSearch(lines) {
     let pattern3 = new RegExp("([0-9]){1,2}[\.]([0-9]){1,2}[\.]([0-9]){2,4}");
     let pattern4 = new RegExp("([0-9]){1,2}-([a-z]){3}-([0-9]){2,4}");
     let pattern5 = new RegExp("([0-9]){1,2} ([a-z]){3}, ([0-9]){2,4}");
+    let pattern6 = new RegExp("([0-9]){1,2}/([a-z]){3}/([0-9]){2,4}");
     let dates = [];
 
     let monthCheck = {
@@ -220,6 +220,7 @@ function dateSearch(lines) {
         let l3 = line.match(pattern3);
         let l4 = line.match(pattern4);
         let l5 = line.match(pattern5);
+        let l6 = line.match(pattern6);
         if (l1 != null && l1.length > 1) {
             console.log("1st type date");
             let m1 = monthCheck.vals(l1[0].split("/"));
@@ -247,6 +248,13 @@ function dateSearch(lines) {
             let m5 = monthCheck.vals(dt.split(","));
             if (m5) { dates.push(m5) }
         }
+        if (l6 != null && l6.length > 1) {
+            let dt = l6[0].split("/");
+            dt[1] = monthCheck.monthNum(dt[1]);
+            let m6 = monthCheck.vals(dt);
+            if (m6) { dates.push(m6) }
+        }
+
     });
     return dates[0]
 }
@@ -486,13 +494,10 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
             doc.default = settings.account;
 
             if (settings.isSwitchedProj == "yes") {
-                console.log("switch project saving...");
-
                 let allpromises = [];
 
                 return Teams.find({ user_email: email }).exec().then(mydocs => {
                     mydocs.map((mydoc, i) => {
-                        console.log(i);
                         if (mydoc.teamid == settings.newProjectID) {
                             mydoc.default = "yes";
                         } else {
@@ -503,7 +508,6 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
                     });
 
                     return Promise.all(allpromises).then(() => {
-                        console.log("resolved ALL");
                         return doc.save().then(() => new Promise((resolve, rej) => resolve()))
 
                     });
@@ -517,39 +521,89 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
     });
 }
 
-function loadChartsData(pskey, agent, email, acc_setting, perMode) {
+function loadChartsData(pskey, agent, email, perMode) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
         if (doc == null) {
             return new Promise((resolve, rej) => rej());
-        } else {
-            if (doc.default == "personal") {
-                let datas = [];
-                doc.personal.bills.forEach(function(bill) {
-                    datas.push({ data: bill.data, date: bill.submitdate })
-                });
-                let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
-                return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
-            } else {
-                console.log("load chart for Team")
-            }
+        } else if (doc.default == "personal") {
+            let datas = [];
+            doc.personal.bills.forEach(function(bill) {
+                datas.push({ data: bill.data, date: bill.submitdate })
+            });
+            let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+            return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
+        } else if (perMode == "private") {
+            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(onedoc => {
+                if (onedoc == null) {
+                    return new Promise((resolve, rej) => rej("nochartdata"));
+                } else {
+                    let datas = [];
+                    onedoc.bills.forEach(bill => {
+                        if (bill.status == "approved") {
+                            datas.push({ data: bill.data, date: bill.submitdate });
+                        }
+                    });
+                    let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+                    return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
+                }
+            });
+        } else if (perMode == "team") {
+            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(tdoc => {
+                if (tdoc == null) {
+                    return new Promise((resolve, rej) => rej("nochartdata"));
+                } else {
+                    let project = tdoc.teamid;
+                    let myrole = tdoc.role;
+                    return Teams.find({ teamid: project }).exec().then(tdoc1 => {
+                        if (tdoc1 == null || tdoc1.length == 0) {
+                            return new Promise((resolve, rej) => rej("invalid"));
+                        } else {
+                            let team = null;
+                            if (myrole == "admin") {
+                                team = tdoc1.filter(docs => (docs.role != "admin"));
+                            }
+                            if (myrole == "manager") {
+                                team = tdoc1.filter(docs => (docs.approver == email));
+                            }
+                            if (myrole == "member") {
+                                team = tdoc1.filter(docs => (docs.user_email == email));
+                            }
+
+                            let datas = [];
+                            team.forEach(tm => {
+                                tm.bills.filter(bill => (bill.status == "approved")).forEach(bdoc => {
+                                    datas.push({
+                                        date: bdoc.submitdate,
+                                        data: bdoc.data,
+                                        user: tm.user_email,
+                                        role: tm.role
+                                    });
+                                });
+                            });
+
+                            let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+                            return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
+
+                        }
+                    });
+
+                }
+            }).catch(err => {
+                console.log(err)
+            })
         }
-    }).catch(function() {
-        return new Promise((resolve, rej) => rej());
-    })
+    });
 
 }
-
 
 function createNewProject(pskey, agent, email, proj, logoimg) {
     let maxProjLimit = 5;
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(function(doc) {
         if (doc.default == "team" && doc.privilege == "all") {
             return Teams.find({ user_email: email, role: "admin" }).exec().then(doc1 => {
-                console.log("creating...1");
                 if (doc1 == null || doc1.length < maxProjLimit) {
                     let isDefault = (doc1 == null || doc1.length == 0) ? "yes" : "no";
                     return Teams.find({ title: proj }).exec().then(onedoc => {
-                        console.log("creating...2");
                         if (onedoc == null || onedoc.length == 0) {
                             let projID = idRandomise("teamid");
                             let date_now = getIndDate();
@@ -566,8 +620,6 @@ function createNewProject(pskey, agent, email, proj, logoimg) {
                                 logs: [],
                                 bills: []
                             });
-                            //bills: [{ billid: "", imgsrc: "", data: "", submitdate: "", status: "", logs: [] }]
-
                             return newproject.save().then(function() {
                                 return new Promise((resolve, rej) => resolve(projID));
                             }).catch(function() {
@@ -591,9 +643,9 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(function(doc) {
         if (doc.default == "team" && doc.privilege == "all") {
             return teamMemberValidation(newMemberEmail).then(s1 => {
-                let adminUser = s1.state;
-                if (s1.state == "nouser") {
-                    return new Promise((res, reject) => reject({ status: s1.state, msg: `${newMemberEmail} is not yet registered.` }));
+                let userState = s1.state;
+                if (userState == "nouser") {
+                    return new Promise((res, reject) => reject({ status: userState, msg: `${newMemberEmail} is not yet registered.` }));
                 } else {
                     return teamMemberValidation(approver).then(s2 => {
                         if (s2.state == "nouser") {
@@ -601,25 +653,28 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
                         } else {
                             return Teams.findOne({ user_email: newMemberEmail, teamid: project }).exec().then(teamem1 => {
                                 if (teamem1 == null) {
-                                    if (adminUser != "admin") {
-                                        return addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver).then(() => {
+                                    //if (userState != "admin") {
+                                    return addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver).then(() => {
 
-                                            return Teams.findOne({ user_email: approver, teamid: project }).exec().then(teamem2 => {
-                                                if (teamem2 == null) {
-                                                    return addToTeam(project, logoimg, project_name, approver, "manager", email)
-                                                        .then(() => new Promise((resolve, rej) => resolve()));
-                                                } else if (teamem2.role == "member") {
+                                        return Teams.findOne({ user_email: approver, teamid: project }).exec().then(teamem2 => {
+                                            if (teamem2 == null) {
+                                                return addToTeam(project, logoimg, project_name, approver, "manager", email)
+                                                    .then(() => new Promise((resolve, rej) => resolve()));
+                                            } else if (teamem2.role == "member") {
+                                                return Teams.deleteOne({ user_email: newMemberEmail, teamid: project }).exec().then((del) => {
                                                     return new Promise((res, reject) => reject({ status: "declineMemberRole", msg: `Already assigned Member(${approver}) can not be re-assigned "Manager" Role` }));
-                                                } else {
-                                                    teamem2.role = (teamem2.role == "admin") ? "admin" : "manager";
-                                                    return teamem2.save().then(() => new Promise((resolve, rej) => resolve()))
+                                                });
 
-                                                }
-                                            });
+                                            } else {
+                                                teamem2.role = (teamem2.role == "admin") ? "admin" : "manager";
+                                                return teamem2.save().then(() => new Promise((resolve, rej) => resolve()))
+
+                                            }
                                         });
-                                    } else {
+                                    });
+                                    /*} else {
                                         return new Promise((res, reject) => reject({ status: "adminreject", msg: `Can not Add "${newMemberEmail}", who is an Admin to other project(s)` }))
-                                    }
+                                    }*/
 
                                 } else if (teamem1.role == "manager") {
                                     if (memberRole == "member") {
@@ -662,9 +717,11 @@ function teamMemberValidation(member) {
     return Users.findOne({ email: member, activation: "_ENABLED_" }).exec().then(function(memdoc) {
         if (memdoc == null) {
             return new Promise((resolve, rej) => resolve({ state: "nouser" }));
-        } else if (memdoc.privilege == "all") {
-            return new Promise((resolve, rej) => resolve({ state: "admin" }));
-        } else {
+        }
+        /*else if (memdoc.privilege == "all") {
+                   return new Promise((resolve, rej) => resolve({ state: "admin" }));
+               }*/
+        else {
             return new Promise((resolve, rej) => resolve({ state: "allowuser" }));
         }
     });
@@ -699,7 +756,6 @@ function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, a
 function setasDefaultTeam(user) {
     return Teams.findOne({ user_email: user }).exec().then(listeam => {
         if (listeam == null) {
-            console.log("First Team for:" + user);
             return new Promise((res, rej) => res({ default: "yes" }));
         } else {
             return new Promise((res, rej) => res({ default: "no" }));
@@ -716,7 +772,7 @@ function removeProject(pwdkey, useragent, email, project) {
 
 }
 
-function loadUserBills(pskey, agent, email, mode, projid) {
+function loadUserBills(pskey, agent, email, mode) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
 
         if (doc == null) {
@@ -725,6 +781,7 @@ function loadUserBills(pskey, agent, email, mode, projid) {
             let obj = {};
             obj.account = doc.default;
             obj.controls = doc.privilege;
+            obj.isGlobalAdmin = (doc.privilege == "all") ? "yes" : "no";
             if (doc.default == "personal") {
                 obj.user_bills = doc.personal.bills.map(function(bill) {
                     return {
@@ -734,7 +791,6 @@ function loadUserBills(pskey, agent, email, mode, projid) {
                         lastdate: bill.submitdate
                     }
                 });
-                console.log("user bills...");
                 return new Promise((resolve, rej) => resolve({ data: obj }));
 
             } else {
@@ -758,13 +814,13 @@ function loadUserBills(pskey, agent, email, mode, projid) {
                                             id: bill.billid,
                                             lastdate: bill.submitdate,
                                             status: bill.status,
+                                            history: bill.logs,
                                             approver: tdoc.approver,
                                             useremail: tdoc.user_email
                                         }
                                     });
                                 }
                             });
-                            console.log("personal team bill");
                             return new Promise((resolve, rej) => resolve({ data: obj }));
                         }
 
@@ -805,7 +861,6 @@ function findInProjectID(id, controls, email, roles) {
         teamdoc.forEach(function(doc) {
             if (controls == "all") {
                 if (doc.role !== "admin") {
-                    console.log("admin's team member bills.." + doc.user_email + " / " + doc.bills.length);
                     let teamdata = getTeamData(doc);
                     teamdata.forEach(bills => {
                         allProjMembers.push(bills);
@@ -814,29 +869,35 @@ function findInProjectID(id, controls, email, roles) {
 
             } else if (roles == "manager") {
                 if (doc.approver == email) {
-                    allProjMembers.concat(getTeamData(doc));
+                    let teamdata = getTeamData(doc);
+                    teamdata.forEach(bills => {
+                        allProjMembers.push(bills);
+                    });
+
                 }
             } else if (doc.user_email == email) {
-                allProjMembers.concat(getTeamData(doc));
+                let teamdata = getTeamData(doc);
+                teamdata.forEach(bills => {
+                    allProjMembers.push(bills);
+                });
+
             }
 
         });
-        console.log("concated bills size: " + allProjMembers.length);
         return new Promise((resolve, rej) => resolve(allProjMembers));
 
     });
 }
 
 function getTeamData(team_doc) {
-
     let projUserbills = team_doc.bills.filter(b => (b.imgsrc != "")).map(bill => {
-        console.log(bill.billid);
         return {
             img: bill.imgsrc,
             data: bill.data,
             id: bill.billid,
             lastdate: bill.submitdate,
             status: bill.status,
+            history: bill.logs,
             approver: team_doc.approver,
             useremail: team_doc.user_email,
             role: team_doc.role
@@ -876,42 +937,45 @@ function saveUserBill(pskey, agent, email, receipt) {
             }
 
         } else {
-            console.log("saving to team");
             return Teams.find({ user_email: email }).exec().then(teamdoc => {
                 let promisecall = [];
-                teamdoc.forEach((tdoc, i) => {
-                    if (tdoc.default == "yes") {
-                        let isDuplicates = false;
-                        tdoc.bills.forEach(function(bill) {
-                            let half1 = receipt.bill.substr(0, 2000);
-                            let half2 = bill.imgsrc.substr(0, 2000);
-                            if (half1 == half2) {
-                                isDuplicates = true;
-                            }
-                        });
-                        if (!isDuplicates) {
-                            let submDate = getIndDate();
-                            tdoc.lastlogin = submDate;
-                            tdoc.bills.push({
-                                billid: idRandomise("bill"),
-                                imgsrc: receipt.bill,
-                                data: receipt.billFields,
-                                submitdate: submDate,
-                                status: "pending",
-                                logs: ["Bill Submitted on: " + submDate]
+                if (teamdoc == null || teamdoc.length == 0) {
+                    return new Promise((resolve, rej) => rej());
+                } else {
+                    teamdoc.forEach((tdoc, i) => {
+                        if (tdoc.default == "yes") {
+                            let isDuplicates = false;
+                            tdoc.bills.forEach(function(bill) {
+                                let half1 = receipt.bill.substr(0, 2000);
+                                let half2 = bill.imgsrc.substr(0, 2000);
+                                if (half1 == half2) {
+                                    isDuplicates = true;
+                                }
                             });
-                            promisecall[i] = tdoc.save().then(() => new Promise((resolve, rej) => resolve()));
+                            if (!isDuplicates) {
+                                let submDate = getIndDate();
+                                tdoc.lastlogin = submDate;
+                                tdoc.bills.push({
+                                    billid: idRandomise("bill"),
+                                    imgsrc: receipt.bill,
+                                    data: receipt.billFields,
+                                    submitdate: submDate,
+                                    status: "pending",
+                                    logs: ["Bill Submitted on: " + submDate]
+                                });
+                                promisecall[i] = tdoc.save().then(() => new Promise((resolve, rej) => resolve()));
 
-                        } else {
-                            promisecall[i] = new Promise((resolve, rej) => rej("duplicate"));
+                            } else {
+                                promisecall[i] = new Promise((resolve, rej) => rej("duplicate"));
+                            }
                         }
-                    }
-                });
+                    });
 
-                return Promise.all(promisecall).then(() => {
-                    console.log("All resolved!");
-                    return new Promise((resolve, rej) => resolve());
-                });
+                    return Promise.all(promisecall).then(() => {
+                        return new Promise((resolve, rej) => resolve());
+                    });
+
+                }
 
             });
         }
@@ -921,11 +985,10 @@ function saveUserBill(pskey, agent, email, receipt) {
 
 
 function deleteUserBill(pskey, agent, email, bill_id) {
-    console.log("To delete: " + bill_id);
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
         if (doc == null) {
             return new Promise((resolve, rej) => rej());
-        } else {
+        } else if (doc.default == "personal") {
             let deletedBills = doc.personal.bills.filter(bill => (bill.billid != bill_id));
             doc.personal.bills = deletedBills;
             return doc.save().then(function() {
@@ -933,6 +996,16 @@ function deleteUserBill(pskey, agent, email, bill_id) {
             }).catch(function() {
                 return new Promise((resolve, rej) => rej());
             })
+        } else {
+            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(teamdoc => {
+                if (teamdoc == null) {
+                    return new Promise((resolve, rej) => rej());
+                } else {
+                    let deletedBills = teamdoc.bills.filter(bill => (bill.billid != bill_id));
+                    teamdoc.bills = deletedBills;
+                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
+                }
+            });
         }
 
     })
@@ -940,19 +1013,15 @@ function deleteUserBill(pskey, agent, email, bill_id) {
 
 
 function updateUserBill(pskey, agent, email, bill_id, bill_data) {
-    console.log("To Update: " + bill_id);
 
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
         if (doc == null) {
             return new Promise((resolve, rej) => rej());
-        } else {
-            console.log("update query...");
+        } else if (doc.default == "personal") {
             doc.personal.bills.map(bill => {
-                console.log(bill.billid);
                 if (bill.billid === bill_id) {
                     bill.data = bill_data;
                     bill.submitdate = getIndDate();
-                    console.log("updated: " + bill_id);
                 }
             });
             return doc.save().then(function() {
@@ -961,13 +1030,76 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
                 return new Promise((resolve, rej) => rej());
             })
 
+        } else {
+            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(teamdoc => {
+                let promisecall = [];
+                if (teamdoc == null || teamdoc.length == 0) {
+                    return new Promise((resolve, rej) => rej());
+                } else {
+                    
+                    teamdoc.bills.map(bill => {
+                        if (bill.billid === bill_id) {
+                            let modDate = getIndDate();
+                            bill.data = bill_data;
+                            bill.submitdate = modDate;
+                            bill.status = "pending";
+                            bill.logs.push("Bill Updated on: " + modDate);
+                        }
+                    });
+                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
+                }
+            });
         }
-
     }).catch(function() {
-
         return new Promise((resolve, rej) => rej());
     })
 }
+
+function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, mode) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            return Teams.findOne({ user_email: user, teamid: proj }).exec().then(team => {
+                if (team == null) {
+                    return new Promise((resolve, rej) => rej());
+                } else {
+                    team.bills.map(bill => {
+                        if (bill.billid === bill_id) {
+                            let logval = "Bill " + mode + " by " + doc.name + " (" + email + ") on: " + getIndDate();
+                            bill.logs.push(logval);
+                            bill.status = mode;
+                        }
+                    });
+                    return team.save().then(() => new Promise((resolve, rej) => resolve({ status: mode })));
+                }
+            });
+        }
+    });
+}
+
+function rejectUserBill(pskey, agent, email, bill_id, proj, user) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            return Teams.findOne({ user_email: user, teamid: proj }).exec().then(team => {
+                if (team == null) {
+                    return new Promise((resolve, rej) => rej());
+                } else {
+                    team.bills.map(bill => {
+                        if (bill.billid === bill_id) {
+                            bill.logs.push("Bill Rejected by " + doc.name + " (" + email + ") on: " + getIndDate());
+                            bill.status = "rejected";
+                        }
+                    });
+                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
+                }
+            });
+        }
+    });
+}
+
 
 
 function getIndDate() {
@@ -1005,11 +1137,13 @@ function getEmail(email) {
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/login.html");
-    let pagevisit = new Pagevisits({
-        addr: req.ip,
-        date: getIndDate()
-    });
-    pagevisit.save();
+    if (typeof KEYS_DATA.allowAdminRights == "undefined") {
+        let pagevisit = new Pagevisits({
+            date: getIndDate()
+        });
+        pagevisit.save();
+    }
+
 
 });
 app.get("/home", (req, res) => {
@@ -1022,7 +1156,6 @@ app.get("/get-my-users", (req, res) => {
 
 
 app.post("/processTextData", (req, res) => {
-    console.log("Text processing...");
     res.json({ status: processBillText(req.body.imgtext) });
 
 });
@@ -1076,7 +1209,6 @@ app.post("/login", (req, res) => {
         if (s.error == "email") {
             res.json({ status: "email_invalid" })
         } else {
-            console.log(s);
             res.json({ status: "busy" })
         }
     });
@@ -1120,8 +1252,8 @@ app.post("/userAuth", (req, res) => {
 });
 
 app.post("/loadBills", (req, res) => {
-    const { em, agent, key_serv, mode, ptype, projid } = req.body;
-    loadUserBills(key_serv, agent, getEmail(em), ptype, projid).then(d => {
+    const { em, agent, key_serv, mode, ptype } = req.body;
+    loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
         console.log("loaded bills");
         res.json({ status: "done", user_data: d.data });
     }).catch(function(s) {
@@ -1138,7 +1270,6 @@ app.post("/loadBills", (req, res) => {
 app.post("/saveBill", (req, res) => {
     const { em, agent, key_serv, receipt } = req.body;
     saveUserBill(key_serv, agent, getEmail(em), receipt).then(() => {
-        console.log("saved 2");
         res.json({ status: "saved" });
     }).catch(function(s) {
         if (s == "duplicate") {
@@ -1153,10 +1284,8 @@ app.post("/saveBill", (req, res) => {
 app.post("/deleteBill", (req, res) => {
     const { em, agent, key_serv, receiptid } = req.body;
     deleteUserBill(key_serv, agent, getEmail(em), receiptid).then(() => {
-        console.log("deleted 2");
         res.json({ status: "deleted" });
     }).catch(function() {
-        console.log("cannot delete");
         res.json({ status: "invalid" });
     })
 
@@ -1165,10 +1294,18 @@ app.post("/deleteBill", (req, res) => {
 app.post("/updateBill", (req, res) => {
     const { em, agent, key_serv, receiptid, bdata } = req.body;
     updateUserBill(key_serv, agent, getEmail(em), receiptid, bdata).then(() => {
-        console.log("updated 2");
         res.json({ status: "updated" });
     }).catch(function() {
-        console.log("cannot update");
+        res.json({ status: "invalid" });
+    })
+
+});
+
+app.post("/approveRejectBill", (req, res) => {
+    const { em, agent, key_serv, billid, proj, user, mode } = req.body;
+    approveRejectUserBill(key_serv, agent, getEmail(em), billid, proj, user, mode).then((s) => {
+        res.json({ status: s.status });
+    }).catch(function() {
         res.json({ status: "invalid" });
     })
 
@@ -1179,7 +1316,6 @@ app.post("/settingsload", (req, res) => {
     loadSettingsData(key_serv, agent, getEmail(em)).then(d => {
         res.json({ status: "done", accdata: d.data })
     }).catch(function() {
-        console.log("cannot load settings");
         res.json({ status: "invalid" });
     })
 
@@ -1190,7 +1326,6 @@ app.post("/settingsave", (req, res) => {
     saveSettingsData(key_serv, agent, getEmail(em), usersetting).then(() => {
         res.json({ status: "saved" })
     }).catch(function() {
-        console.log("cannot save settings");
         res.json({ status: "invalid" });
     });
 
@@ -1202,7 +1337,6 @@ app.post("/addNewProjMember", (req, res) => {
         addMemberToProject(key_serv, agent, getEmail(em), member, role, approver, proj_id, projname, logo).then(() => {
             res.json({ status: "added" });
         }).catch(function(s) {
-            console.log("cannot add Member to proj");
             if (s.status) {
                 res.json({ status: s.status, msg: s.msg });
             } else {
@@ -1221,7 +1355,6 @@ app.post("/addNewProject", (req, res) => {
     createNewProject(key_serv, agent, getEmail(em), project, logo).then(projid => {
         res.json({ status: "created", projid: projid })
     }).catch(function(s) {
-        console.log("cannot create project");
         if (s.state == "maxlimit") {
             res.json({ status: "limitreached", max: s.maxVal });
         } else if (s.state == "duplicateProject") {
@@ -1247,15 +1380,17 @@ app.post("/chartsload", (req, res) => {
     const { em, agent, key_serv, persTeam } = req.body;
     loadChartsData(key_serv, agent, getEmail(em), persTeam).then(c => {
         res.json({ status: "done", chartdata: c.chartdata })
-    }).catch(function() {
-        console.log("cannot load charts data");
-        res.json({ status: "invalid" });
+    }).catch(function(err) {
+        if(err == "nochartdata"){
+            res.json({status:"nochart"})
+        }else{
+            res.json({ status: "invalid" });
+        }
     })
 
 });
 
 app.post("/missingfeature", (req, res) => {
-    console.log("no feature mailing...");
     let mailOptions = {
         from: KEYS_DATA.email,
         to: KEYS_DATA.notificationBox,
@@ -1269,10 +1404,8 @@ app.post("/missingfeature", (req, res) => {
     };
     transporter.sendMail(mailOptions, function(err, data) {
         if (err) {
-            console.log(err)
             res.json({ status: "??" });
         } else {
-            console.log("sent nofeature");
             res.json({ status: "OK" });
         }
     });
@@ -1303,11 +1436,8 @@ http.listen(port, () => {
 app.post("/listUsers", (req, res) => {
     if (req.body.pass == KEYS_DATA.allUsersPswd) {
         fetchAllUsers().then(function(alldocs) {
-            console.log("fetch done");
             res.json({ status: "done", results: alldocs })
         }).catch(function(err) {
-            console.log("cannot load users");
-            console.log(err);
             res.json({ status: "serverbusy" });
         });
     } else {
@@ -1348,15 +1478,14 @@ function fetchAllUsers() {
             let allvisits = [];
             return Pagevisits.find({}).exec().then(visits => {
                 visits.forEach(vs => {
-                    allvisits.push({from:vs.addr, date:vs.date});
-                });                
-                return new Promise((resolve, rej) => resolve({allusers:allusers,visits:allvisits}));
+                    allvisits.push({ date: vs.date });
+                });
+                return new Promise((resolve, rej) => resolve({ allusers: allusers, visits: allvisits }));
             });
 
         }
 
     }).catch(function() {
-        console.log("users find failed");
         return new Promise((resolve, rej) => rej());
     })
 

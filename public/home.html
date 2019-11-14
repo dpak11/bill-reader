@@ -68,7 +68,10 @@
                         <span id="savebill">Save</span>
                         <span id="updatebill" class="hide">Update</span>
                         <span id="deletebill">Delete</span>
-                        <span id="exitbill">Cancel</span>
+                        <span id="rejectbill">Reject</span>
+                        <span id="approvebill">Approve</span>
+                        <span id="exitbill">Close</span>
+
                     </div>
                 </section>
                 <section class="prev-block">
@@ -115,9 +118,9 @@
                             </select>
                         </p>
                         <p class="tip-info hide">You are currently logged into your <span id="active_account_txt"></span> Account. After Saving the changes, you will be automatically logged into <span id="new_account_txt"></span> Account</p>
-                        <p style="margin-top: 50px">
+                        <p id="saveCloseSetting" style="margin-top: 50px">
                             <span class="btn" id="savesettings" style="margin-right: 20px">Save</span>
-                            <span class="btn" id="cancelsettings">Cancel</span>
+                            <span class="btn" id="closesettings">Close</span>
                         </p>
                     </div>
                     <div id="teamSettingsPage" class="profile_info hide">
@@ -175,6 +178,12 @@
                     <div id="chooseAmount"></div>
                     <p id="amountStatusSkip" class="btn">Skip</p>
                     
+                </div>
+            </div>
+            <div id="infoTipBox" class="hide">
+                <div>
+                    <p id="infocontent"></p>                    
+                    <p id="infotipclose" class="btn">OK</p>                    
                 </div>
             </div>
             <div id="mybillORall">
