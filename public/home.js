@@ -89,6 +89,7 @@ billshomeBtn.addEventListener("click", function() {
         document.querySelector(".container").classList.remove("settingMode");
         document.getElementById("settingsBlock").classList.add("hide");
         document.getElementById("chartsBlock").classList.add("hide");
+        document.getElementById("mybillORall").style.display = "none";
     }
 
 });
@@ -332,7 +333,7 @@ function addCategorySelectOptions() {
     }];
 
     if (userAcType == "personal") {
-        categoriy_opts.push({ text: "LifeStyle (Clothing/Footwear)", val: "lifestyle" });
+        categoriy_opts.push({ text: "LifeStyle (Clothing/Footwear/accessories)", val: "lifestyle" });
         categoriy_opts.push({ text: "Medical", val: "medical" });
     }
     categoriy_opts.push({ text: "Other expenses", val: "other" });
