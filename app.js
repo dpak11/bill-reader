@@ -173,7 +173,7 @@ function processBillText(datarray) {
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
     let totalsList = arr.filter(function(txt) {
-        return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("payable") || txt.includes("rate"));
+        return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("amt") || txt.includes("payable") || txt.includes("rate"));
     });
 
     let get_total = null;
@@ -272,6 +272,14 @@ function extractTotalVal(totals, alltexts) {
             }
         }
 
+        if (total.indexOf("amt") >= 0) {
+            totalValue = total.split("amt")[1];
+        }
+
+        if (total.indexOf("amnt") >= 0) {
+            totalValue = total.split("amnt")[1];
+        }
+
         if (total.indexOf("total") >= 0) {
             totalValue = total.split("total")[1];
         }
@@ -279,9 +287,7 @@ function extractTotalVal(totals, alltexts) {
         if (total.indexOf("rate") >= 0) {
             totalValue = total.split("rate")[1];
         }
-        if (total.indexOf("amnt") >= 0) {
-            totalValue = total.split("amnt")[1];
-        }
+                
         if (total.indexOf("amount") >= 0) {
             totalValue = total.split("amount")[1];
         }

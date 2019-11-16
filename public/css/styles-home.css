@@ -21,7 +21,7 @@ header img {
 }
 #themechooser{
     width: 12px;
-    height: 8px;
+    height: 6px;
     position: absolute;
     top: 46px;
     right: 10px;
@@ -339,7 +339,7 @@ section.main {
     flex-direction: column;
     height: 350px;
     align-items: center;
-    box-shadow: 1px 1px 8px 1px #372f2f;
+    box-shadow: 1px 1px 8px 1px rgba(55, 47, 47, 0.58);
     background: #8bd7f1;
     margin-top: 20px;
     border-radius: 8px;
@@ -604,7 +604,7 @@ span.pick-amount{
     justify-content: space-between;
     align-items: center;
     margin-bottom: 25px;
-    box-shadow: 0px 0px 8px 2px rgba(0, 0, 0, 0.69);
+    box-shadow: 0px 0px 8px 2px rgba(0, 0, 0, 0.55);
     border-radius: 8px;
     padding: 10px 0;
     cursor: pointer
@@ -800,7 +800,7 @@ div#ui-datepicker-div {
 
     /* Top floater */
     .topfloater header{
-        border-bottom: none
+        border-bottom: none !important
     }
     .topfloater section.side-nav {
         display: flex;
@@ -845,6 +845,9 @@ div#ui-datepicker-div {
     .topfloater .nav-selected{
         background: rgba(246, 246, 246, 0.7);
         border-top: 2px solid #fff;
+    }
+    .skin6 .topfloater .nav-selected{
+        background: #fff;
     }
 
     /* End top floater */
@@ -918,12 +921,7 @@ div#ui-datepicker-div {
 .skin1 #billTable {
     background: #aca7c0;
 }
-.skin1 #billTable input {
-    background: #aecdd9;
-    box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #d7c0c0;
-}
-.skin1 #billtype {
+.skin1 #billTable input, .skin1 #billtype  {
     background: #aecdd9;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #d7c0c0;
@@ -1014,20 +1012,12 @@ div#ui-datepicker-div {
 .skin2 #billTable {
     background: #eef5db;
 }
-.skin2 #billTable input {
+.skin2 #billTable input, .skin2 #billtype {
     background: #e1f1b5;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #ffffff;
     color: #2f2c2c;
 }
-
-
-.skin2 #billtype {
-    background: #e1f1b5;
-    box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #ffffff;
-}
-
 
 .skin2 #billTable.static-table input,
 .skin2 #billTable.static-table select
@@ -1124,21 +1114,12 @@ div#ui-datepicker-div {
 .skin3 #billTable {
     background: #bad0c2;
 }
-.skin3 #billTable input {
+.skin3 #billTable input, .skin3 #billtype {
     background: #a4b9ac;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #ffffff;
+    border-bottom: 2px solid #eddcdc;
     color: #2f2c2c;
 }
-
-
-.skin3 #billtype {
-    background: #a4b9ac;
-    box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #d7c0c0;
-    color: #2f2c2c;
-}
-
 
 .skin3 #billTable.static-table input,
 .skin3 #billTable.static-table select
@@ -1175,4 +1156,324 @@ div#ui-datepicker-div {
 .skin3 .member-fields-disable {
     color: #92a69a !important;
     background: #b9d0c2 !important;
+}
+
+
+
+
+
+
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin4 header{
+    background: #1c6e8c;
+    border-bottom: solid 1px #2c403f;
+}
+
+.skin4 .profile_info h2 {
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
+    color: #7a7688;
+}
+
+.skin4 .team-sub-setting {
+    background: #d8dae4;
+}
+
+.skin4 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin4 .profile_info input,
+.skin4 .profile_info select {
+    color: #3f3a3a;
+    background: #ecf1ee;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #fffbfb;
+}
+
+.skin4 #profile_img_browse+label,
+.skin4 #team_img_browse+label {
+    background-color: #4d6bd9;
+}
+
+.skin4 #settingsBlock {
+    background: #d1e9f1;
+}
+
+.skin4 .content-box, .skin4 section.main {
+    background: #d3d0cf;
+}
+
+.skin4 section.side-nav {
+    background: #97bdca;
+}
+
+.skin4 section.side-nav span {
+    color: #2b2b39;
+}
+.skin4 #billTable {
+    background: #c1d7df;
+}
+.skin4 #billTable input, .skin4 #billtype {
+    background: #e5ede8;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #ffffff;
+    color: #2f2c2c;
+}
+
+
+.skin4 #billTable.static-table input,
+.skin4 #billTable.static-table select
+{
+    color: #b29898 !important;
+    background: #dadecd !important;
+
+}
+
+.skin4 .input-image+label {
+    color: #eae5ff;
+    background-color: #5073f2;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin4 .thumbnail {
+    border: 3px solid #e9f3ed;
+    background: #c1d7df;
+}
+
+.skin4 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin4 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin4 #saveCloseSetting{
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
+}
+
+
+.skin4 .member-fields-disable {
+    color: #a2b7aa !important;
+    background: #d1e9f1 !important;
+}
+
+
+
+
+
+
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin5 header{
+    background: #8dad95;
+    border-bottom: solid 3px #85a28c;
+}
+
+.skin5 #projectNameHead{
+    border: 1px solid #3a5340;
+    color: #e1e2ef
+}
+
+.skin5 #projectNameHead b {
+    color: #5a5966;
+}
+
+.skin5 .profile_info h2 {
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
+    color: #597660;
+}
+
+.skin5 .team-sub-setting {
+    background: #9ecaa9;
+}
+
+.skin5 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin5 .profile_info input,
+.skin5 .profile_info select {
+    color: #3f3a3a;
+    background: #d7f1de;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #fffbfb;
+}
+
+.skin5 #profile_img_browse+label,
+.skin5 #team_img_browse+label {
+    background-color: #4d6bd9;
+}
+
+.skin5 #settingsBlock {
+    background: #b0d8ba;
+}
+
+.skin5 .content-box, .skin5 section.main {
+    background: #a8c5af;
+}
+
+.skin5 section.side-nav {
+    background: #c1edcc;
+}
+
+.skin5 section.side-nav span {
+    color: #2b2b39;
+}
+.skin5 #billTable {
+    background: #b9d3bf;
+}
+.skin5 #billTable input, .skin5 #billtype {
+    background: #e5ede8;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #e3e0e0;
+    color: #2f2c2c;
+}
+
+
+.skin5 #billTable.static-table input,
+.skin5 #billTable.static-table select
+{
+    color: #b29898 !important;
+    background: #dadecd !important;
+
+}
+
+.skin5 .input-image+label {
+    color: #e9d8d0;
+    background-color: #837f7d;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin5 .thumbnail {
+    border: 3px solid #cde1d1;
+    background: #b9d3bf;
+}
+
+.skin5 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin5 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin5 #saveCloseSetting{
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
+}
+
+
+.skin5 .member-fields-disable {
+    color: #81988a !important;
+    background: #9fceaa !important;
+}
+
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin6 header{
+    background: #4d2a2d;
+    border-bottom: solid 3px #85a28c;
+}
+
+
+.skin6 .profile_info h2 {
+    border-bottom: 2px solid rgba(174, 112, 70, 0.57);
+    color: #597660;
+}
+
+.skin6 .team-sub-setting {
+    background: #9ecaa9;
+}
+
+.skin6 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin6 .profile_info input,
+.skin6 .profile_info select {
+    color: #3f3a3a;
+    background: #d7f1de;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #fffbfb;
+}
+
+.skin6 #profile_img_browse+label,
+.skin6 #team_img_browse+label {
+    background-color: #995c33;
+}
+
+.skin6 #settingsBlock {
+    background: #cd9773;
+}
+
+.skin6 .content-box, .skin6 section.main {
+    background: #d58936;
+}
+
+.skin6 section.side-nav {
+    background: #fff94f;
+}
+
+.skin6 section.side-nav span {
+    color: #2b2b39;
+}
+.skin6 #billTable {
+    background: #eba151;
+}
+.skin6 #billTable input, .skin6 #billtype {
+    background: #f4cca0;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #e3e0e0;
+    color: #2f2c2c;
+}
+
+
+.skin6 #billTable.static-table input,
+.skin6 #billTable.static-table select
+{
+    color: #b29898 !important;
+    background: #dadecd !important;
+
+}
+
+.skin6 .input-image+label {
+    color: #e9bb87;
+    background-color: #b55f02;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin6 .thumbnail {
+    border: 3px solid #e3ad89;
+    background: #cd9773;
+}
+
+.skin6 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin6 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin6 #saveCloseSetting{
+    border-top: 2px solid rgba(174, 112, 70, 0.57);
+}
+
+
+.skin6 .member-fields-disable {
+    color: #81988a !important;
+    background: #9fceaa !important;
 }
