@@ -28,6 +28,7 @@ let header_layout = document.querySelector("header img");
 let preloader = document.querySelector(".lds-roller");
 let headerLogo = document.querySelector("header > img");
 let themechooser = document.getElementById("themechooser");
+let totalThemes = document.querySelector(".container").getAttribute("data-themes");
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
@@ -77,14 +78,14 @@ header_layout.addEventListener("click", function() {
 });
 
 themechooser.addEventListener("click", function() {
-    let maxskin = 3;
+    let maxThemes = Number(totalThemes);
     let bodyElt = document.querySelector("body");
     let bodyclass = bodyElt.getAttribute("class");
     if(!bodyclass || bodyclass.indexOf("skin") == -1){
         bodyElt.classList.add("skin1");
     }else{
         let skinNum = Number(bodyclass.split("skin")[1]);
-        if(skinNum <3){
+        if(skinNum < maxThemes){
             skinNum++;
             bodyElt.setAttribute("class","skin"+skinNum);
         }else{
