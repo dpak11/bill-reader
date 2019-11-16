@@ -16,6 +16,25 @@ header {
     border-bottom: solid 4px #adaceb;
 
 }
+header img {
+    cursor: pointer
+}
+#themechooser{
+    width: 12px;
+    height: 8px;
+    position: absolute;
+    top: 46px;
+    right: 10px;
+    font-size: .9em;
+    padding: 3px;
+    border-radius: 50%;
+    box-shadow: 1px 1px 4px 1px rgba(0, 0, 0, 0.58);
+    padding-top: 11px;
+    background: url(../images/themeicon.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer
+}
 
 .hide {
     display: none
@@ -323,6 +342,7 @@ section.main {
     box-shadow: 1px 1px 8px 1px #372f2f;
     background: #8bd7f1;
     margin-top: 20px;
+    border-radius: 8px;
 }
 
 #billTable input {
@@ -336,6 +356,13 @@ section.main {
 #billTable.teamTable{
     height: 410px;
 }
+#billTable.static-table input,
+#billTable.static-table select
+{
+    color:#b29898;
+
+}
+
 
 p.tip-info {
     margin-top: 50px;
@@ -458,6 +485,7 @@ p {
     overflow: hidden;
     background: #fefefe;
     border: 15px solid #eaeaf0;
+    border-radius: 8px;
     box-shadow: 0px 1px 6px 2px rgba(0, 0, 0, 0.6);
 }
 
@@ -689,6 +717,9 @@ div#ui-datepicker-div {
         background: rgba(224, 227, 235, 0.5);
         color: #0e0e0e;
     }
+    .skin1 section.side-nav p:hover {
+        background: rgba(71, 82, 111, 0.5);
+    }
 }
 
 @media (max-width:920px) {
@@ -730,6 +761,16 @@ div#ui-datepicker-div {
     header img {
         margin: 6px 0 0 13px;
         width: 120px
+    }
+
+    #themechooser {
+        width: 8px;
+        height: 5px;
+        top: 30px;
+    }
+
+    #projectNameHead{
+        top:-5px;
     }
 
     section.side-nav {
@@ -823,4 +864,315 @@ div#ui-datepicker-div {
     .thumb-img img {
         width: 220px;
     }
+}
+
+
+
+/* ----------------SKINS -------------------- */
+
+.skin1 header{
+    background: #533a48;
+    border-bottom: solid 1px #806573;
+}
+
+.skin1 .profile_info h2 {
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);    
+    color: #d3c2d4;
+}
+
+.skin1 .team-sub-setting {
+    background: #959bbe;
+}
+
+.skin1 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin1 .profile_info input,
+.skin1 .profile_info select {
+    background: #c8ebf8;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #d7c0c0;
+}
+
+.skin1 #profile_img_browse+label,
+.skin1 #team_img_browse+label {
+    background-color: #4d6bd9;
+}
+
+.skin1 #settingsBlock {
+    background: #8099aa;
+}
+
+.skin1 .content-box, .skin1 section.main {
+    background: #7c5869;
+}
+
+.skin1 section.side-nav {    
+    background: #9a7197;
+}
+
+.skin1 section.side-nav span {
+    color: #2b2b39;
+}
+.skin1 #billTable {
+    background: #aca7c0;
+}
+.skin1 #billTable input {
+    background: #aecdd9;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #d7c0c0;
+}
+.skin1 #billtype {
+    background: #aecdd9;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #d7c0c0;
+}
+
+.skin1 #billTable.static-table input,
+.skin1 #billTable.static-table select
+{
+    color:#9a8383;
+
+}
+
+
+.skin1 .input-image+label {
+    color: #bcbcd5;
+    background-color: #9a7197;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin1 .thumbnail {
+    border: 3px solid rgba(225, 232, 241, 0.61);
+    background: #9d96b8;
+}
+
+.skin1 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin1 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin1 #saveCloseSetting{
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
+}
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin2 header{
+    background: #454955;
+    border-bottom: solid 1px #b6c58d;
+}
+
+.skin2 .profile_info h2 {
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
+    color: #806a82;
+}
+
+.skin2 .team-sub-setting {
+    background: #d8dae4;
+}
+
+.skin2 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin2 .profile_info input,
+.skin2 .profile_info select {
+    color: black;
+    background: #c8ebf8;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #fffbfb;
+}
+
+.skin2 #profile_img_browse+label,
+.skin2 #team_img_browse+label {
+    background-color: #4d6bd9;
+}
+
+.skin2 #settingsBlock {
+    background: #e9eae5;
+}
+
+.skin2 .content-box, .skin2 section.main {
+    background: #c7efcf;
+}
+
+.skin2 section.side-nav {
+    background: #fe5f55;
+}
+
+.skin2 section.side-nav span {
+    color: #2b2b39;
+}
+.skin2 #billTable {
+    background: #eef5db;
+}
+.skin2 #billTable input {
+    background: #e1f1b5;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #ffffff;
+    color: #2f2c2c;
+}
+
+
+.skin2 #billtype {
+    background: #e1f1b5;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #ffffff;
+}
+
+
+.skin2 #billTable.static-table input,
+.skin2 #billTable.static-table select
+{
+    color: #b29898 !important;
+    background: #dadecd !important;
+
+}
+
+.skin2 .input-image+label {
+    color: #dedee7;
+    background-color: #d86c65;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin2 .thumbnail {
+    border: 3px solid rgba(225, 232, 241, 0.61);
+    background: #eef5db;
+}
+
+.skin2 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin2 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin2 #saveCloseSetting{
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
+}
+
+
+.skin2 .member-fields-disable {
+    color: #9c879c !important;
+    background: #d7e0e2 !important;
+}
+
+
+
+
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin3 header{
+    background: #3f5c5b;
+    border-bottom: solid 1px #2c403f;
+}
+
+.skin3 .profile_info h2 {
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
+    color: #6c7a71;
+}
+
+.skin3 .team-sub-setting {
+    background: #d8dae4;
+}
+
+.skin3 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin3 .profile_info input,
+.skin3 .profile_info select {
+    color: #3f3a3a;
+    background: #a4b9ac;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #fffbfb;
+}
+
+.skin3 #profile_img_browse+label,
+.skin3 #team_img_browse+label {
+    background-color: #4d6bd9;
+}
+
+.skin3 #settingsBlock {
+    background: #bad0c2;
+}
+
+.skin3 .content-box, .skin3 section.main {
+    background: #586b5f;
+}
+
+.skin3 section.side-nav {
+    background: #89a894;
+}
+
+.skin3 section.side-nav span {
+    color: #2b2b39;
+}
+.skin3 #billTable {
+    background: #bad0c2;
+}
+.skin3 #billTable input {
+    background: #a4b9ac;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #ffffff;
+    color: #2f2c2c;
+}
+
+
+.skin3 #billtype {
+    background: #a4b9ac;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #d7c0c0;
+    color: #2f2c2c;
+}
+
+
+.skin3 #billTable.static-table input,
+.skin3 #billTable.static-table select
+{
+    color: #b29898 !important;
+    background: #dadecd !important;
+
+}
+
+.skin3 .input-image+label {
+    color: #e3b8b8;
+    background-color: #9a8282;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin3 .thumbnail {
+    border: 3px solid #b9d5c4;
+    background: #9eb7a7;
+}
+
+.skin3 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin3 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin3 #saveCloseSetting{
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
+}
+
+
+.skin3 .member-fields-disable {
+    color: #92a69a !important;
+    background: #b9d0c2 !important;
 }

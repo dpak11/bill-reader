@@ -24,9 +24,10 @@ let myBill_allMembs = document.querySelector("#mybillORall p");
 
 let captureImg = document.getElementById('captureImg');
 let fileImg = document.getElementById('fileImg');
-let header_layout = document.querySelector("header");
+let header_layout = document.querySelector("header img");
 let preloader = document.querySelector(".lds-roller");
-let headerLogo = document.querySelector("header img");
+let headerLogo = document.querySelector("header > img");
+let themechooser = document.getElementById("themechooser");
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
@@ -71,6 +72,24 @@ header_layout.addEventListener("click", function() {
         containerdiv.classList.remove("topfloater")
     } else {
         containerdiv.classList.add("topfloater")
+    }
+
+});
+
+themechooser.addEventListener("click", function() {
+    let maxskin = 3;
+    let bodyElt = document.querySelector("body");
+    let bodyclass = bodyElt.getAttribute("class");
+    if(!bodyclass || bodyclass.indexOf("skin") == -1){
+        bodyElt.classList.add("skin1");
+    }else{
+        let skinNum = Number(bodyclass.split("skin")[1]);
+        if(skinNum <3){
+            skinNum++;
+            bodyElt.setAttribute("class","skin"+skinNum);
+        }else{
+            bodyclass=bodyElt.setAttribute("class","");
+        }
     }
 
 });
@@ -614,21 +633,17 @@ function resetTableFields(state) {
     let fields = ["merchant_field", "amount_field", "descr_field"];
     fields.forEach(function(field) {
         if (state == "disable") {
-            document.getElementById(field).style.color = "#b29898";
             document.getElementById(field).setAttribute("readonly", true);
         } else {
-            document.getElementById(field).style.color = "#000";
             document.getElementById(field).removeAttribute("readonly");
         }
     });
     if (state == "disable") {
-        document.getElementById("billtype").style.color = "#b29898";
-        document.getElementById("date_field").style.color = "#b29898";
+        document.getElementById("billTable").classList.add("static-table");
         document.getElementById("billtype").disabled = true;
 
     } else {
-        document.getElementById("billtype").style.color = "#000";
-        document.getElementById("date_field").style.color = "#000";
+        document.getElementById("billTable").classList.remove("static-table");
         document.getElementById("billtype").disabled = false;
     }
 
