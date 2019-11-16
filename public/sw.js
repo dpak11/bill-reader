@@ -1,5 +1,5 @@
-const staticCacheName = 'billvault-static-v02';
-const dynamicCacheName = 'billvault-dynamic-v02';
+const staticCacheName = 'billvault-static-v03';
+const dynamicCacheName = 'billvault-dynamic-v03';
 const assets = [ 
   '/',
   '/home', 
@@ -31,6 +31,7 @@ const assets = [
   '/images/pending.png',
   '/images/rejected.png',
   '/images/approved.png',
+  '/images/themeicon.png',
   '/images/history.png'
 ];
 
