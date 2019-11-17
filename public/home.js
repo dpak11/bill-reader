@@ -77,23 +77,53 @@ header_layout.addEventListener("click", function() {
 
 });
 
+let themeChanged = false;
+let themeName = "";
+let themeTrackInterval;
+
 themechooser.addEventListener("click", function() {
+    themeChanged = true;
     let maxThemes = Number(totalThemes);
     let bodyElt = document.querySelector("body");
     let bodyclass = bodyElt.getAttribute("class");
-    if(!bodyclass || bodyclass.indexOf("skin") == -1){
+    clearInterval(themeTrackInterval);
+    themeTrackInterval = setInterval(themeUpdateTracker, 5000);
+    if (!bodyclass || bodyclass.indexOf("skin") == -1) {
         bodyElt.classList.add("skin1");
-    }else{
+        themeName = "skin1";
+    } else {
         let skinNum = Number(bodyclass.split("skin")[1]);
-        if(skinNum < maxThemes){
+        if (skinNum < maxThemes) {
             skinNum++;
-            bodyElt.setAttribute("class","skin"+skinNum);
-        }else{
-            bodyclass=bodyElt.setAttribute("class","");
+            bodyElt.setAttribute("class", "skin" + skinNum);
+            themeName = "skin" + skinNum;
+        } else {
+            bodyclass = bodyElt.setAttribute("class", "");
+            themeName = "";
         }
     }
 
 });
+
+function themeUpdateTracker() {
+    if (themeChanged) {
+        console.log("interval call:"+themeTrackInterval);
+        themeChanged = false;
+       showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
+    }
+}
+
+function saveTheme() {
+    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
+        .then(dat => dat.json())
+        .then(txtjson => {
+            showAlertBox("Default Theme Saved!", "OK", null, false);
+        }).catch(function(s) {
+            console.log("theme failed");
+        });
+
+}
+
 
 
 
@@ -390,8 +420,9 @@ function fetchBills() {
                 }
                 if (res.status == "notinteam") {
                     userAcType = res.user_data.account;
-                    teamAcRights = res.user_data.controls;
+                    teamAcRights = res.user_data.controls;                    
                     globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
+                    document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
                     showAlertBox("You are not in any Project", "OK", null, false);
                     preloader.classList.add("hide");
                 }
@@ -403,6 +434,7 @@ function fetchBills() {
                     userAcType = res.user_data.account;
                     teamAcRights = res.user_data.controls;
                     globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
+                    document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
                     if (userAcType == "team") {
                         selectedProjectID = res.user_data.activeProjectID || "";
                         projectMemberRole = res.user_data.role || "";
@@ -826,7 +858,7 @@ saveBillBtn.addEventListener("click", function() {
         billObj.bill = btoa(imgSrc);
         billObj.billFields = btoa(JSON.stringify(billdata));
     }
-    
+
     saveBillBtn.innerText = "Saving, please wait...";
     saveBillBtn.classList.add("saving-state");
     deleteBillBtn.classList.add("hide");
@@ -1613,7 +1645,7 @@ function filterChart(days) {
         }
         return tot_days <= days;
     });
-    let categories_pie = calculatedTotals(pieChartList);    
+    let categories_pie = calculatedTotals(pieChartList);
     let barChartList1 = null;
     let barChartList1Filter = null;
     let categories_bar1 = null;

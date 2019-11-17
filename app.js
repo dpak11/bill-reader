@@ -37,6 +37,7 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         name: String,
         photo: String,
         default: String,
+        theme: String,
         created: String,
         lastlogin: String,
         personal: new mongoose.Schema({
@@ -111,6 +112,7 @@ function addUserToDB(e_mail, actCode) {
         name: "",
         photo: "",
         default: "personal",
+        theme: "",
         created: getIndDate(),
         lastlogin: "",
         personal: new mongoose.Schema({
@@ -272,17 +274,18 @@ function extractTotalVal(totals, alltexts) {
             }
         }
 
+        if (total.indexOf("total") >= 0) {
+            totalValue = total.split("total")[1];
+        }
+
         if (total.indexOf("amt") >= 0) {
             totalValue = total.split("amt")[1];
         }
 
         if (total.indexOf("amnt") >= 0) {
             totalValue = total.split("amnt")[1];
-        }
+        }       
         
-        if (total.indexOf("total") >= 0) {
-            totalValue = total.split("total")[1];
-        }
 
         if (total.indexOf("rate") >= 0) {
             totalValue = total.split("rate")[1];
@@ -787,6 +790,7 @@ function loadUserBills(pskey, agent, email, mode) {
             let obj = {};
             obj.account = doc.default;
             obj.controls = doc.privilege;
+            obj.defaultskin = doc.theme;
             obj.isGlobalAdmin = (doc.privilege == "all") ? "yes" : "no";
             if (doc.default == "personal") {
                 obj.user_bills = doc.personal.bills.map(function(bill) {
@@ -827,6 +831,7 @@ function loadUserBills(pskey, agent, email, mode) {
                                     });
                                 }
                             });
+                            console.log("default skin:"+obj.defaultskin);
                             return new Promise((resolve, rej) => resolve({ data: obj }));
                         }
 
@@ -1106,6 +1111,13 @@ function rejectUserBill(pskey, agent, email, bill_id, proj, user) {
     });
 }
 
+function saveDefaultTheme(pskey, agent, email, theme){
+    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
+        doc.theme = theme;
+        doc.save().then(() => new Promise((resolve, rej) => resolve()))
+    });
+}
+
 
 
 function getIndDate() {
@@ -1261,6 +1273,7 @@ app.post("/loadBills", (req, res) => {
     const { em, agent, key_serv, mode, ptype } = req.body;
     loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
         console.log("loaded bills");
+        console.log(d.data.defaultskin);
         res.json({ status: "done", user_data: d.data });
     }).catch(function(s) {
         if (s.status == "notinteam") {
@@ -1395,6 +1408,17 @@ app.post("/chartsload", (req, res) => {
     })
 
 });
+
+app.post("/saveDefaultTheme", (req, res) => {
+    const { em, agent, key_serv, theme } = req.body;
+    saveDefaultTheme(key_serv, agent, getEmail(em), theme).then(() => {
+        res.json({ status: "done" })
+    }).catch(function(err) {        
+        res.json({ status: "invalid" });        
+    })
+
+});
+
 
 app.post("/missingfeature", (req, res) => {
     let mailOptions = {
