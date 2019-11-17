@@ -875,7 +875,7 @@ div#ui-datepicker-div {
 
 .skin1 header{
     background: #533a48;
-    border-bottom: solid 1px #806573;
+    border-bottom: solid 2px #816373
 }
 
 .skin1 .profile_info h2 {
@@ -961,16 +961,17 @@ div#ui-datepicker-div {
 
 
 
+
 /*------------------------------------------------------- */
 
 .skin2 header{
-    background: #454955;
-    border-bottom: solid 1px #b6c58d;
+    background: #1c6e8c;
+    border-bottom: solid 2px #3d5a58;
 }
 
 .skin2 .profile_info h2 {
     border-bottom: 2px solid rgba(92, 83, 92, 0.3);
-    color: #806a82;
+    color: #7a7688;
 }
 
 .skin2 .team-sub-setting {
@@ -983,8 +984,8 @@ div#ui-datepicker-div {
 
 .skin2 .profile_info input,
 .skin2 .profile_info select {
-    color: black;
-    background: #c8ebf8;
+    color: #3f3a3a;
+    background: #ecf1ee;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #fffbfb;
 }
@@ -995,29 +996,30 @@ div#ui-datepicker-div {
 }
 
 .skin2 #settingsBlock {
-    background: #e9eae5;
+    background: #d1e9f1;
 }
 
 .skin2 .content-box, .skin2 section.main {
-    background: #c7efcf;
+    background: #d3d0cf;
 }
 
 .skin2 section.side-nav {
-    background: #fe5f55;
+    background: #97bdca;
 }
 
 .skin2 section.side-nav span {
     color: #2b2b39;
 }
 .skin2 #billTable {
-    background: #eef5db;
+    background: #c1d7df;
 }
 .skin2 #billTable input, .skin2 #billtype {
-    background: #e1f1b5;
+    background: #e5ede8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #ffffff;
     color: #2f2c2c;
 }
+
 
 .skin2 #billTable.static-table input,
 .skin2 #billTable.static-table select
@@ -1028,14 +1030,14 @@ div#ui-datepicker-div {
 }
 
 .skin2 .input-image+label {
-    color: #dedee7;
-    background-color: #d86c65;
+    color: #eae5ff;
+    background-color: #5073f2;
     border-bottom: 1px solid #1d1d23;
 }
 
 .skin2 .thumbnail {
-    border: 3px solid rgba(225, 232, 241, 0.61);
-    background: #eef5db;
+    border: 3px solid #e9f3ed;
+    background: #c1d7df;
 }
 
 .skin2 .thumb-date-bill {
@@ -1052,27 +1054,21 @@ div#ui-datepicker-div {
 
 
 .skin2 .member-fields-disable {
-    color: #9c879c !important;
-    background: #d7e0e2 !important;
+    color: #a2b7aa !important;
+    background: #d1e9f1 !important;
 }
-
-
-
-
-
-
 
 
 /*------------------------------------------------------- */
 
 .skin3 header{
-    background: #3f5c5b;
-    border-bottom: solid 1px #2c403f;
+    background: #454955;
+    border-bottom: solid 2px #e8f0e0;
 }
 
 .skin3 .profile_info h2 {
     border-bottom: 2px solid rgba(92, 83, 92, 0.3);
-    color: #6c7a71;
+    color: #806a82;
 }
 
 .skin3 .team-sub-setting {
@@ -1085,8 +1081,8 @@ div#ui-datepicker-div {
 
 .skin3 .profile_info input,
 .skin3 .profile_info select {
-    color: #3f3a3a;
-    background: #a4b9ac;
+    color: black;
+    background: #c8ebf8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #fffbfb;
 }
@@ -1097,27 +1093,27 @@ div#ui-datepicker-div {
 }
 
 .skin3 #settingsBlock {
-    background: #bad0c2;
+    background: #e9eae5;
 }
 
 .skin3 .content-box, .skin3 section.main {
-    background: #586b5f;
+    background: #c7efcf;
 }
 
 .skin3 section.side-nav {
-    background: #89a894;
+    background: #fe5f55;
 }
 
 .skin3 section.side-nav span {
     color: #2b2b39;
 }
 .skin3 #billTable {
-    background: #bad0c2;
+    background: #eef5db;
 }
 .skin3 #billTable input, .skin3 #billtype {
-    background: #a4b9ac;
+    background: #e1f1b5;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #eddcdc;
+    border-bottom: 2px solid #ffffff;
     color: #2f2c2c;
 }
 
@@ -1130,14 +1126,14 @@ div#ui-datepicker-div {
 }
 
 .skin3 .input-image+label {
-    color: #e3b8b8;
-    background-color: #9a8282;
+    color: #dedee7;
+    background-color: #d86c65;
     border-bottom: 1px solid #1d1d23;
 }
 
 .skin3 .thumbnail {
-    border: 3px solid #b9d5c4;
-    background: #9eb7a7;
+    border: 3px solid rgba(225, 232, 241, 0.61);
+    background: #eef5db;
 }
 
 .skin3 .thumb-date-bill {
@@ -1154,14 +1150,9 @@ div#ui-datepicker-div {
 
 
 .skin3 .member-fields-disable {
-    color: #92a69a !important;
-    background: #b9d0c2 !important;
+    color: #9c879c !important;
+    background: #d7e0e2 !important;
 }
-
-
-
-
-
 
 
 
@@ -1170,17 +1161,18 @@ div#ui-datepicker-div {
 /*------------------------------------------------------- */
 
 .skin4 header{
-    background: #1c6e8c;
-    border-bottom: solid 1px #2c403f;
+    background: #6a152a;
+    border-bottom: solid 3px #b7414d;
 }
 
+
 .skin4 .profile_info h2 {
-    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
-    color: #7a7688;
+    border-bottom: 2px solid rgb(181, 123, 84);
+    color: #295b35;
 }
 
 .skin4 .team-sub-setting {
-    background: #d8dae4;
+    background: #f1bd82;
 }
 
 .skin4 #addUserPanel>p {
@@ -1190,38 +1182,38 @@ div#ui-datepicker-div {
 .skin4 .profile_info input,
 .skin4 .profile_info select {
     color: #3f3a3a;
-    background: #ecf1ee;
+    background: #e3bf99;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #fffbfb;
+    border-bottom: 2px solid #e8ccac;
 }
 
 .skin4 #profile_img_browse+label,
 .skin4 #team_img_browse+label {
-    background-color: #4d6bd9;
+        background-color: #693f22;
 }
 
 .skin4 #settingsBlock {
-    background: #d1e9f1;
+    background: #fa6477;
 }
 
 .skin4 .content-box, .skin4 section.main {
-    background: #d3d0cf;
+    background: #c52233;
 }
 
 .skin4 section.side-nav {
-    background: #97bdca;
+    background: #f13b52;
 }
 
 .skin4 section.side-nav span {
     color: #2b2b39;
 }
 .skin4 #billTable {
-    background: #c1d7df;
+    background: #f3848f;
 }
 .skin4 #billTable input, .skin4 #billtype {
-    background: #e5ede8;
+    background: #f2b9bf;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #ffffff;
+    border-bottom: 2px solid #eec69c;
     color: #2f2c2c;
 }
 
@@ -1229,39 +1221,47 @@ div#ui-datepicker-div {
 .skin4 #billTable.static-table input,
 .skin4 #billTable.static-table select
 {
-    color: #b29898 !important;
-    background: #dadecd !important;
-
+    color: #d25c68 !important;
+    background: #f3848f !important;
 }
 
 .skin4 .input-image+label {
-    color: #eae5ff;
-    background-color: #5073f2;
+    color: #c0813b;
+    background-color: #a6091d;
     border-bottom: 1px solid #1d1d23;
 }
 
 .skin4 .thumbnail {
-    border: 3px solid #e9f3ed;
-    background: #c1d7df;
+    border: 3px solid #d11c2f;
+    background: #b50e20;
 }
 
 .skin4 .thumb-date-bill {
-    color: #3d3737;
+    color: #d15565;
+}
+
+.skin4 .thumb-title-bill, .skin4 .thumb-date-submit, .skin  {
+    color: #e56576;
 }
 
 .skin4 .amount-thumb {
-    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+    color: #d11919;
+    box-shadow: inset 1px 1px 4px 1px #000;
 }
 
 .skin4 #saveCloseSetting{
-    border-top: 2px solid rgba(92, 83, 92, 0.3);
+    border-top: 2px solid rgba(174, 112, 70, 0.57);
 }
 
 
 .skin4 .member-fields-disable {
-    color: #a2b7aa !important;
-    background: #d1e9f1 !important;
+    color: #2ca95d !important;
+    background: #6fce85 !important;
 }
+
+
+
+
 
 
 
@@ -1275,26 +1275,17 @@ div#ui-datepicker-div {
 /*------------------------------------------------------- */
 
 .skin5 header{
-    background: #8dad95;
-    border-bottom: solid 3px #85a28c;
-}
-
-.skin5 #projectNameHead{
-    border: 1px solid #3a5340;
-    color: #e1e2ef
-}
-
-.skin5 #projectNameHead b {
-    color: #5a5966;
+    background: #3f5c5b;
+    border-bottom: solid 1px #2c403f;
 }
 
 .skin5 .profile_info h2 {
     border-bottom: 2px solid rgba(92, 83, 92, 0.3);
-    color: #597660;
+    color: #6c7a71;
 }
 
 .skin5 .team-sub-setting {
-    background: #9ecaa9;
+    background: #d8dae4;
 }
 
 .skin5 #addUserPanel>p {
@@ -1304,7 +1295,7 @@ div#ui-datepicker-div {
 .skin5 .profile_info input,
 .skin5 .profile_info select {
     color: #3f3a3a;
-    background: #d7f1de;
+    background: #a4b9ac;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #fffbfb;
 }
@@ -1315,30 +1306,29 @@ div#ui-datepicker-div {
 }
 
 .skin5 #settingsBlock {
-    background: #b0d8ba;
+    background: #bad0c2;
 }
 
 .skin5 .content-box, .skin5 section.main {
-    background: #a8c5af;
+    background: #586b5f;
 }
 
 .skin5 section.side-nav {
-    background: #c1edcc;
+    background: #89a894;
 }
 
 .skin5 section.side-nav span {
     color: #2b2b39;
 }
 .skin5 #billTable {
-    background: #b9d3bf;
+    background: #bad0c2;
 }
 .skin5 #billTable input, .skin5 #billtype {
-    background: #e5ede8;
+    background: #a4b9ac;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #e3e0e0;
+    border-bottom: 2px solid #eddcdc;
     color: #2f2c2c;
 }
-
 
 .skin5 #billTable.static-table input,
 .skin5 #billTable.static-table select
@@ -1349,14 +1339,14 @@ div#ui-datepicker-div {
 }
 
 .skin5 .input-image+label {
-    color: #e9d8d0;
-    background-color: #837f7d;
+    color: #e3b8b8;
+    background-color: #9a8282;
     border-bottom: 1px solid #1d1d23;
 }
 
 .skin5 .thumbnail {
-    border: 3px solid #cde1d1;
-    background: #b9d3bf;
+    border: 3px solid #b9d5c4;
+    background: #9eb7a7;
 }
 
 .skin5 .thumb-date-bill {
@@ -1373,9 +1363,10 @@ div#ui-datepicker-div {
 
 
 .skin5 .member-fields-disable {
-    color: #81988a !important;
-    background: #9fceaa !important;
+    color: #92a69a !important;
+    background: #b9d0c2 !important;
 }
+
 
 
 
@@ -1384,14 +1375,22 @@ div#ui-datepicker-div {
 /*------------------------------------------------------- */
 
 .skin6 header{
-    background: #4d2a2d;
-    border-bottom: solid 3px #b06615;
+    background: #617867;
+    border-bottom: solid 3px #4f6655;
 }
 
+.skin6 #projectNameHead{
+    border: 1px solid #3a5340;
+    color: #e1e2ef
+}
+
+.skin6 #projectNameHead b {
+    color: #9cb8a4;
+}
 
 .skin6 .profile_info h2 {
-    border-bottom: 2px solid rgba(174, 112, 70, 0.57);
-    color: #295b35;
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
+    color: #597660;
 }
 
 .skin6 .team-sub-setting {
@@ -1412,29 +1411,29 @@ div#ui-datepicker-div {
 
 .skin6 #profile_img_browse+label,
 .skin6 #team_img_browse+label {
-    background-color: #995c33;
+    background-color: #4d6bd9;
 }
 
 .skin6 #settingsBlock {
-    background: #cd9773;
+    background: #b0d8ba;
 }
 
 .skin6 .content-box, .skin6 section.main {
-    background: #d58936;
+    background: #a8c5af;
 }
 
 .skin6 section.side-nav {
-    background: #fff94f;
+    background: #c1edcc;
 }
 
 .skin6 section.side-nav span {
     color: #2b2b39;
 }
 .skin6 #billTable {
-    background: #eba151;
+    background: #b9d3bf;
 }
 .skin6 #billTable input, .skin6 #billtype {
-    background: #f4cca0;
+    background: #e5ede8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #e3e0e0;
     color: #2f2c2c;
@@ -1450,14 +1449,14 @@ div#ui-datepicker-div {
 }
 
 .skin6 .input-image+label {
-    color: #e9bb87;
-    background-color: #b55f02;
+    color: #e9d8d0;
+    background-color: #837f7d;
     border-bottom: 1px solid #1d1d23;
 }
 
 .skin6 .thumbnail {
-    border: 3px solid #e3ad89;
-    background: #cd9773;
+    border: 3px solid #cde1d1;
+    background: #b9d3bf;
 }
 
 .skin6 .thumb-date-bill {
@@ -1469,7 +1468,7 @@ div#ui-datepicker-div {
 }
 
 .skin6 #saveCloseSetting{
-    border-top: 2px solid rgba(174, 112, 70, 0.57);
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
 
@@ -1477,3 +1476,214 @@ div#ui-datepicker-div {
     color: #81988a !important;
     background: #9fceaa !important;
 }
+
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin7 header{
+    background: #4d2a2d;
+    border-bottom: solid 3px #311c05;
+}
+
+
+.skin7 .profile_info h2 {
+    border-bottom: 2px solid rgba(174, 112, 70, 0.57);
+    color: #295b35;
+}
+
+.skin7 .team-sub-setting {
+    background: #9ecaa9;
+}
+
+.skin7 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin7 .profile_info input,
+.skin7 .profile_info select {
+    color: #3f3a3a;
+    background: #d7f1de;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #fffbfb;
+}
+
+.skin7 #profile_img_browse+label,
+.skin7 #team_img_browse+label {
+    background-color: #995c33;
+}
+
+.skin7 #settingsBlock {
+    background: #cd9773;
+}
+
+.skin7 .content-box, .skin7 section.main {
+    background: #d58936;
+}
+
+.skin7 section.side-nav {
+    background: #fff94f;
+}
+
+.skin7 section.side-nav span {
+    color: #2b2b39;
+}
+.skin7 #billTable {
+    background: #eba151;
+}
+.skin7 #billTable input, .skin7 #billtype {
+    background: #f4cca0;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #e3e0e0;
+    color: #2f2c2c;
+}
+
+
+.skin7 #billTable.static-table input,
+.skin7 #billTable.static-table select
+{
+    color: #b29898 !important;
+    background: #dadecd !important;
+
+}
+
+.skin7 .input-image+label {
+    color: #e9bb87;
+    background-color: #b55f02;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin7 .thumbnail {
+    border: 3px solid #e3ad89;
+    background: #cd9773;
+}
+
+.skin7 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin7 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin7 #saveCloseSetting{
+    border-top: 2px solid rgba(174, 112, 70, 0.57);
+}
+
+
+.skin7 .member-fields-disable {
+    color: #81988a !important;
+    background: #9fceaa !important;
+}
+
+
+
+
+
+
+
+
+/*------------------------------------------------------- */
+
+.skin8 header{
+    background: #ac0b18;
+    border-bottom: solid 3px #623a0b;
+}
+
+
+.skin8 .profile_info h2 {
+    border-bottom: 2px solid rgba(174, 112, 70, 0.57);
+    color: #295b35;
+}
+
+.skin8 .team-sub-setting {
+    background: #f1bd82;
+}
+
+.skin8 #addUserPanel>p {
+    color: #484d66;x
+}
+
+.skin8 .table-head{
+    color: #90591d
+}
+
+.skin8 .profile_info input,
+.skin8 .profile_info select {
+    color: #3f3a3a;
+    background: #e3bf99;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #e8ccac;
+}
+
+.skin8 #profile_img_browse+label,
+.skin8 #team_img_browse+label {
+    background-color: #995c33;
+}
+
+.skin8 #settingsBlock {
+    background: #e7ae70;
+}
+
+.skin8 .content-box, .skin8 section.main {
+    background: #d89f62;
+}
+
+.skin8 section.side-nav {
+    background: #dbd64e;
+}
+
+.skin8 section.side-nav span {
+    color: #2b2b39;
+}
+.skin8 #billTable {
+    background: #e7ae70;
+}
+.skin8 #billTable input, .skin8 #billtype {
+    background: #ecc79e;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #eec69c;
+    color: #2f2c2c;
+}
+
+
+.skin8 #billTable.static-table input,
+.skin8 #billTable.static-table select
+{
+    color: #a3713a !important;
+    background: #dfa565 !important;
+}
+
+.skin8 .input-image+label {
+    color: #dfa564;
+    background-color: #7f5425;
+    border-bottom: 1px solid #1d1d23;
+}
+
+.skin8 .thumbnail {
+    border: 3px solid #e3ad89;
+    background: #e2c3a2;
+}
+
+.skin8 .thumb-date-bill {
+    color: #3d3737;
+}
+
+.skin8 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+}
+
+.skin8 #saveCloseSetting{
+    border-top: 2px solid rgba(174, 112, 70, 0.57);
+}
+
+
+.skin8 .member-fields-disable {
+    color: #2ca95d !important;
+    background: #6fce85 !important;
+}
+
+
+
