@@ -78,8 +78,12 @@ header_layout.addEventListener("click", function() {
 });
 
 let themeChanged = false;
-let themeName = "";
 let themeTrackInterval;
+
+let themeName = localStorage.getItem("theme") || "";
+if(themeName != ""){
+    document.querySelector("body").setAttribute("class", themeName);
+} 
 
 themechooser.addEventListener("click", function() {
     themeChanged = true;
@@ -107,7 +111,6 @@ themechooser.addEventListener("click", function() {
 
 function themeUpdateTracker() {
     if (themeChanged) {
-        console.log("interval call:"+themeTrackInterval);
         themeChanged = false;
        showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
     }
@@ -116,8 +119,9 @@ function themeUpdateTracker() {
 function saveTheme() {
     fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
         .then(dat => dat.json())
-        .then(txtjson => {
+        .then(() => {
             showAlertBox("Default Theme Saved!", "OK", null, false);
+            localStorage.setItem("theme",themeName);
         }).catch(function(s) {
             console.log("theme failed");
         });
@@ -423,6 +427,7 @@ function fetchBills() {
                     teamAcRights = res.user_data.controls;                    
                     globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
                     document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
+                    localStorage.setItem("theme",res.user_data.defaultskin);
                     showAlertBox("You are not in any Project", "OK", null, false);
                     preloader.classList.add("hide");
                 }
