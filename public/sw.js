@@ -1,11 +1,10 @@
-const staticCacheName = 'billvault-static-v06';
-const dynamicCacheName = 'billvault-dynamic-v06';
+const staticCacheName = 'billvault-static-v07';
+const dynamicCacheName = 'billvault-dynamic-v07';
 const assets = [ 
   '/',
   '/home', 
   '/css/styles-home.css',
   '/css/styles-login.css',
-  '/css/spinner.css',
   '/css/resets.css',
   '/login.html',
   '/home.html',
