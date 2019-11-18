@@ -440,6 +440,7 @@ function fetchBills() {
                     teamAcRights = res.user_data.controls;
                     globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
                     document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
+                    localStorage.setItem("theme",res.user_data.defaultskin);
                     if (userAcType == "team") {
                         selectedProjectID = res.user_data.activeProjectID || "";
                         projectMemberRole = res.user_data.role || "";
@@ -1917,3 +1918,9 @@ if (initAuthState == "") {
 if (initAuthState == "done") {
     initLoad();
 }
+
+window.addEventListener("resize", function(){
+    document.querySelector(".content-box").style.minheight = (window.innerHeight - document.querySelector("header").offsetHeight)+"px"
+})
+
+document.querySelector(".content-box").style.minHeight = (window.innerHeight - document.querySelector("header").offsetHeight)+"px"

@@ -250,8 +250,10 @@ header img {
 }
 
 .lds-roller {
-    display: block;
-    margin: auto
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 35px;
 }
 
 
@@ -443,6 +445,7 @@ p.tip-info {
 
 .bill-status-approval.hide,
 .bill-status.hide,
+.lds-roller.hide,
 #projectsList.hide,
 #user_setting_link.hide,
 #mainStatusCancel.hide,
@@ -866,6 +869,28 @@ div#ui-datepicker-div {
 
     .thumb-img img {
         width: 220px;
+    }
+}
+
+.loader-circ-path {
+    height: 30px;
+    width: 30px;
+    color: rgba(37, 36, 36, 0.67);
+    position: relative;
+    display: inline-block;
+    border: 4px solid;
+    border-radius: 50%;
+    border-right-color: #ada6a6;
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
     }
 }
 
