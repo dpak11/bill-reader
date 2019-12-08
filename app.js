@@ -284,13 +284,13 @@ function extractTotalVal(totals, alltexts) {
 
         if (total.indexOf("amnt") >= 0) {
             totalValue = total.split("amnt")[1];
-        }       
-        
+        }
+
 
         if (total.indexOf("rate") >= 0) {
             totalValue = total.split("rate")[1];
         }
-        
+
         if (total.indexOf("amount") >= 0) {
             totalValue = total.split("amount")[1];
         }
@@ -446,6 +446,50 @@ function userAuthenticate(pskey, agent, email, mode) {
         })
 
     }
+
+}
+
+function loadProjectMembers(pskey, agent, email, proj) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            return Teams.find({ teamid: proj }).exec().then(myteam => {
+                let myrole = myteam.filter(m => m.user_email == email)[0].role;
+                let approvers = myteam.map(t => {
+                    if (t.role == "manager" || t.role == "admin") {
+                        return t.user_email;
+                    }
+                    return false;
+                }).filter(f => f != false);
+                let list = myteam.map(tm => {
+                    if (myrole == "manager") {
+                        if (tm.approver == email) {
+                            return {
+                                role: tm.role,
+                                member: tm.user_email,
+                                approver: tm.approver
+                            }
+                        }
+                        return false;
+                    }
+                    if (myrole == "admin" && tm.role != "admin") {
+                        return {
+                            role: tm.role,
+                            member: tm.user_email,
+                            approver: tm.approver
+                        }
+                    }
+                    return false;
+                }).filter(f => f != false);
+
+                return new Promise((resolve, rej) => resolve({ data: JSON.stringify({ approvers: approvers, teamlist: list }) }));
+
+            });
+
+        }
+    });
 
 }
 
@@ -831,7 +875,6 @@ function loadUserBills(pskey, agent, email, mode) {
                                     });
                                 }
                             });
-                            console.log("default skin:"+obj.defaultskin);
                             return new Promise((resolve, rej) => resolve({ data: obj }));
                         }
 
@@ -1047,7 +1090,7 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
                 if (teamdoc == null || teamdoc.length == 0) {
                     return new Promise((resolve, rej) => rej());
                 } else {
-                    
+
                     teamdoc.bills.map(bill => {
                         if (bill.billid === bill_id) {
                             let modDate = getIndDate();
@@ -1111,7 +1154,7 @@ function rejectUserBill(pskey, agent, email, bill_id, proj, user) {
     });
 }
 
-function saveDefaultTheme(pskey, agent, email, theme){
+function saveDefaultTheme(pskey, agent, email, theme) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
         doc.theme = theme;
         doc.save().then(() => new Promise((resolve, rej) => resolve()))
@@ -1273,7 +1316,6 @@ app.post("/loadBills", (req, res) => {
     const { em, agent, key_serv, mode, ptype } = req.body;
     loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
         console.log("loaded bills");
-        console.log(d.data.defaultskin);
         res.json({ status: "done", user_data: d.data });
     }).catch(function(s) {
         if (s.status == "notinteam") {
@@ -1330,6 +1372,8 @@ app.post("/approveRejectBill", (req, res) => {
 
 });
 
+
+
 app.post("/settingsload", (req, res) => {
     const { em, agent, key_serv } = req.body;
     loadSettingsData(key_serv, agent, getEmail(em)).then(d => {
@@ -1347,6 +1391,16 @@ app.post("/settingsave", (req, res) => {
     }).catch(function() {
         res.json({ status: "invalid" });
     });
+
+});
+
+app.post("/getProjMembers", (req, res) => {
+    const { em, agent, key_serv, project } = req.body;
+    loadProjectMembers(key_serv, agent, getEmail(em), project).then(d => {
+        res.json({ status: "done", team: d.data })
+    }).catch(function() {
+        res.json({ status: "invalid" });
+    })
 
 });
 
@@ -1400,9 +1454,9 @@ app.post("/chartsload", (req, res) => {
     loadChartsData(key_serv, agent, getEmail(em), persTeam).then(c => {
         res.json({ status: "done", chartdata: c.chartdata })
     }).catch(function(err) {
-        if(err == "nochartdata"){
-            res.json({status:"nochart"})
-        }else{
+        if (err == "nochartdata") {
+            res.json({ status: "nochart" })
+        } else {
             res.json({ status: "invalid" });
         }
     })
@@ -1413,8 +1467,8 @@ app.post("/saveDefaultTheme", (req, res) => {
     const { em, agent, key_serv, theme } = req.body;
     saveDefaultTheme(key_serv, agent, getEmail(em), theme).then(() => {
         res.json({ status: "done" })
-    }).catch(function(err) {        
-        res.json({ status: "invalid" });        
+    }).catch(function(err) {
+        res.json({ status: "invalid" });
     })
 
 });

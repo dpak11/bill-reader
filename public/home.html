@@ -110,7 +110,7 @@
                                 <option value="personal">Personal Account</option>
                             </select>
                         </p>
-                        <p class="tip-info hide">You are currently logged into your <span id="active_account_txt"></span> Account. After Saving the changes, you will be automatically logged into <span id="new_account_txt"></span> Account</p>
+                        <p class="tip-info hide">You are currently logged into your <span id="active_account_txt"></span> Account. Save you changes to automatically log into <span id="new_account_txt"></span> Account</p>
                         <p id="saveCloseSetting" style="margin-top: 50px">
                             <span class="btn" id="savesettings" style="margin-right: 20px">Save</span>
                             <span class="btn" id="closesettings">Close</span>
@@ -128,6 +128,7 @@
                                 <label for="myProject_select">Select Default Project</label>
                                 <select name="myProject_select" id="myProject_select">
                                 </select>
+                                <span class="btn btn-editproj" id="editProject" style="margin-left: 20px">Edit Project</span>
                             </p>
                         </div>
                         <div id="teamDetailsSection" class="hide">
@@ -144,10 +145,17 @@
                             <div id="addUserPanel" class="team-sub-setting hide">
                                 <div id="newMemberPanelBody"></div>
                                 <p>
-                                    <b>Roles:</b><br>
-                                    - A Manager can Add or Delete a member from the Team. A manager can approve Bills of a Member or other Managers<br><br>
-                                    - An Admin can Add or Delete Members and Managers from the Team. Admin can modify the Roles of Managers and Members. Admin alone has access to modify the Logo and Name of the Team.<br><br>
-                                    - Members can submit their Bills to their respective Managers for approval.
+                                    <b>Roles of Manager:</b><br><br>
+                                    - Manager can approve/reject bills of members or other managers who are assigned under him/her for approval<br>
+                                    - Manager can (re)assign a member to other Managers(or Admin) for bill approval. <br><br>
+
+                                    <b>Roles of Admin:</b><br><br>
+                                    - Admin can approve/reject bills of members or other managers who are assigned under him/her for approval<br>
+                                    - Admin can (re)assign a member to other Managers for bill approval. <br>
+                                    - Admin can self-approve his/her bills.<br>
+                                    - Admin can Add or Delete Members from the Project. <br>
+                                    - Admin can change the Roles of Managers and Members in a Project. <br>
+                                    - Admin has access to modify the Logo and Name of the Project.
                                 </p>
                             </div>
                             <div>
@@ -155,6 +163,20 @@
                             </div>
                         </div>
                         <span class="btn" id="createNewTeam" style="margin-right: 20px">Create Project</span>
+                        <div id="modifyProjectMembers" class="team-sub-setting hide">
+                            <h5></h5>
+                            <p><img id="teamlogoImgModify" src="images/user.png"><br>
+                                    <input class="input-image" type="file" id="team_imgEdit" accept="image/*" />
+                                    <label for="team_imgEdit">Upload Logo</label>
+                            </p>
+                            <p>
+                                <label for="displayteamname_edit">Project Name</label>
+                                <input type="text" id="displayteamname_edit">
+                            </p>
+                            <div id="editProjMembersPanel">
+                              <p id="addmemberEdit" class="btn">+</p>  
+                            </div>
+                        </div>
                     </div>
                 </section>
             </section>

@@ -37,7 +37,7 @@ header img {
 }
 
 .hide {
-    display: none
+    display: none !important
 }
 
 .btn {
@@ -86,6 +86,16 @@ header img {
     color:#8883c5;
 }
 
+#addmemberEdit{
+    margin-top: 5px;
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #fff;
+
+}
 .team-sub-setting {
     /* border: 1px solid #697b9c; */
     padding: 20px;
@@ -104,16 +114,26 @@ header img {
     width: 95%
 }
 
+#editProjMembersPanel{
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
 
 .profile_info p:nth-child(3),
-.team-sub-setting:nth-child(1)>p:nth-child(1) {
+.team-sub-setting:nth-child(1)>p:nth-child(1)
+ {
     margin-bottom: 50px;
     width: 270px;
     text-align: center;
 }
 
 .team-sub-setting:nth-child(1)>p:nth-child(1),
-.team-sub-setting:nth-child(1)>p:nth-child(2) {
+.team-sub-setting:nth-child(1)>p:nth-child(2),
+#modifyProjectMembers > p:nth-child(2),
+#modifyProjectMembers > p:nth-child(3)
+ {
     width: 100%;
     text-align: center
 }
@@ -135,7 +155,9 @@ header img {
 }
 
 #profile_img_browse+label,
-#team_img_browse+label {
+#team_img_browse+label,
+#team_imgEdit+label
+ {
     padding: 5px;
     font-size: 1em;
     background-color: #8792ba;
@@ -173,13 +195,20 @@ header img {
     padding: 15px 5px;
 }
 
-.newuserGroup span {
+.newuserGroup span, .edituserGroup span {
     padding-bottom: 10px;
     display: inline-block;
 }
 .member-fields-disable{
     color: #a78ca7 !important;
     background: #b0cfd8 !important;
+}
+
+.edituserGroup {
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    padding: 10px 15px;
+    border-radius: 7px;
+    margin-bottom: 8px;
 }
 
 #team_setting_link,
@@ -697,6 +726,20 @@ span.pick-amount{
     border-radius: 5px;
 }
 
+#modifyProjectMembers{
+    margin-top: 20px;
+    padding: 0;
+}
+
+#modifyProjectMembers h5{
+    margin: 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.6);
+    letter-spacing: 1px;
+    border-radius: 8px 8px 0 0;
+}
+
 div#ui-datepicker-div {
     z-index: 7 !important;
 }
@@ -708,10 +751,27 @@ div#ui-datepicker-div {
     display: none
 }
 
+.btn-editproj{
+    padding: 4px 8px;
+    font-size: .8em;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 255, 0.5);
+}
+
 #saveCloseSetting{
     margin-top: 60px;
     padding-top: 20px;
     border-top: 1px solid #4b70a9;
+}
+
+
+#editProjMembersPanel input,
+#editProjMembersPanel select {
+    width: 200px;
+}
+
+.edituserGroup{
+    width: 45%
 }
 
 
@@ -740,6 +800,14 @@ div#ui-datepicker-div {
 
     #billTable select {
         width: 95%;
+    }
+     .edituserGroup{
+        width: 90%
+    }
+    
+    #editProjMembersPanel input,
+    #editProjMembersPanel select {
+        width: 98%;
     }
 
 }
@@ -924,7 +992,8 @@ div#ui-datepicker-div {
 }
 
 .skin1 #profile_img_browse+label,
-.skin1 #team_img_browse+label {
+.skin1 #team_img_browse+label,
+.skin1 #team_imgEdit+label {
     background-color: #4d6bd9;
 }
 
@@ -1016,7 +1085,8 @@ div#ui-datepicker-div {
 }
 
 .skin2 #profile_img_browse+label,
-.skin2 #team_img_browse+label {
+.skin2 #team_img_browse+label,
+.skin2 #team_imgEdit+label {
     background-color: #4d6bd9;
 }
 
@@ -1113,7 +1183,8 @@ div#ui-datepicker-div {
 }
 
 .skin3 #profile_img_browse+label,
-.skin3 #team_img_browse+label {
+.skin3 #team_img_browse+label,
+.skin3 #team_imgEdit+label {
     background-color: #4d6bd9;
 }
 
@@ -1213,7 +1284,8 @@ div#ui-datepicker-div {
 }
 
 .skin4 #profile_img_browse+label,
-.skin4 #team_img_browse+label {
+.skin4 #team_img_browse+label,
+.skin4 #team_imgEdit+label {
         background-color: #693f22;
 }
 
@@ -1326,7 +1398,8 @@ div#ui-datepicker-div {
 }
 
 .skin5 #profile_img_browse+label,
-.skin5 #team_img_browse+label {
+.skin5 #team_img_browse+label,
+.skin5 #team_imgEdit+label {
     background-color: #4d6bd9;
 }
 
@@ -1435,7 +1508,9 @@ div#ui-datepicker-div {
 }
 
 .skin6 #profile_img_browse+label,
-.skin6 #team_img_browse+label {
+.skin6 #team_img_browse+label,
+.skin6 #team_imgEdit+label
+ {
     background-color: #4d6bd9;
 }
 
@@ -1536,7 +1611,8 @@ div#ui-datepicker-div {
 }
 
 .skin7 #profile_img_browse+label,
-.skin7 #team_img_browse+label {
+.skin7 #team_img_browse+label,
+.skin7 #team_imgEdit+label {
     background-color: #995c33;
 }
 
@@ -1644,7 +1720,8 @@ div#ui-datepicker-div {
 }
 
 .skin8 #profile_img_browse+label,
-.skin8 #team_img_browse+label {
+.skin8 #team_img_browse+label,
+.skin8 #team_imgEdit+label {
     background-color: #995c33;
 }
 

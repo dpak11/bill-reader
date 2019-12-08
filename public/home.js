@@ -81,9 +81,9 @@ let themeChanged = false;
 let themeTrackInterval;
 
 let themeName = localStorage.getItem("theme") || "";
-if(themeName != ""){
+if (themeName != "") {
     document.querySelector("body").setAttribute("class", themeName);
-} 
+}
 
 themechooser.addEventListener("click", function() {
     themeChanged = true;
@@ -112,7 +112,7 @@ themechooser.addEventListener("click", function() {
 function themeUpdateTracker() {
     if (themeChanged) {
         themeChanged = false;
-       showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
+        showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
     }
 }
 
@@ -121,7 +121,7 @@ function saveTheme() {
         .then(dat => dat.json())
         .then(() => {
             showAlertBox("Default Theme Saved!", "OK", null, false);
-            localStorage.setItem("theme",themeName);
+            localStorage.setItem("theme", themeName);
         }).catch(function(s) {
             console.log("theme failed");
         });
@@ -424,10 +424,10 @@ function fetchBills() {
                 }
                 if (res.status == "notinteam") {
                     userAcType = res.user_data.account;
-                    teamAcRights = res.user_data.controls;                    
+                    teamAcRights = res.user_data.controls;
                     globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
                     document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
-                    localStorage.setItem("theme",res.user_data.defaultskin);
+                    localStorage.setItem("theme", res.user_data.defaultskin);
                     showAlertBox("You are not in any Project", "OK", null, false);
                     preloader.classList.add("hide");
                 }
@@ -440,7 +440,7 @@ function fetchBills() {
                     teamAcRights = res.user_data.controls;
                     globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
                     document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
-                    localStorage.setItem("theme",res.user_data.defaultskin);
+                    localStorage.setItem("theme", res.user_data.defaultskin);
                     if (userAcType == "team") {
                         selectedProjectID = res.user_data.activeProjectID || "";
                         projectMemberRole = res.user_data.role || "";
@@ -952,6 +952,7 @@ exitBillBtn.addEventListener("click", function() {
 let settingsBtn = document.getElementById("settings");
 let profileImgBtn = document.getElementById("profile_img_browse");
 let teamImgBtn = document.getElementById("team_img_browse");
+let teamImgEditBtn = document.getElementById("team_imgEdit");
 let savesettingsBtn = document.getElementById("savesettings");
 let closesettingsBtn = document.getElementById("closesettings");
 let saveCloseSetting = document.getElementById("saveCloseSetting");
@@ -960,14 +961,15 @@ let userSettingLink = document.getElementById("user_setting_link");
 let teamSettingLink = document.getElementById("team_setting_link");
 let createNewTeamBtn = document.getElementById("createNewTeam");
 let addNewMemberProjBtn = document.getElementById("addNewMemberProj");
+let projectNameHead = document.getElementById("projectNameHead");
 let projectsListBlock = document.getElementById("projectsList");
 let myProjectSelect = document.getElementById("myProject_select");
-let projectNameHead = document.getElementById("projectNameHead");
+let editProjectBtn = document.getElementById("editProject");
+let addmemberEditBtn = document.getElementById("addmemberEdit");
 let enableAddNewMember = false;
 let isProfilePicModified = false;
 let saveSettingEnabled = false;
 let initAccountVals = { name: "", type: "", projchange: false };
-
 
 
 settingsBtn.addEventListener("click", function() {
@@ -990,21 +992,43 @@ settingsBtn.addEventListener("click", function() {
 });
 
 
+editProjectBtn.addEventListener("click", function() {
+    editProjectBtn.innerText = "please wait...";
+    editProjectBtn.classList.add("saving-state");
+    editProjectBtn.classList.remove("btn");
+    editProjectBtn.classList.remove("btn-editproj");
+    getMembersList()
+
+});
+
+addmemberEditBtn.addEventListener("click", function() {
+
+
+});
+
+
 
 profileImgBtn.addEventListener('change', () => {
-    attachProfileImage(profileImgBtn.files[0], "userimage");
+    attachProfileImage(profileImgBtn.files[0], "userimage", null);
 
 });
 
 
 teamImgBtn.addEventListener('change', () => {
-    attachProfileImage(teamImgBtn.files[0], "logo");
+    attachProfileImage(teamImgBtn.files[0], "logo", "teamlogoImg");
+
+});
+
+
+teamImgEditBtn.addEventListener('change', () => {
+    attachProfileImage(teamImgEditBtn.files[0], "logo", "teamlogoImgModify");
 
 });
 
 
 
-function attachProfileImage(imgfile, logoprofile) {
+
+function attachProfileImage(imgfile, logoprofile, logoholder) {
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 1) {
@@ -1024,7 +1048,7 @@ function attachProfileImage(imgfile, logoprofile) {
                 if (tempImg.width > 196 || tempImg.heigth > 100 || tempImg.width < 150) {
                     showAlertBox("Logo Dimension must be 196 X 100", "OK", null, false);
                 } else {
-                    document.getElementById("teamlogoImg").src = srcData;
+                    document.getElementById(logoholder).src = srcData;
                 }
             }
         }
@@ -1043,7 +1067,112 @@ function attachProfileImage(imgfile, logoprofile) {
     }
 }
 
+function removeProjMember(evt){
+    let parentDiv = evt.currentTarget.parentNode;
+    let member = parentDiv.getAttribute("data-memberemail");
+    showAlertBox(`Deleting "${member}" from Project...`, "", null, false);    
+    fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }, {member: member}])) })
+        .then(data => data.json())
+        .then(function(p) {
+            mainStatusOK.classList.remove("hide");
+            if (p.status == "removed") {
+               parentDiv.remove();
+               mainStatusOK.click(); 
+            }
+            if(p.status == "denied"){
+                mainStatusOK.click();
+                setTimeout(function(){
+                    showAlertBox(`Can not delete Member whose bills are approved`, "OK", null, false); 
+                },1500);
+                
+            }
+        }).catch(err => {
+            mainStatusOK.classList.remove("hide");
+        })
+}
 
+
+function getMembersList() {
+
+    fetch("../getProjMembers/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }])) })
+        .then(data => data.json())
+        .then(function(p) {
+            if (p.status == "done") {
+                editProjectBtn.innerText = "Edit Project";
+                editProjectBtn.classList.remove("saving-state");
+                editProjectBtn.classList.add("btn");
+                editProjectBtn.classList.add("btn-editproj");
+                editProjectBtn.classList.add("hide");
+                document.getElementById("modifyProjectMembers").classList.remove("hide");
+                document.getElementById("displayteamname_edit").value = selectedProjectName;
+                document.querySelector("#modifyProjectMembers h5").innerText = "Edit Project ("+selectedProjectName+")";
+                let team = JSON.parse(p.team);                
+                let deleteBtnTag = (teamAcRights == "all") ? `<span class="deletemember btn" style="background:red;width:auto">Delete</span>` : "&nbsp;";
+                
+                team.teamlist.forEach(tl => {
+                    let selected = (tl.role == "member") ? `<option value="member">Member</option><option value="manager">Manager</option>` : `<option value="manager">Manager</option><option value="member">Member</option>`;
+                    let approversList = ``;
+                    let approverFilter = team.approvers.filter(appr => appr != tl.member);
+                    let approverindex = approverFilter.indexOf(tl.approver);
+                    if(approverindex > -1){
+                        console.log(approverFilter);
+                        approverFilter.splice(approverindex,1);
+                        approverFilter.splice(0,0,tl.approver);
+                        console.log(approverFilter);
+                        console.log("-----------");
+                    }
+                    approverFilter.forEach(approver => {
+                        approversList = `${approversList}<option value="${approver}">${approver}</option>`;
+                    });
+                    let div = document.createElement("div");
+                    div.setAttribute("class", "edituserGroup");
+                    div.setAttribute("data-memberemail",tl.member);
+                    div.innerHTML = `   
+                        <span class="member-email-field"><b>${tl.member}</b></span><br>
+                        <span>
+                            <select class="select-roles-control">
+                                ${selected}
+                            </select>
+                        </span>
+                        ${deleteBtnTag}
+                        <br><br><span>Select Approver</span>
+                        <br>
+                        <span>
+                           <select class="select-approver-control">
+                                ${approversList}
+                            </select>
+                        </span>`;
+                    document.getElementById("editProjMembersPanel").appendChild(div);
+                });
+
+                let add_mem = document.getElementById("addmemberEdit");
+                let projmain = document.querySelectorAll("#modifyProjectMembers > p");
+                if(teamAcRights == "all"){
+                    add_mem.classList.remove("hide");
+                    projmain[0].classList.remove("hide");
+                    projmain[1].classList.remove("hide");
+                    document.getElementById("editProjMembersPanel").appendChild(add_mem);
+                    let deleteMemberList = document.querySelectorAll(".deletemember");
+                    deleteMemberList.forEach((del) => {
+                        del.addEventListener("click", removeProjMember);                        
+                    });
+                }else{
+                    //add_mem.style.display = "none";
+                    add_mem.classList.add("hide");                    
+                    projmain[0].classList.add("hide");
+                    projmain[1].classList.add("hide");
+                }
+                
+
+            }else{
+                editProjectBtn.innerText = "Edit Project";
+                editProjectBtn.classList.remove("saving-state");
+                editProjectBtn.classList.add("btn");
+                editProjectBtn.classList.add("btn-editproj");
+            }
+        });
+
+}
 
 
 savesettingsBtn.addEventListener("click", function() {
@@ -1169,9 +1298,11 @@ function loadAccountSettings() {
                         if (teamAcRights == "none") {
                             if (projectMemberRole == "member") {
                                 document.querySelector("#addUserPanel p").remove();
+                                editProjectBtn.classList.add("hide");
                             }
                             document.querySelector('.team-sub-setting').remove();
                             createNewTeamBtn.remove();
+
                         }
                     }
 
@@ -1390,7 +1521,19 @@ userAccField.addEventListener("change", function() {
 myProjectSelect.addEventListener("change", function() {
     if (myProjectSelect.value != selectedProjectID) {
         initAccountVals.projchange = true;
+        editProjectBtn.classList.add("hide");
+        document.getElementById("modifyProjectMembers").classList.add("hide");
+        let editusergroup = document.querySelectorAll(".edituserGroup");
+        editusergroup.forEach(group => {
+            group.remove();
+        })
+    } else {
+        initAccountVals.projchange = false;
+        if (projectMemberRole !== "member") {
+            editProjectBtn.classList.remove("hide");
+        }
     }
+
 })
 
 userSettingLink.addEventListener("click", function() {
@@ -1486,10 +1629,10 @@ closesettingsBtn.addEventListener("click", function() {
 // Charts
 
 
-/*let piechartdata = [
+/*let piechartdata = [1075
     ['Task', 'Hours per Day'],
     ['Fuel', 250],
-    ['Entertainment', 102],
+    ['Entertainment', 10752],
     ['Food', 20],
     ['Lodging', 550],
     ['Travel', 140]
@@ -1847,6 +1990,9 @@ function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okpara
     alertBoxWindow.classList.remove("hide");
     mainStatusMsg.innerText = msg;
     mainStatusOK.innerText = oktext;
+    if(oktext == ""){
+        mainStatusOK.classList.add("hide");
+    }
     if (isConfirmType) {
         mainStatusCancel.innerText = canceltext;
         mainStatusCancel.classList.remove("hide");
@@ -1919,8 +2065,8 @@ if (initAuthState == "done") {
     initLoad();
 }
 
-window.addEventListener("resize", function(){
-    document.querySelector(".content-box").style.minheight = (window.innerHeight - document.querySelector("header").offsetHeight)+"px"
+window.addEventListener("resize", function() {
+    document.querySelector(".content-box").style.minheight = (window.innerHeight - document.querySelector("header").offsetHeight) + "px"
 })
 
-document.querySelector(".content-box").style.minHeight = (window.innerHeight - document.querySelector("header").offsetHeight)+"px"
+document.querySelector(".content-box").style.minHeight = (window.innerHeight - document.querySelector("header").offsetHeight) + "px"
