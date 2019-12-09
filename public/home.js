@@ -70,7 +70,15 @@ myBill_allMembs.addEventListener("click", function() {
 header_layout.addEventListener("click", function() {
     let containerdiv = document.querySelector(".container");
     if (containerdiv.getAttribute("class").includes("topfloater")) {
-        containerdiv.classList.remove("topfloater")
+        // for devices smaller than 375px width, do not remove topfloater class in Settings Mode
+        if (window.innerWidth > 375) {
+            containerdiv.classList.remove("topfloater")
+        } else {
+            let settingmodeclass = document.querySelector(".container").getAttribute("class");
+            if (settingmodeclass.indexOf("settingMode") == -1) {
+                containerdiv.classList.remove("topfloater")
+            }
+        }
     } else {
         containerdiv.classList.add("topfloater")
     }
@@ -988,6 +996,11 @@ settingsBtn.addEventListener("click", function() {
         userSettingLink.click();
         loadAccountSettings();
         document.querySelector("title").text = "Settings | Bill Vault";
+        // for devices smaller than 375px width, always keep topfloater class in Settings Mode
+        if (window.innerWidth < 375) {
+            document.querySelector(".container").classList.add("topfloater")
+        }
+
     }
 });
 
@@ -997,7 +1010,7 @@ editProjectBtn.addEventListener("click", function() {
     editProjectBtn.classList.add("saving-state");
     editProjectBtn.classList.remove("btn");
     editProjectBtn.classList.remove("btn-editproj");
-    getMembersList()
+    getMembersList("")
 
 });
 
@@ -1067,32 +1080,51 @@ function attachProfileImage(imgfile, logoprofile, logoholder) {
     }
 }
 
-function removeProjMember(evt){
+function confirmMemberDeletion(evt) {
     let parentDiv = evt.currentTarget.parentNode;
     let member = parentDiv.getAttribute("data-memberemail");
-    showAlertBox(`Deleting "${member}" from Project...`, "", null, false);    
-    fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }, {member: member}])) })
+    showAlertBox(`Do you really want to remove "${member}" from this Project?`, "Yes", "No", true, removeProjMember, { member: member, deletionDIV: parentDiv }, null, null);
+
+}
+
+
+function removeProjMember(rem) {
+    setTimeout(function() {
+        showAlertBox(`Deleting "${rem.member}" from Project...`, "", null, false);
+    }, 1500);
+
+    fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }, { member: rem.member }])) })
         .then(data => data.json())
         .then(function(p) {
-            mainStatusOK.classList.remove("hide");
-            if (p.status == "removed") {
-               parentDiv.remove();
-               mainStatusOK.click(); 
+            if (p.status == "deleted-manager") {
+                let editusergroup = document.querySelectorAll(".edituserGroup");
+                editusergroup.forEach(group => {
+                    group.remove();
+                })
+                getMembersList("refresh");
+
             }
-            if(p.status == "denied"){
+            if (p.status == "deleted-member") {
+                mainStatusOK.classList.remove("hide");
+                rem.deletionDIV.remove();
                 mainStatusOK.click();
-                setTimeout(function(){
-                    showAlertBox(`Can not delete Member whose bills are approved`, "OK", null, false); 
-                },1500);
-                
+            }
+            if (p.status == "denied") {
+                mainStatusOK.classList.remove("hide");
+                mainStatusOK.click();
+                setTimeout(function() {
+                    showAlertBox(`Can not delete member/manager whose bills are approved`, "OK", null, false);
+                }, 1500);
+
             }
         }).catch(err => {
             mainStatusOK.classList.remove("hide");
+            mainStatusOK.click();
         })
 }
 
 
-function getMembersList() {
+function getMembersList(_auto) {
 
     fetch("../getProjMembers/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }])) })
         .then(data => data.json())
@@ -1105,19 +1137,19 @@ function getMembersList() {
                 editProjectBtn.classList.add("hide");
                 document.getElementById("modifyProjectMembers").classList.remove("hide");
                 document.getElementById("displayteamname_edit").value = selectedProjectName;
-                document.querySelector("#modifyProjectMembers h5").innerText = "Edit Project ("+selectedProjectName+")";
-                let team = JSON.parse(p.team);                
+                document.querySelector("#modifyProjectMembers h5").innerText = "Edit Project (" + selectedProjectName + ")";
+                let team = JSON.parse(p.team);
                 let deleteBtnTag = (teamAcRights == "all") ? `<span class="deletemember btn" style="background:red;width:auto">Delete</span>` : "&nbsp;";
-                
+
                 team.teamlist.forEach(tl => {
                     let selected = (tl.role == "member") ? `<option value="member">Member</option><option value="manager">Manager</option>` : `<option value="manager">Manager</option><option value="member">Member</option>`;
                     let approversList = ``;
                     let approverFilter = team.approvers.filter(appr => appr != tl.member);
                     let approverindex = approverFilter.indexOf(tl.approver);
-                    if(approverindex > -1){
+                    if (approverindex > -1) {
                         console.log(approverFilter);
-                        approverFilter.splice(approverindex,1);
-                        approverFilter.splice(0,0,tl.approver);
+                        approverFilter.splice(approverindex, 1);
+                        approverFilter.splice(0, 0, tl.approver);
                         console.log(approverFilter);
                         console.log("-----------");
                     }
@@ -1126,7 +1158,7 @@ function getMembersList() {
                     });
                     let div = document.createElement("div");
                     div.setAttribute("class", "edituserGroup");
-                    div.setAttribute("data-memberemail",tl.member);
+                    div.setAttribute("data-memberemail", tl.member);
                     div.innerHTML = `   
                         <span class="member-email-field"><b>${tl.member}</b></span><br>
                         <span>
@@ -1145,26 +1177,28 @@ function getMembersList() {
                     document.getElementById("editProjMembersPanel").appendChild(div);
                 });
 
-                let add_mem = document.getElementById("addmemberEdit");
                 let projmain = document.querySelectorAll("#modifyProjectMembers > p");
-                if(teamAcRights == "all"){
-                    add_mem.classList.remove("hide");
+                if (teamAcRights == "all") {
+                    if (_auto == "refresh") {
+                        mainStatusOK.classList.remove("hide");
+                        mainStatusOK.click();
+                    }
+                    addmemberEditBtn.classList.remove("hide");
                     projmain[0].classList.remove("hide");
                     projmain[1].classList.remove("hide");
-                    document.getElementById("editProjMembersPanel").appendChild(add_mem);
+                    document.getElementById("editProjMembersPanel").appendChild(addmemberEditBtn);
                     let deleteMemberList = document.querySelectorAll(".deletemember");
                     deleteMemberList.forEach((del) => {
-                        del.addEventListener("click", removeProjMember);                        
+                        del.addEventListener("click", confirmMemberDeletion);
                     });
-                }else{
-                    //add_mem.style.display = "none";
-                    add_mem.classList.add("hide");                    
+                } else {
+                    addmemberEditBtn.classList.add("hide");
                     projmain[0].classList.add("hide");
                     projmain[1].classList.add("hide");
                 }
-                
 
-            }else{
+
+            } else {
                 editProjectBtn.innerText = "Edit Project";
                 editProjectBtn.classList.remove("saving-state");
                 editProjectBtn.classList.add("btn");
@@ -1281,6 +1315,7 @@ function loadAccountSettings() {
                 if (initAccountVals.type == "team") {
                     if (settingdata.teamlist.length > 0) {
                         projectsListBlock.classList.remove("hide");
+                        teamSettingLink.classList.remove("hide");
                         let options = ``;
                         settingdata.teamlist.forEach(tm => {
                             options = `${options} <option value="${tm.id}">${tm.projname}</option>`;
@@ -1291,7 +1326,7 @@ function loadAccountSettings() {
                         }, 1000);
                         initAccountVals.projchange = false;
                     }
-                    teamSettingLink.classList.remove("hide");
+
                     document.querySelector(".user_role").classList.remove("hide");
                     document.getElementById("userrole_field").value = projectMemberRole || "--";
                     if (!globalAdminRight) {
@@ -1990,7 +2025,7 @@ function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okpara
     alertBoxWindow.classList.remove("hide");
     mainStatusMsg.innerText = msg;
     mainStatusOK.innerText = oktext;
-    if(oktext == ""){
+    if (oktext == "") {
         mainStatusOK.classList.add("hide");
     }
     if (isConfirmType) {

@@ -818,6 +818,55 @@ function setasDefaultTeam(user) {
 }
 
 
+function removeProjectMember(pwdkey, useragent, email, project, member) {
+    return Users.findOne({ email: email, key: pwdkey, browser: useragent }).exec().then(doc => {
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            return Teams.findOne({ user_email: member, teamid: project }).exec().then(teamdoc => {
+                if (teamdoc != null) {
+                    let allowdeletion = true;
+                    teamdoc.bills.forEach(bill => {
+                        if (bill.status == "approved") {
+                            allowdeletion = false;
+                        }
+                    });
+                    if (!allowdeletion) {
+                        return new Promise((resolve, rej) => resolve("denied"));
+                    } else {
+                        return Teams.deleteOne({ user_email: member, teamid: project }).exec().then(del => {
+                            // If manager is deleted, then assign admin as the default bill approver to replace this manager
+                            if(teamdoc.role == "manager"){
+                                let promises = [];
+                                return Teams.find({ approver: member, teamid: project }).exec().then(tm => {
+                                    if (tm == null || tm.length == 0) {
+                                         return new Promise((resolve, rej) => rej());
+                                    }else{
+                                        tm.forEach((mem,i) => {
+                                            mem.approver = email;
+                                            promises[i] = mem.save().then(() => new Promise((resolve, rej) => resolve()));
+                                        });
+                                        return Promise.all(promises).then(() => {
+                                            return new Promise((resolve, rej) => resolve("deleted-manager"));
+                                        });
+                                    }
+
+                                });
+                            }else{
+                                return new Promise((resolve, rej) => resolve("deleted-member"));
+                            }
+                            
+                        });
+                    }
+
+                }
+            });
+        }
+
+    });
+}
+
+
 function removeProject(pwdkey, useragent, email, project) {
     return Teams.deleteOne({ teamid: project }).exec().then((del) => {
         return new Promise((resolve, rej) => resolve());
@@ -1440,6 +1489,16 @@ app.post("/addNewProject", (req, res) => {
 
 });
 
+app.post("/removeMember", (req, res) => {
+    const { em, agent, key_serv, project, member } = req.body;
+    removeProjectMember(key_serv, agent, getEmail(em), project, member).then((delstatus) => {
+        res.json({ status: delstatus })
+    }).catch(function(){
+        res.json({ status: "invalid" });
+    })
+
+});
+
 app.post("/removeTempProj", (req, res) => {
     const { em, agent, key_serv, proj } = req.body;
     removeProject(key_serv, agent, getEmail(em), proj).then(() => {
@@ -1447,6 +1506,7 @@ app.post("/removeTempProj", (req, res) => {
     })
 
 });
+
 
 
 app.post("/chartsload", (req, res) => {

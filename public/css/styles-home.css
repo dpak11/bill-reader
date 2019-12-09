@@ -460,6 +460,7 @@ p.tip-info {
 }
 
 #addNewMemberProj.saving-state,
+#editProject.saving-state,
 #savebill.saving-state,
 #updatebill.saving-state,
 #savesettings.saving-state,
@@ -470,6 +471,9 @@ p.tip-info {
     border-bottom: none;
     cursor: default;
     background: none;
+}
+#editProject.saving-state{
+    font-size: .8em;
 }
 
 .bill-status-approval.hide,
@@ -938,6 +942,19 @@ div#ui-datepicker-div {
     .thumb-img img {
         width: 220px;
     }
+}
+
+@media (max-width:375px) {
+    #editProject{
+        margin-left:0 !important;
+    }
+    .profile_info #projectsList input, .profile_info #projectsList select{
+        width: 175px;
+    }
+    .profile_info .newuserGroup input, .profile_info .newuserGroup select{
+        width: 155px;
+    }
+
 }
 
 .loader-circ-path {
