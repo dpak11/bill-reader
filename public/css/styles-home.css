@@ -118,6 +118,7 @@ header img {
     padding: 20px;
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-around;
 }
 
 
@@ -568,6 +569,12 @@ span.pick-amount{
 
 .settingMode #mybillORall{
     display: none !important
+}
+
+.editRoleLabel{
+    padding: 8px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 #mybillORall{

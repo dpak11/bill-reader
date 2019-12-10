@@ -781,7 +781,7 @@ function teamMemberValidation(member) {
 }
 
 function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver) {
-    return setasDefaultTeam(newMemberEmail).then((state) => {
+    return getDefaultTeam(newMemberEmail).then((state) => {
         let date_now = getIndDate();
         let newproject = new Teams({
             teamid: project,
@@ -806,7 +806,7 @@ function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, a
 
 }
 
-function setasDefaultTeam(user) {
+function getDefaultTeam(user) {
     return Teams.findOne({ user_email: user }).exec().then(listeam => {
         if (listeam == null) {
             return new Promise((res, rej) => res({ default: "yes" }));
@@ -816,6 +816,26 @@ function setasDefaultTeam(user) {
         }
     })
 }
+
+function setDefaultTeam(user) {
+    return Teams.find({ user_email: user }).exec().then(listeam => {
+        if (listeam == null || listeam.length == 0) {
+            return new Promise((resolve, rej) => resolve());
+        } else {
+            let defaults = listeam.filter(tm => (tm.default == "yes"));
+            if (defaults.length == 0) {
+                listeam[0].default = "yes";
+                console.log("set another project as default after deletion");
+                return listeam[0].save().then(() => new Promise((resolve, rej) => resolve()));
+
+            } else {
+                console.log("another default project already exists after deletion");
+                return new Promise((resolve, rej) => resolve());
+            }
+        }
+    })
+}
+
 
 
 function removeProjectMember(pwdkey, useragent, email, project, member) {
@@ -834,28 +854,30 @@ function removeProjectMember(pwdkey, useragent, email, project, member) {
                     if (!allowdeletion) {
                         return new Promise((resolve, rej) => resolve("denied"));
                     } else {
-                        return Teams.deleteOne({ user_email: member, teamid: project }).exec().then(del => {
-                            // If manager is deleted, then assign admin as the default bill approver to replace this manager
-                            if(teamdoc.role == "manager"){
-                                let promises = [];
-                                return Teams.find({ approver: member, teamid: project }).exec().then(tm => {
-                                    if (tm == null || tm.length == 0) {
-                                         return new Promise((resolve, rej) => rej());
-                                    }else{
-                                        tm.forEach((mem,i) => {
-                                            mem.approver = email;
-                                            promises[i] = mem.save().then(() => new Promise((resolve, rej) => resolve()));
-                                        });
-                                        return Promise.all(promises).then(() => {
-                                            return new Promise((resolve, rej) => resolve("deleted-manager"));
-                                        });
-                                    }
+                        return Teams.deleteOne({ user_email: member, teamid: project }).exec().then(() => {
+                            return setDefaultTeam(member).then(() => {
+                                if (teamdoc.role == "manager") {
+                                    // If manager is deleted, then assign admin as the default bill approver to replace this manager
+                                    let promises = [];
+                                    return Teams.find({ approver: member, teamid: project }).exec().then(tm => {
+                                        if (tm == null || tm.length == 0) {
+                                            return new Promise((resolve, rej) => rej());
+                                        } else {
+                                            tm.forEach((mem, i) => {
+                                                mem.approver = email; // set admin email as approver
+                                                promises[i] = mem.save().then(() => new Promise((resolve, rej) => resolve()));
+                                            });
+                                            return Promise.all(promises).then(() => {
+                                                return new Promise((resolve, rej) => resolve("deleted-manager"));
+                                            });
+                                        }
 
-                                });
-                            }else{
-                                return new Promise((resolve, rej) => resolve("deleted-member"));
-                            }
-                            
+                                    });
+                                } else {
+                                    return new Promise((resolve, rej) => resolve("deleted-member"));
+                                }
+                            });
+
                         });
                     }
 
@@ -903,8 +925,10 @@ function loadUserBills(pskey, agent, email, mode) {
                     } else {
                         obj.activeProjectID = "";
                         if (mode == "private") {
+                            console.log("private bill - Team");
                             teamdoc.forEach(function(tdoc) {
                                 if (tdoc.default == "yes") {
+
                                     obj.activeProjectID = tdoc.teamid;
                                     obj.logo = tdoc.logo;
                                     obj.projname = tdoc.title;
@@ -928,6 +952,7 @@ function loadUserBills(pskey, agent, email, mode) {
                         }
 
                         if (mode == "team") {
+                            console.log("team bill - Team");
                             teamdoc.forEach(function(tdoc) {
                                 if (tdoc.default == "yes") {
                                     obj.activeProjectID = tdoc.teamid;
@@ -1364,7 +1389,6 @@ app.post("/userAuth", (req, res) => {
 app.post("/loadBills", (req, res) => {
     const { em, agent, key_serv, mode, ptype } = req.body;
     loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
-        console.log("loaded bills");
         res.json({ status: "done", user_data: d.data });
     }).catch(function(s) {
         if (s.status == "notinteam") {
@@ -1493,7 +1517,7 @@ app.post("/removeMember", (req, res) => {
     const { em, agent, key_serv, project, member } = req.body;
     removeProjectMember(key_serv, agent, getEmail(em), project, member).then((delstatus) => {
         res.json({ status: delstatus })
-    }).catch(function(){
+    }).catch(function() {
         res.json({ status: "invalid" });
     })
 

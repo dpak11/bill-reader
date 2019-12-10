@@ -1135,23 +1135,23 @@ function getMembersList(_auto) {
                 editProjectBtn.classList.add("btn");
                 editProjectBtn.classList.add("btn-editproj");
                 editProjectBtn.classList.add("hide");
-                document.getElementById("modifyProjectMembers").classList.remove("hide");
+
                 document.getElementById("displayteamname_edit").value = selectedProjectName;
                 document.querySelector("#modifyProjectMembers h5").innerText = "Edit Project (" + selectedProjectName + ")";
                 let team = JSON.parse(p.team);
                 let deleteBtnTag = (teamAcRights == "all") ? `<span class="deletemember btn" style="background:red;width:auto">Delete</span>` : "&nbsp;";
-
+                if (team.teamlist.length > 0) {
+                    document.getElementById("modifyProjectMembers").classList.remove("hide");
+                } else {
+                    showAlertBox(`Admin has not assigned any members under you.`, "OK", null, false);
+                }
                 team.teamlist.forEach(tl => {
-                    let selected = (tl.role == "member") ? `<option value="member">Member</option><option value="manager">Manager</option>` : `<option value="manager">Manager</option><option value="member">Member</option>`;
                     let approversList = ``;
                     let approverFilter = team.approvers.filter(appr => appr != tl.member);
                     let approverindex = approverFilter.indexOf(tl.approver);
                     if (approverindex > -1) {
-                        console.log(approverFilter);
                         approverFilter.splice(approverindex, 1);
                         approverFilter.splice(0, 0, tl.approver);
-                        console.log(approverFilter);
-                        console.log("-----------");
                     }
                     approverFilter.forEach(approver => {
                         approversList = `${approversList}<option value="${approver}">${approver}</option>`;
@@ -1161,10 +1161,8 @@ function getMembersList(_auto) {
                     div.setAttribute("data-memberemail", tl.member);
                     div.innerHTML = `   
                         <span class="member-email-field"><b>${tl.member}</b></span><br>
-                        <span>
-                            <select class="select-roles-control">
-                                ${selected}
-                            </select>
+                        <span class="editRoleLabel">
+                           ${tl.role}
                         </span>
                         ${deleteBtnTag}
                         <br><br><span>Select Approver</span>
