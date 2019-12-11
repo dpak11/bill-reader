@@ -545,7 +545,7 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
             doc.photo = settings.profile_img;
             doc.name = settings.displayname;
             doc.default = settings.account;
-
+            
             if (settings.isSwitchedProj == "yes") {
                 let allpromises = [];
 
@@ -567,10 +567,48 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
 
                 });
             } else {
-                return doc.save().then(() => new Promise((resolve, rej) => resolve()))
+                if (settings.editedProjectVals != "") {
+                    return updateEditedProject(settings.editedProjectVals, email).then(() => {
+                        console.log("updated edited project");
+                        return doc.save().then(() => new Promise((resolve, rej) => resolve()))
+                    })
+                }else{
+                   return doc.save().then(() => new Promise((resolve, rej) => resolve())) 
+                }
             }
         }
 
+    });
+}
+
+function updateEditedProject(editedproj, manager_admin) {
+    return Teams.find({ teamid: editedproj.projid }).exec().then(tmdoc => {
+        let promises = [];
+        let users = editedproj.users;
+        let counter = 0;
+        tmdoc.forEach((team) => {
+            if (editedproj.logo != "") {
+                team.logo = editedproj.logo;
+            }
+            if (editedproj.projName != "") {
+                team.title = editedproj.projName;
+            }
+
+            let user = users.filter(em => (em.email == team.user_email));
+            if (user.length == 1) {
+                team.approver = user[0].approver;                
+                console.log("changed approver:"+team.user_email+" -- "+user[0].approver);                
+            }
+            if(user.length == 1 || editedproj.logo != "" || editedproj.projName != ""){
+                promises[counter] = team.save().then(() => new Promise((resolve, rej) => resolve()));
+                counter++;
+            }
+            
+        });
+        return Promise.all(promises).then(() => {
+            return new Promise((resolve, rej) => resolve());
+
+        });
     });
 }
 
@@ -925,7 +963,6 @@ function loadUserBills(pskey, agent, email, mode) {
                     } else {
                         obj.activeProjectID = "";
                         if (mode == "private") {
-                            console.log("private bill - Team");
                             teamdoc.forEach(function(tdoc) {
                                 if (tdoc.default == "yes") {
 
@@ -952,7 +989,6 @@ function loadUserBills(pskey, agent, email, mode) {
                         }
 
                         if (mode == "team") {
-                            console.log("team bill - Team");
                             teamdoc.forEach(function(tdoc) {
                                 if (tdoc.default == "yes") {
                                     obj.activeProjectID = tdoc.teamid;

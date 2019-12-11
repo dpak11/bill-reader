@@ -118,7 +118,7 @@ header img {
     padding: 20px;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: center;
 }
 
 
@@ -765,8 +765,8 @@ div#ui-datepicker-div {
 .btn-editproj{
     padding: 4px 8px;
     font-size: .8em;
-    color: rgba(255, 255, 255, 0.7);
-    background: rgba(0, 0, 255, 0.5);
+    color: rgb(255, 255, 255);
+    background: rgba(44, 44, 47, 0.5);
 }
 
 #saveCloseSetting{

@@ -21,6 +21,7 @@ let approveBillBtn = document.getElementById("approvebill");
 let rejectBillBtn = document.getElementById("rejectbill");
 let infotipcloseBtn = document.getElementById("infotipclose");
 let myBill_allMembs = document.querySelector("#mybillORall p");
+let amountStatusSkip = document.getElementById("amountStatusSkip");
 
 let captureImg = document.getElementById('captureImg');
 let fileImg = document.getElementById('fileImg');
@@ -85,6 +86,11 @@ header_layout.addEventListener("click", function() {
 
 });
 
+amountStatusSkip.addEventListener("click", function() {
+    confirmAmountWindow.classList.add("hide");
+
+});
+
 let themeChanged = false;
 let themeTrackInterval;
 
@@ -116,27 +122,6 @@ themechooser.addEventListener("click", function() {
     }
 
 });
-
-function themeUpdateTracker() {
-    if (themeChanged) {
-        themeChanged = false;
-        showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
-    }
-}
-
-function saveTheme() {
-    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
-        .then(dat => dat.json())
-        .then(() => {
-            showAlertBox("Default Theme Saved!", "OK", null, false);
-            localStorage.setItem("theme", themeName);
-        }).catch(function(s) {
-            console.log("theme failed");
-        });
-
-}
-
-
 
 
 billshomeBtn.addEventListener("click", function() {
@@ -180,6 +165,25 @@ fileImg.addEventListener('change', () => {
     }
 
 });
+
+function themeUpdateTracker() {
+    if (themeChanged) {
+        themeChanged = false;
+        showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
+    }
+}
+
+function saveTheme() {
+    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
+        .then(dat => dat.json())
+        .then(() => {
+            showAlertBox("Default Theme Saved!", "OK", null, false);
+            localStorage.setItem("theme", themeName);
+        }).catch(function(s) {
+            console.log("theme failed");
+        });
+
+}
 
 
 function imageProcess(imgfile) {
@@ -841,7 +845,12 @@ function approveRejectBill(mode) {
         });
 }
 
-
+function getHistoryInfo() {
+    document.getElementById("infoTipBox").classList.remove("hide");
+    let history = document.getElementById("infoTipBox").getAttribute("data-history");
+    let historyLog = JSON.parse(atob(history));
+    document.getElementById("infocontent").innerHTML = historyLog.join("<br><br>");
+}
 
 
 
@@ -909,13 +918,6 @@ rejectBillBtn.addEventListener("click", function() {
 
 });
 
-function getHistoryInfo() {
-    document.getElementById("infoTipBox").classList.remove("hide");
-    let history = document.getElementById("infoTipBox").getAttribute("data-history");
-    let historyLog = JSON.parse(atob(history));
-    document.getElementById("infocontent").innerHTML = historyLog.join("<br><br>");
-}
-
 
 
 infotipcloseBtn.addEventListener("click", function() {
@@ -976,6 +978,7 @@ let editProjectBtn = document.getElementById("editProject");
 let addmemberEditBtn = document.getElementById("addmemberEdit");
 let enableAddNewMember = false;
 let isProfilePicModified = false;
+let isLogoModified = false;
 let saveSettingEnabled = false;
 let initAccountVals = { name: "", type: "", projchange: false };
 
@@ -1038,8 +1041,102 @@ teamImgEditBtn.addEventListener('change', () => {
 
 });
 
+savesettingsBtn.addEventListener("click", function() {
+
+    if (!saveSettingEnabled) {
+        return;
+    }
+
+    isTempProj = localStorage.getItem("tempProjID") || "";
+    if (isTempProj != "") {
+        showAlertBox(`You have not assigned Members for the New Project: ${document.getElementById("displayteamname").value}`, "OK", null, false);
+        return;
+    }
+    if (document.getElementById("teamSettingsPage")) {
+        let isNewProjCreated = document.getElementById("teamSettingsPage").getAttribute("data-projectidnew") || "";
+        if (isNewProjCreated != "") {
+            document.getElementById("teamDetailsSection").remove();
+            document.getElementById("createNewTeam").remove();
+        }
+    }
 
 
+    let prof_img = document.getElementById("userprofilepic").getAttribute("src");
+    let disp_name = document.getElementById("displayname_field").value;
+    let acc_type = document.getElementById("user_account_field").value;
+
+    let editedProjVals = getEditedProjectVals();
+
+    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "") {
+        saveSettingEnabled = false;
+        savesettingsBtn.innerText = "Saving...";
+        savesettingsBtn.classList.add("saving-state");
+        closesettingsBtn.classList.add("hide");
+
+        let accountObj = {
+            profile_img: prof_img,
+            displayname: disp_name,
+            account: acc_type,
+            isSwitchedProj: "no",
+            editedProjectVals: editedProjVals
+        }
+
+        if (initAccountVals.projchange) {
+            accountObj.isSwitchedProj = "yes";
+            accountObj.newProjectID = myProjectSelect.value;
+        }
+
+        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ usersetting: btoa(JSON.stringify(accountObj)) }])) })
+            .then(data => data.json())
+            .then(function(setting) {
+                if (setting.status == "invalid") {
+                    sessionStorage.clear();
+                }
+                if (setting.status == "saved") {
+                    if (acc_type !== initAccountVals.type) {
+                        setTimeout(function() {
+                            localStorage.setItem("accountchange", acc_type);
+                            location.reload();
+                        }, 1000);
+                    } else if (initAccountVals.projchange) {
+                        setTimeout(function() {
+                            localStorage.setItem("projectchange", "yes");
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        isProfilePicModified = false;
+                        isLogoModified = false;
+                        savesettingsBtn.innerText = "Save";
+                        savesettingsBtn.classList.remove("saving-state");
+                        closesettingsBtn.classList.remove("hide");
+                        initAccountVals.name = disp_name;
+                        initAccountVals.type = acc_type;
+                        initAccountVals.projchange = false;
+                        saveSettingEnabled = true;
+                        if (editedProjVals != "") {
+                            document.getElementById("modifyProjectMembers").classList.add("hide");
+                            if (editedProjVals.projName != "" || editedProjVals.logo != "") {
+                                setTimeout(function() {
+                                    localStorage.setItem("projectmodify", "yes");
+                                    location.reload();
+                                }, 1000);
+                            }
+                            if (editedProjVals.users.length > 0) { removeEditUserGroups() }
+                        }
+                        closesettingsBtn.click();
+                    }
+
+                }
+
+            }).catch(function(s) {
+                saveSettingEnabled = true;
+                savesettingsBtn.innerText = "Save";
+                savesettingsBtn.classList.remove("saving-state");
+            });
+    } else {
+        closesettingsBtn.click();
+    }
+});
 
 function attachProfileImage(imgfile, logoprofile, logoholder) {
     if (imgfile.type.indexOf("image/") > -1) {
@@ -1062,6 +1159,9 @@ function attachProfileImage(imgfile, logoprofile, logoholder) {
                     showAlertBox("Logo Dimension must be 196 X 100", "OK", null, false);
                 } else {
                     document.getElementById(logoholder).src = srcData;
+                    if (logoholder == "teamlogoImgModify") {
+                        isLogoModified = true;
+                    }
                 }
             }
         }
@@ -1097,10 +1197,7 @@ function removeProjMember(rem) {
         .then(data => data.json())
         .then(function(p) {
             if (p.status == "deleted-manager") {
-                let editusergroup = document.querySelectorAll(".edituserGroup");
-                editusergroup.forEach(group => {
-                    group.remove();
-                })
+                removeEditUserGroups();
                 getMembersList("refresh");
 
             }
@@ -1159,6 +1256,7 @@ function getMembersList(_auto) {
                     let div = document.createElement("div");
                     div.setAttribute("class", "edituserGroup");
                     div.setAttribute("data-memberemail", tl.member);
+                    div.setAttribute("data-approveremail", tl.approver);
                     div.innerHTML = `   
                         <span class="member-email-field"><b>${tl.member}</b></span><br>
                         <span class="editRoleLabel">
@@ -1206,93 +1304,35 @@ function getMembersList(_auto) {
 
 }
 
-
-savesettingsBtn.addEventListener("click", function() {
-
-    if (!saveSettingEnabled) {
-        return;
+function getEditedProjectVals() {
+    if (projectMemberRole == "member") {
+        return "";
     }
-
-    isTempProj = localStorage.getItem("tempProjID") || "";
-    if (isTempProj != "") {
-        showAlertBox(`You forgot to assign Team Members for the Project: ${document.getElementById("displayteamname").value}`, "OK", null, false);
-        return;
-    }
-    if (document.getElementById("teamSettingsPage")) {
-        let isNewProjCreated = document.getElementById("teamSettingsPage").getAttribute("data-projectidnew") || "";
-        if (isNewProjCreated != "") {
-            document.getElementById("teamDetailsSection").remove();
-            document.getElementById("createNewTeam").remove();
+    let editlist = document.querySelectorAll(".edituserGroup");
+    let modifiedList = { logo: "", projName: "", projid: selectedProjectID, users: [] };
+    editlist.forEach(editItem => {
+        let selectedapprover = editItem.querySelector("select").value;
+        if (editItem.getAttribute("data-approveremail") != selectedapprover) {
+            modifiedList.users.push({ email: editItem.getAttribute("data-memberemail"), approver: selectedapprover });
+        }
+    });
+    let teamnameEdit = document.getElementById("displayteamname_edit");
+    if (teamnameEdit) {
+        if (selectedProjectName != teamnameEdit.value) {
+            modifiedList.projName = teamnameEdit.value;
         }
     }
 
-
-    let prof_img = document.getElementById("userprofilepic").getAttribute("src");
-    let disp_name = document.getElementById("displayname_field").value;
-    let acc_type = document.getElementById("user_account_field").value;
-
-
-    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange) {
-        saveSettingEnabled = false;
-        savesettingsBtn.innerText = "Saving...";
-        savesettingsBtn.classList.add("saving-state");
-        closesettingsBtn.classList.add("hide");
-
-        let accountObj = {
-            profile_img: prof_img,
-            displayname: disp_name,
-            account: acc_type,
-            isSwitchedProj: "no"
-        }
-
-        if (initAccountVals.projchange) {
-            accountObj.isSwitchedProj = "yes";
-            accountObj.newProjectID = myProjectSelect.value;
-        }
-
-
-        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ usersetting: btoa(JSON.stringify(accountObj)) }])) })
-            .then(data => data.json())
-            .then(function(setting) {
-                if (setting.status == "invalid") {
-                    sessionStorage.clear();
-                }
-                if (setting.status == "saved") {
-                    if (acc_type !== initAccountVals.type) {
-                        setTimeout(function() {
-                            localStorage.setItem("accountchange", acc_type);
-                            location.reload();
-                        }, 1000);
-                    } else if (initAccountVals.projchange) {
-                        setTimeout(function() {
-                            localStorage.setItem("projectchange", "yes");
-                            location.reload();
-                        }, 1000);
-                    } else {
-                        isProfilePicModified = false;
-                        savesettingsBtn.innerText = "Save";
-                        savesettingsBtn.classList.remove("saving-state");
-                        closesettingsBtn.classList.remove("hide");
-                        initAccountVals.name = disp_name;
-                        initAccountVals.type = acc_type;
-                        initAccountVals.projchange = false;
-                        saveSettingEnabled = true;
-                        /*document.getElementById("teamDetailsSection").remove();
-                        document.getElementById("createNewTeam").remove();*/
-                        closesettingsBtn.click();
-                    }
-
-                }
-
-            }).catch(function(s) {
-                saveSettingEnabled = true;
-                savesettingsBtn.innerText = "Save";
-                savesettingsBtn.classList.remove("saving-state");
-            });
-    } else {
-        closesettingsBtn.click();
+    if (isLogoModified) {
+        modifiedList.logo = document.getElementById("teamlogoImgModify").getAttribute("src");
     }
-});
+    if (modifiedList.logo == "" && modifiedList.projName == "" && modifiedList.users.length == 0) {
+        return "";
+    }
+    return modifiedList;
+
+}
+
 
 function loadAccountSettings() {
     fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([])) })
@@ -1338,8 +1378,6 @@ function loadAccountSettings() {
 
                         }
                     }
-
-
                 } else {
                     if (document.getElementById("teamSettingsPage")) {
                         document.getElementById("teamSettingsPage").remove();
@@ -1525,6 +1563,12 @@ function newMemberInsertFields() {
 
 }
 
+function removeEditUserGroups() {
+    let editusergroup = document.querySelectorAll(".edituserGroup");
+    editusergroup.forEach(group => {
+        group.remove();
+    })
+}
 
 function removeTempProject(pID) {
     fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ proj: pID }])) })
@@ -1556,10 +1600,7 @@ myProjectSelect.addEventListener("change", function() {
         initAccountVals.projchange = true;
         editProjectBtn.classList.add("hide");
         document.getElementById("modifyProjectMembers").classList.add("hide");
-        let editusergroup = document.querySelectorAll(".edituserGroup");
-        editusergroup.forEach(group => {
-            group.remove();
-        })
+        removeEditUserGroups();
     } else {
         initAccountVals.projchange = false;
         if (projectMemberRole !== "member") {
@@ -1570,7 +1611,9 @@ myProjectSelect.addEventListener("change", function() {
 })
 
 userSettingLink.addEventListener("click", function() {
-    document.getElementById("teamSettingsPage").classList.add("hide");
+    if(document.getElementById("teamSettingsPage")){
+       document.getElementById("teamSettingsPage").classList.add("hide"); 
+   }    
     document.getElementById("userSettingsPage").classList.remove("hide");
     document.getElementById("userSettingsPage").appendChild(saveCloseSetting);
 });
@@ -1963,8 +2006,6 @@ function showDayMonth(d) {
 
 
 
-
-
 //---------------------------------------------------------------------------------------
 
 let logOutBtn = document.getElementById("logout");
@@ -1973,7 +2014,6 @@ let confirmAmountWindow = document.getElementById("confirmAmountWindow");
 let mainStatusOK = document.getElementById("mainStatusOK");
 let mainStatusCancel = document.getElementById("mainStatusCancel");
 let mainStatusMsg = document.querySelector("#alertBoxWindow h4");
-let amountStatusSkip = document.getElementById("amountStatusSkip");
 
 let callbackConfirm = {
     yes: {
@@ -2014,10 +2054,7 @@ mainStatusOK.addEventListener("click", function() {
     clearCallbacks();
 });
 
-amountStatusSkip.addEventListener("click", function() {
-    confirmAmountWindow.classList.add("hide");
 
-});
 
 function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okparams, cancelcallback, cancelparams) {
     alertBoxWindow.classList.remove("hide");
@@ -2057,12 +2094,6 @@ function ConfirmAmountBox(amountList) {
 }
 
 
-logOutBtn.addEventListener("click", function() {
-    sessionStorage.clear();
-    location.replace("/")
-});
-
-
 function initLoad() {
     billshomeBtn.click();
     $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
@@ -2070,6 +2101,7 @@ function initLoad() {
     if (temp_projid !== "") { removeTempProject(temp_projid) }
     let accountchangeUser = localStorage.getItem("accountchange") || "";
     let projectchangeUser = localStorage.getItem("projectchange") || "";
+    let projectmodifyUser = localStorage.getItem("projectmodify") || "";
     if (accountchangeUser != "") {
         localStorage.removeItem("accountchange");
         let atype = accountchangeUser == "team" ? "Business Account" : "Personal Account";
@@ -2078,6 +2110,9 @@ function initLoad() {
     } else if (projectchangeUser == "yes") {
         localStorage.removeItem("projectchange");
         showAlertBox("Project Changed Successfuly", "OK", null, false);
+    } else if (projectmodifyUser == "yes") {
+        localStorage.removeItem("projectmodify");
+        showAlertBox("Project Updated", "OK", null, false);
     }
 }
 
@@ -2097,6 +2132,13 @@ if (initAuthState == "") {
 if (initAuthState == "done") {
     initLoad();
 }
+
+
+
+logOutBtn.addEventListener("click", function() {
+    sessionStorage.clear();
+    location.replace("/")
+});
 
 window.addEventListener("resize", function() {
     document.querySelector(".content-box").style.minheight = (window.innerHeight - document.querySelector("header").offsetHeight) + "px"
