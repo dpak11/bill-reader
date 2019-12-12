@@ -567,8 +567,8 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
 
                 });
             } else {
-                if (settings.editedProjectVals != "") {
-                    return updateEditedProject(settings.editedProjectVals, email).then(() => {
+                if (settings.editedProjectVals != "none") {
+                    return updateEditedProject(settings.editedProjectVals).then(() => {
                         console.log("updated edited project");
                         return doc.save().then(() => new Promise((resolve, rej) => resolve()))
                     })
@@ -581,7 +581,7 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
     });
 }
 
-function updateEditedProject(editedproj, manager_admin) {
+function updateEditedProject(editedproj) {
     return Teams.find({ teamid: editedproj.projid }).exec().then(tmdoc => {
         let promises = [];
         let users = editedproj.users;
@@ -679,9 +679,7 @@ function loadChartsData(pskey, agent, email, perMode) {
                     });
 
                 }
-            }).catch(err => {
-                console.log(err)
-            })
+            });
         }
     });
 

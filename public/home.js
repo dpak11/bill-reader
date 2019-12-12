@@ -1066,8 +1066,12 @@ savesettingsBtn.addEventListener("click", function() {
     let acc_type = document.getElementById("user_account_field").value;
 
     let editedProjVals = getEditedProjectVals();
+    if (editedProjVals == "invalidProjName") {
+        return;
+    }
 
-    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "") {
+
+    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none") {
         saveSettingEnabled = false;
         savesettingsBtn.innerText = "Saving...";
         savesettingsBtn.classList.add("saving-state");
@@ -1113,7 +1117,7 @@ savesettingsBtn.addEventListener("click", function() {
                         initAccountVals.type = acc_type;
                         initAccountVals.projchange = false;
                         saveSettingEnabled = true;
-                        if (editedProjVals != "") {
+                        if (editedProjVals != "none") {
                             document.getElementById("modifyProjectMembers").classList.add("hide");
                             if (editedProjVals.projName != "" || editedProjVals.logo != "") {
                                 setTimeout(function() {
@@ -1306,7 +1310,7 @@ function getMembersList(_auto) {
 
 function getEditedProjectVals() {
     if (projectMemberRole == "member") {
-        return "";
+        return "none";
     }
     let editlist = document.querySelectorAll(".edituserGroup");
     let modifiedList = { logo: "", projName: "", projid: selectedProjectID, users: [] };
@@ -1319,7 +1323,11 @@ function getEditedProjectVals() {
     let teamnameEdit = document.getElementById("displayteamname_edit");
     if (teamnameEdit) {
         if (selectedProjectName != teamnameEdit.value) {
-            modifiedList.projName = teamnameEdit.value;
+            if(validateProjectName(teamnameEdit.value.trim())){
+                modifiedList.projName = teamnameEdit.value;
+            }else{
+                return "invalidProjName";
+            }          
         }
     }
 
@@ -1327,7 +1335,7 @@ function getEditedProjectVals() {
         modifiedList.logo = document.getElementById("teamlogoImgModify").getAttribute("src");
     }
     if (modifiedList.logo == "" && modifiedList.projName == "" && modifiedList.users.length == 0) {
-        return "";
+        return "none";
     }
     return modifiedList;
 
@@ -1453,29 +1461,9 @@ function addMemberToProject(member, role, approver) {
 
 function createNewProject() {
     let proj = document.getElementById("displayteamname").value.trim();
-    let allowed = "1234567890 mnbvcxzasdfghjklpoiuytrewq_QWERTYUIOPLKJHGFDSAZXCVBNM-";
-    if (proj.length < 3) {
-        showAlertBox("Project Name Invalid", "OK", null, false);
+    if (!validateProjectName(proj)) {
         enableAddNewMember = true;
         return false;
-    }
-    if (!/[a-z0-9]/gi.test(proj)) {
-        showAlertBox("Project Name Invalid", "OK", null, false);
-        enableAddNewMember = true;
-        return false;
-    }
-    if (proj.length > 40) {
-        showAlertBox("Project Name can not exceed 40 Characters", "OK", null, false);
-        enableAddNewMember = true;
-        return false;
-    }
-
-    for (let i = 0; i < proj.length; i++) {
-        if (allowed.indexOf(proj.substr(i, 1)) == -1) {
-            showAlertBox("Project Name Invalid", "OK", null, false);
-            enableAddNewMember = true;
-            return false;
-        }
     }
 
     addNewMemberProjBtn.innerText = "Adding Project...";
@@ -1540,6 +1528,30 @@ function createNewProjectName(projname) {
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
         });
+}
+
+function validateProjectName(proj) {
+    let allowed = "1234567890 mnbvcxzasdfghjklpoiuytrewq_QWERTYUIOPLKJHGFDSAZXCVBNM-";
+    if (proj.length < 3) {
+        showAlertBox("Project Name Invalid", "OK", null, false);
+        return false;
+    }
+    if (!/[a-z0-9]/gi.test(proj)) {
+        showAlertBox("Project Name Invalid", "OK", null, false);
+        return false;
+    }
+    if (proj.length > 40) {
+        showAlertBox("Project Name can not exceed 40 Characters", "OK", null, false);
+        return false;
+    }
+
+    for (let i = 0; i < proj.length; i++) {
+        if (allowed.indexOf(proj.substr(i, 1)) == -1) {
+            showAlertBox("Project Name Invalid", "OK", null, false);
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -1611,9 +1623,9 @@ myProjectSelect.addEventListener("change", function() {
 })
 
 userSettingLink.addEventListener("click", function() {
-    if(document.getElementById("teamSettingsPage")){
-       document.getElementById("teamSettingsPage").classList.add("hide"); 
-   }    
+    if (document.getElementById("teamSettingsPage")) {
+        document.getElementById("teamSettingsPage").classList.add("hide");
+    }
     document.getElementById("userSettingsPage").classList.remove("hide");
     document.getElementById("userSettingsPage").appendChild(saveCloseSetting);
 });
