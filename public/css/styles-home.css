@@ -575,6 +575,7 @@ span.pick-amount{
     padding: 8px 10px;
     border: 1px solid rgba(0, 0, 0, 0.3);
     color: rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
 }
 
 #mybillORall{
@@ -767,6 +768,11 @@ div#ui-datepicker-div {
     font-size: .8em;
     color: rgb(255, 255, 255);
     background: rgba(44, 44, 47, 0.5);
+}
+
+.lastapproverlog{
+    font-size: .8em;
+    color: rgba(0, 0, 0, 0.5);
 }
 
 #saveCloseSetting{

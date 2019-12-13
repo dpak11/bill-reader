@@ -1013,13 +1013,27 @@ editProjectBtn.addEventListener("click", function() {
     editProjectBtn.classList.add("saving-state");
     editProjectBtn.classList.remove("btn");
     editProjectBtn.classList.remove("btn-editproj");
-    getMembersList("")
+    getMembersList("");
 
 });
 
 addmemberEditBtn.addEventListener("click", function() {
-
-
+    addmemberEditBtn.remove();
+    let newDiv = document.createElement("div");
+    newDiv.setAttribute("id", "editProjAddOne");
+    newDiv.innerHTML = `   
+        <span><input class="member-email-field" type="text" placeholder="Member's Email"></span>
+        <span>
+            <select class="select-roles-control">
+                <option value="none">-Select Role-</option>
+                <option value="member">Member</option>
+                <option value="manager">Manager</option>
+            </select>
+        </span>
+        <span>
+           <input type="text" class="approver-email-field" placeholder="Approver's Email">
+        </span>`;
+    document.getElementById("editProjMembersPanel").appendChild(newDiv)
 });
 
 
@@ -1052,26 +1066,22 @@ savesettingsBtn.addEventListener("click", function() {
         showAlertBox(`You have not assigned Members for the New Project: ${document.getElementById("displayteamname").value}`, "OK", null, false);
         return;
     }
-    if (document.getElementById("teamSettingsPage")) {
-        let isNewProjCreated = document.getElementById("teamSettingsPage").getAttribute("data-projectidnew") || "";
-        if (isNewProjCreated != "") {
-            document.getElementById("teamDetailsSection").remove();
-            document.getElementById("createNewTeam").remove();
-        }
-    }
-
-
-    let prof_img = document.getElementById("userprofilepic").getAttribute("src");
-    let disp_name = document.getElementById("displayname_field").value;
-    let acc_type = document.getElementById("user_account_field").value;
 
     let editedProjVals = getEditedProjectVals();
     if (editedProjVals == "invalidProjName") {
         return;
     }
 
+    let insertedOneVals = checkEditInsertedOne();
+    if (insertedOneVals == "invalid") {
+        return;
+    }
 
-    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none") {
+    let prof_img = document.getElementById("userprofilepic").getAttribute("src");
+    let disp_name = document.getElementById("displayname_field").value;
+    let acc_type = document.getElementById("user_account_field").value;
+
+    if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none" || insertedOneVals != "none") {
         saveSettingEnabled = false;
         savesettingsBtn.innerText = "Saving...";
         savesettingsBtn.classList.add("saving-state");
@@ -1082,7 +1092,8 @@ savesettingsBtn.addEventListener("click", function() {
             displayname: disp_name,
             account: acc_type,
             isSwitchedProj: "no",
-            editedProjectVals: editedProjVals
+            editedProjectVals: editedProjVals,
+            insertedOneVals: insertedOneVals
         }
 
         if (initAccountVals.projchange) {
@@ -1095,6 +1106,13 @@ savesettingsBtn.addEventListener("click", function() {
             .then(function(setting) {
                 if (setting.status == "invalid") {
                     sessionStorage.clear();
+                }
+                if (setting.status == "invalidEmail") {
+                    showAlertBox(`You have entered Invalid Email`, "OK", null, false);
+                    saveSettingEnabled = true;
+                    savesettingsBtn.innerText = "Save";
+                    savesettingsBtn.classList.remove("saving-state");
+                    closesettingsBtn.classList.remove("hide");
                 }
                 if (setting.status == "saved") {
                     if (acc_type !== initAccountVals.type) {
@@ -1117,18 +1135,38 @@ savesettingsBtn.addEventListener("click", function() {
                         initAccountVals.type = acc_type;
                         initAccountVals.projchange = false;
                         saveSettingEnabled = true;
+                        if (document.getElementById("teamSettingsPage")) {
+                            let isNewProjCreated = document.getElementById("teamSettingsPage").getAttribute("data-projectidnew") || "";
+                            if (isNewProjCreated != "") {
+                                document.getElementById("teamDetailsSection").classList.add("hide");
+                                document.getElementById("createNewTeam").classList.add("hide");
+                            }
+                        }
                         if (editedProjVals != "none") {
                             document.getElementById("modifyProjectMembers").classList.add("hide");
+                            editProjectBtn.classList.remove("hide");
                             if (editedProjVals.projName != "" || editedProjVals.logo != "") {
                                 setTimeout(function() {
                                     localStorage.setItem("projectmodify", "yes");
                                     location.reload();
                                 }, 1000);
                             }
-                            if (editedProjVals.users.length > 0) { removeEditUserGroups() }
+                            if (editedProjVals.users.length > 0) {
+                                removeEditUserGroups()
+                            }
+                        }
+                        if(insertedOneVals != "none"){
+                            location.reload();
                         }
                         closesettingsBtn.click();
                     }
+
+                } else if (setting.status && setting.msg) {
+                    showAlertBox(setting.msg, "OK", null, false);
+                    saveSettingEnabled = true;
+                    savesettingsBtn.innerText = "Save";
+                    savesettingsBtn.classList.remove("saving-state");
+                    closesettingsBtn.classList.remove("hide");
 
                 }
 
@@ -1183,6 +1221,46 @@ function attachProfileImage(imgfile, logoprofile, logoholder) {
         fileReader.readAsDataURL(imgfile);
     }
 }
+
+function checkEditInsertedOne() {
+    let projEditAddOne = document.getElementById("editProjAddOne") || "";
+    if (projEditAddOne != "") {
+        let mem_email = projEditAddOne.querySelector(".member-email-field");
+        let appr_email = projEditAddOne.querySelector(".approver-email-field");
+        let role = projEditAddOne.querySelector(".select-roles-control").value;
+        if (mem_email.value.trim() == "") {
+            appr_email.value = "";
+            return "none";
+        }
+
+        if (mem_email.value.trim() == appr_email.value.trim()) {
+            appr_email.value = "";
+            showAlertBox("Approver's Email must not be the same", "OK", null, false);
+            return "invalid";
+        }
+
+        if (role == "none") {
+            showAlertBox("Please select role", "OK", null, false);
+            return "invalid";
+        }
+
+        if (appr_email.value.trim() == "") {
+            appr_email.value = atob(authVars.em);
+        }
+        return {
+            member: mem_email.value,
+            role: role,
+            approver: appr_email.value,
+            projid: selectedProjectID,
+            projName: selectedProjectName,
+            logo: ""
+        }
+    } else {
+        return "none";
+    }
+
+}
+
 
 function confirmMemberDeletion(evt) {
     let parentDiv = evt.currentTarget.parentNode;
@@ -1257,6 +1335,7 @@ function getMembersList(_auto) {
                     approverFilter.forEach(approver => {
                         approversList = `${approversList}<option value="${approver}">${approver}</option>`;
                     });
+                    let lastApproverChanged = (tl.updated.length == 1) ? `<br><span class="lastapproverlog">${tl.updated[0]}</span>` : "&nbsp;";
                     let div = document.createElement("div");
                     div.setAttribute("class", "edituserGroup");
                     div.setAttribute("data-memberemail", tl.member);
@@ -1273,7 +1352,9 @@ function getMembersList(_auto) {
                            <select class="select-approver-control">
                                 ${approversList}
                             </select>
-                        </span>`;
+                        </span>
+                        ${lastApproverChanged}
+                        `;
                     document.getElementById("editProjMembersPanel").appendChild(div);
                 });
 
@@ -1283,16 +1364,22 @@ function getMembersList(_auto) {
                         mainStatusOK.classList.remove("hide");
                         mainStatusOK.click();
                     }
-                    addmemberEditBtn.classList.remove("hide");
+
                     projmain[0].classList.remove("hide");
                     projmain[1].classList.remove("hide");
-                    document.getElementById("editProjMembersPanel").appendChild(addmemberEditBtn);
+                    if (addmemberEditBtn) {
+                        addmemberEditBtn.classList.remove("hide");
+                        document.getElementById("editProjMembersPanel").appendChild(addmemberEditBtn);
+                    }
                     let deleteMemberList = document.querySelectorAll(".deletemember");
                     deleteMemberList.forEach((del) => {
                         del.addEventListener("click", confirmMemberDeletion);
                     });
                 } else {
-                    addmemberEditBtn.classList.add("hide");
+                    if (addmemberEditBtn) {
+                        addmemberEditBtn.classList.add("hide");
+                    }
+
                     projmain[0].classList.add("hide");
                     projmain[1].classList.add("hide");
                 }
@@ -1323,11 +1410,11 @@ function getEditedProjectVals() {
     let teamnameEdit = document.getElementById("displayteamname_edit");
     if (teamnameEdit) {
         if (selectedProjectName != teamnameEdit.value) {
-            if(validateProjectName(teamnameEdit.value.trim())){
+            if (validateProjectName(teamnameEdit.value.trim())) {
                 modifiedList.projName = teamnameEdit.value;
-            }else{
+            } else {
                 return "invalidProjName";
-            }          
+            }
         }
     }
 
@@ -1489,7 +1576,7 @@ function createNewProjectName(projname) {
 
             if (proj.status == "limitreached") {
                 showAlertBox(`You have already reached Maximum limit of ${proj.max} Projects`, "OK", null, false);
-                document.getElementById("teamDetailsSection").remove();
+                document.getElementById("teamDetailsSection").classList.add("hide");
             }
 
             if (proj.status == "duplicate") {
@@ -1660,15 +1747,15 @@ addNewMemberProjBtn.addEventListener("click", function() {
         let appr_email = lastGroup.querySelector(".approver-email-field");
 
         if (memb_email.value.trim() == "" || appr_email.value.trim() == "") {
-            showAlertBox("Please enter email", "OK", null, false);
+            showAlertBox("Please enter Email", "OK", null, false);
             enableAddNewMember = true;
             return;
         }
 
-        if (memb_email.value == appr_email.value) {
-            memb_email.value = "";
+        if (memb_email.value.trim() == appr_email.value.trim()) {
             appr_email.value = "";
             enableAddNewMember = true;
+            showAlertBox("Approver's Email must not be the same", "OK", null, false);
             return;
         }
 
