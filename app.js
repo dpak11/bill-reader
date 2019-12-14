@@ -224,12 +224,10 @@ function dateSearch(lines) {
         let l5 = line.match(pattern5);
         let l6 = line.match(pattern6);
         if (l1 != null && l1.length > 1) {
-            console.log("1st type date");
             let m1 = monthCheck.vals(l1[0].split("/"));
             if (m1) { dates.push(m1) }
         }
         if (l2 != null && l2.length > 1) {
-            console.log("2nd type date");
             let m2 = monthCheck.vals(l2[0].split("-"));
             if (m2) { dates.push(m2) }
         }
@@ -284,13 +282,13 @@ function extractTotalVal(totals, alltexts) {
 
         if (total.indexOf("amnt") >= 0) {
             totalValue = total.split("amnt")[1];
-        }       
-        
+        }
+
 
         if (total.indexOf("rate") >= 0) {
             totalValue = total.split("rate")[1];
         }
-        
+
         if (total.indexOf("amount") >= 0) {
             totalValue = total.split("amount")[1];
         }
@@ -449,6 +447,52 @@ function userAuthenticate(pskey, agent, email, mode) {
 
 }
 
+function loadProjectMembers(pskey, agent, email, proj) {
+    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            return Teams.find({ teamid: proj }).exec().then(myteam => {
+                let myrole = myteam.filter(m => m.user_email == email)[0].role;
+                let approvers = myteam.map(t => {
+                    if (t.role == "manager" || t.role == "admin") {
+                        return t.user_email;
+                    }
+                    return false;
+                }).filter(f => f != false);
+                let list = myteam.map(tm => {
+                    if (myrole == "manager") {
+                        if (tm.approver == email) {
+                            return {
+                                role: tm.role,
+                                member: tm.user_email,
+                                approver: tm.approver,
+                                updated: tm.logs
+                            }
+                        }
+                        return false;
+                    }
+                    if (myrole == "admin" && tm.role != "admin") {
+                        return {
+                            role: tm.role,
+                            member: tm.user_email,
+                            approver: tm.approver,
+                            updated: tm.logs
+                        }
+                    }
+                    return false;
+                }).filter(f => f != false);
+
+                return new Promise((resolve, rej) => resolve({ data: JSON.stringify({ approvers: approvers, teamlist: list }) }));
+
+            });
+
+        }
+    });
+
+}
+
 function loadSettingsData(pskey, agent, email) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
 
@@ -504,7 +548,6 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
 
             if (settings.isSwitchedProj == "yes") {
                 let allpromises = [];
-
                 return Teams.find({ user_email: email }).exec().then(mydocs => {
                     mydocs.map((mydoc, i) => {
                         if (mydoc.teamid == settings.newProjectID) {
@@ -513,20 +556,84 @@ function saveSettingsData(pskey, agent, email, acc_setting) {
                             mydoc.default = "no";
                         }
 
-                        allpromises[i] = mydoc.save().then(() => new Promise((resolve, rej) => resolve()));
+                        allpromises[i] = mydoc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })));
                     });
 
                     return Promise.all(allpromises).then(() => {
-                        return doc.save().then(() => new Promise((resolve, rej) => resolve()))
+                        return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
 
                     });
-
                 });
             } else {
-                return doc.save().then(() => new Promise((resolve, rej) => resolve()))
+                if (settings.insertedOneVals != "none") {
+                    if (isValidEmail(settings.insertedOneVals.member) && isValidEmail(settings.insertedOneVals.approver)) {
+                        let projname = settings.insertedOneVals.projName;
+                        let projlogo = settings.insertedOneVals.logo;
+                        if (settings.editedProjectVals != "none") {
+                            if (settings.editedProjectVals.logo != "") { projlogo = settings.editedProjectVals.logo }
+                            if (settings.editedProjectVals.projName != "") { projlogo = settings.editedProjectVals.projName }
+                        }
+                        return addMemberToProject(pskey, agent, email, settings.insertedOneVals.member, settings.insertedOneVals.role, settings.insertedOneVals.approver, settings.insertedOneVals.projid, projname, projlogo).then((ss) => {
+                            
+                            if (ss.status == "done") {
+                                if (settings.editedProjectVals != "none") {
+                                    return updateEditedProject(settings.editedProjectVals, email).then(() => {
+                                        return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
+                                    });
+                                } else {
+                                    return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
+                                }
+                            } else {
+                                return new Promise((resolve, rej) => resolve(ss));
+                            }
+                        });
+                    } else {
+                        return new Promise((resolve, rej) => resolve({ status: "invalidEmail" }));
+                    }
+                } else if (settings.editedProjectVals != "none") {
+                    return updateEditedProject(settings.editedProjectVals, email).then(() => {
+                        return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
+                    });
+
+                }else{
+                    return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
+                }
+
             }
         }
 
+    });
+}
+
+
+function updateEditedProject(editedproj, manager_admin) {
+    return Teams.find({ teamid: editedproj.projid }).exec().then(tmdoc => {
+        let promises = [];
+        let users = editedproj.users;
+        let counter = 0;
+        tmdoc.forEach((team) => {
+            if (editedproj.logo != "") {
+                team.logo = editedproj.logo;
+            }
+            if (editedproj.projName != "") {
+                team.title = editedproj.projName;
+            }
+
+            let user = users.filter(em => (em.email == team.user_email));
+            if (user.length == 1) {
+                team.approver = user[0].approver;
+                team.logs = [`<b>Modified by:</b> ${manager_admin} on ${getIndDate()}`];
+            }
+            if (user.length == 1 || editedproj.logo != "" || editedproj.projName != "") {
+                promises[counter] = team.save().then(() => new Promise((resolve, rej) => resolve()));
+                counter++;
+            }
+
+        });
+        return Promise.all(promises).then(() => {
+            return new Promise((resolve, rej) => resolve());
+
+        });
     });
 }
 
@@ -597,9 +704,7 @@ function loadChartsData(pskey, agent, email, perMode) {
                     });
 
                 }
-            }).catch(err => {
-                console.log(err)
-            })
+            });
         }
     });
 
@@ -654,11 +759,11 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
             return teamMemberValidation(newMemberEmail).then(s1 => {
                 let userState = s1.state;
                 if (userState == "nouser") {
-                    return new Promise((res, reject) => reject({ status: userState, msg: `${newMemberEmail} is not yet registered.` }));
+                    return new Promise((res, reject) => res({ status: userState, msg: `${newMemberEmail} is not yet registered.` }));
                 } else {
                     return teamMemberValidation(approver).then(s2 => {
                         if (s2.state == "nouser") {
-                            return new Promise((res, reject) => reject({ status: s2.state, msg: `${approver} is not yet registered.` }));
+                            return new Promise((res, reject) => res({ status: s2.state, msg: `${approver} is not yet registered.` }));
                         } else {
                             return Teams.findOne({ user_email: newMemberEmail, teamid: project }).exec().then(teamem1 => {
                                 if (teamem1 == null) {
@@ -668,15 +773,15 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
                                         return Teams.findOne({ user_email: approver, teamid: project }).exec().then(teamem2 => {
                                             if (teamem2 == null) {
                                                 return addToTeam(project, logoimg, project_name, approver, "manager", email)
-                                                    .then(() => new Promise((resolve, rej) => resolve()));
+                                                    .then(() => new Promise((resolve, rej) => resolve({ status: "done" })));
                                             } else if (teamem2.role == "member") {
                                                 return Teams.deleteOne({ user_email: newMemberEmail, teamid: project }).exec().then((del) => {
-                                                    return new Promise((res, reject) => reject({ status: "declineMemberRole", msg: `Already assigned Member(${approver}) can not be re-assigned "Manager" Role` }));
+                                                    return new Promise((res, reject) => res({ status: "declineMemberRole", msg: `Already assigned Member(${approver}) can not be re-assigned "Manager" Role` }));
                                                 });
 
                                             } else {
                                                 teamem2.role = (teamem2.role == "admin") ? "admin" : "manager";
-                                                return teamem2.save().then(() => new Promise((resolve, rej) => resolve()))
+                                                return teamem2.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
 
                                             }
                                         });
@@ -687,30 +792,30 @@ function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, app
 
                                 } else if (teamem1.role == "manager") {
                                     if (memberRole == "member") {
-                                        return new Promise((res, reject) => reject({ status: "preassigned", msg: `Can not re-assign Manager "${newMemberEmail}" as a Member` }))
+                                        return new Promise((res, reject) => res({ status: "preassigned", msg: `Can not re-assign Manager "${newMemberEmail}" as a Member` }))
                                     } else {
                                         return Teams.findOne({ user_email: approver, teamid: project }).exec().then(tc => {
                                             if (tc == null) {
                                                 return addToTeam(project, logoimg, project_name, approver, "manager", email)
                                                     .then(() => {
                                                         teamem1.approver = approver;
-                                                        return teamem1.save().then(() => new Promise((resolve, rej) => resolve()))
+                                                        return teamem1.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
                                                     });
                                             } else if (tc.role == "manager" || tc.role == "admin") {
                                                 if (teamem1.approver == approver) {
-                                                    return new Promise((res, reject) => reject({ status: "preassigned", msg: `Error: Duplicate Assignment` }))
+                                                    return new Promise((res, reject) => res({ status: "preassigned", msg: `Error: Duplicate Assignment` }))
                                                 } else {
                                                     teamem1.approver = approver;
-                                                    return teamem1.save().then(() => new Promise((resolve, rej) => resolve()))
+                                                    return teamem1.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
                                                 }
                                             } else {
-                                                return new Promise((res, reject) => reject({ status: "preassigned", msg: `Can not re-assign Member "${approver}" as approver` }))
+                                                return new Promise((res, reject) => res({ status: "preassigned", msg: `Can not re-assign Member "${approver}" as approver` }))
                                             }
                                         });
                                     }
 
                                 } else {
-                                    return new Promise((res, reject) => reject({ status: "preassigned", msg: `${newMemberEmail} is already assigned to this Project` }))
+                                    return new Promise((res, reject) => res({ status: "preassigned", msg: `${newMemberEmail} is already assigned to this Project` }))
                                 }
                             });
                         }
@@ -737,7 +842,7 @@ function teamMemberValidation(member) {
 }
 
 function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver) {
-    return setasDefaultTeam(newMemberEmail).then((state) => {
+    return getDefaultTeam(newMemberEmail).then((state) => {
         let date_now = getIndDate();
         let newproject = new Teams({
             teamid: project,
@@ -762,7 +867,7 @@ function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, a
 
 }
 
-function setasDefaultTeam(user) {
+function getDefaultTeam(user) {
     return Teams.findOne({ user_email: user }).exec().then(listeam => {
         if (listeam == null) {
             return new Promise((res, rej) => res({ default: "yes" }));
@@ -771,6 +876,76 @@ function setasDefaultTeam(user) {
 
         }
     })
+}
+
+function setDefaultTeam(user) {
+    return Teams.find({ user_email: user }).exec().then(listeam => {
+        if (listeam == null || listeam.length == 0) {
+            return new Promise((resolve, rej) => resolve());
+        } else {
+            let defaults = listeam.filter(tm => (tm.default == "yes"));
+            if (defaults.length == 0) {
+                listeam[0].default = "yes";
+                return listeam[0].save().then(() => new Promise((resolve, rej) => resolve()));
+
+            } else {
+                return new Promise((resolve, rej) => resolve());
+            }
+        }
+    })
+}
+
+
+
+function removeProjectMember(pwdkey, useragent, email, project, member) {
+    return Users.findOne({ email: email, key: pwdkey, browser: useragent }).exec().then(doc => {
+        if (doc == null) {
+            return new Promise((resolve, rej) => rej());
+        } else {
+            return Teams.findOne({ user_email: member, teamid: project }).exec().then(teamdoc => {
+                if (teamdoc != null) {
+                    let allowdeletion = true;
+                    teamdoc.bills.forEach(bill => {
+                        if (bill.status == "approved") {
+                            allowdeletion = false;
+                        }
+                    });
+                    if (!allowdeletion) {
+                        return new Promise((resolve, rej) => resolve("denied"));
+                    } else {
+                        return Teams.deleteOne({ user_email: member, teamid: project }).exec().then(() => {
+                            return setDefaultTeam(member).then(() => {
+                                if (teamdoc.role == "manager") {
+                                    // If manager is deleted, then assign admin as the default bill approver to replace this manager
+                                    let promises = [];
+                                    return Teams.find({ approver: member, teamid: project }).exec().then(tm => {
+                                        if (tm == null || tm.length == 0) {
+                                            return new Promise((resolve, rej) => resolve("deleted-manager"));
+                                        } else {
+                                            tm.forEach((mem, i) => {
+                                                mem.approver = email; // set admin email as approver
+                                                mem.logs = [`<b>Modified by:</b> ${email} on ${getIndDate()}`];
+                                                promises[i] = mem.save().then(() => new Promise((resolve, rej) => resolve()));
+                                            });
+                                            return Promise.all(promises).then(() => {
+                                                return new Promise((resolve, rej) => resolve("deleted-manager"));
+                                            });
+                                        }
+
+                                    });
+                                } else {
+                                    return new Promise((resolve, rej) => resolve("deleted-member"));
+                                }
+                            });
+
+                        });
+                    }
+
+                }
+            });
+        }
+
+    });
 }
 
 
@@ -812,6 +987,7 @@ function loadUserBills(pskey, agent, email, mode) {
                         if (mode == "private") {
                             teamdoc.forEach(function(tdoc) {
                                 if (tdoc.default == "yes") {
+
                                     obj.activeProjectID = tdoc.teamid;
                                     obj.logo = tdoc.logo;
                                     obj.projname = tdoc.title;
@@ -831,7 +1007,6 @@ function loadUserBills(pskey, agent, email, mode) {
                                     });
                                 }
                             });
-                            console.log("default skin:"+obj.defaultskin);
                             return new Promise((resolve, rej) => resolve({ data: obj }));
                         }
 
@@ -1047,7 +1222,7 @@ function updateUserBill(pskey, agent, email, bill_id, bill_data) {
                 if (teamdoc == null || teamdoc.length == 0) {
                     return new Promise((resolve, rej) => rej());
                 } else {
-                    
+
                     teamdoc.bills.map(bill => {
                         if (bill.billid === bill_id) {
                             let modDate = getIndDate();
@@ -1111,7 +1286,7 @@ function rejectUserBill(pskey, agent, email, bill_id, proj, user) {
     });
 }
 
-function saveDefaultTheme(pskey, agent, email, theme){
+function saveDefaultTheme(pskey, agent, email, theme) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
         doc.theme = theme;
         doc.save().then(() => new Promise((resolve, rej) => resolve()))
@@ -1272,8 +1447,6 @@ app.post("/userAuth", (req, res) => {
 app.post("/loadBills", (req, res) => {
     const { em, agent, key_serv, mode, ptype } = req.body;
     loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
-        console.log("loaded bills");
-        console.log(d.data.defaultskin);
         res.json({ status: "done", user_data: d.data });
     }).catch(function(s) {
         if (s.status == "notinteam") {
@@ -1330,6 +1503,8 @@ app.post("/approveRejectBill", (req, res) => {
 
 });
 
+
+
 app.post("/settingsload", (req, res) => {
     const { em, agent, key_serv } = req.body;
     loadSettingsData(key_serv, agent, getEmail(em)).then(d => {
@@ -1342,26 +1517,39 @@ app.post("/settingsload", (req, res) => {
 
 app.post("/settingsave", (req, res) => {
     const { em, agent, key_serv, usersetting } = req.body;
-    saveSettingsData(key_serv, agent, getEmail(em), usersetting).then(() => {
-        res.json({ status: "saved" })
-    }).catch(function() {
+    saveSettingsData(key_serv, agent, getEmail(em), usersetting).then((s) => {
+        if (s.status == "done") {
+            res.json({ status: "saved" })
+        } else {
+            res.json(s)
+        }
+    }).catch(function(e) {
         res.json({ status: "invalid" });
     });
+
+});
+
+app.post("/getProjMembers", (req, res) => {
+    const { em, agent, key_serv, project } = req.body;
+    loadProjectMembers(key_serv, agent, getEmail(em), project).then(d => {
+        res.json({ status: "done", team: d.data })
+    }).catch(function() {
+        res.json({ status: "invalid" });
+    })
 
 });
 
 app.post("/addNewProjMember", (req, res) => {
     const { em, agent, key_serv, member, role, approver, proj_id, projname, logo } = req.body;
     if (isValidEmail(member) && isValidEmail(approver)) {
-        addMemberToProject(key_serv, agent, getEmail(em), member, role, approver, proj_id, projname, logo).then(() => {
-            res.json({ status: "added" });
-        }).catch(function(s) {
-            if (s.status) {
-                res.json({ status: s.status, msg: s.msg });
+        addMemberToProject(key_serv, agent, getEmail(em), member, role, approver, proj_id, projname, logo).then((ss) => {
+            if (ss.status == "done") {
+                res.json({ status: "added" });
             } else {
-                res.json({ status: "invalid" });
+                res.json({ status: ss.status, msg: ss.msg });
             }
-
+        }).catch(function(s) {
+            res.json({ status: "invalid" });
         });
     } else {
         res.json({ status: "invalidEmail" });
@@ -1386,6 +1574,16 @@ app.post("/addNewProject", (req, res) => {
 
 });
 
+app.post("/removeMember", (req, res) => {
+    const { em, agent, key_serv, project, member } = req.body;
+    removeProjectMember(key_serv, agent, getEmail(em), project, member).then((delstatus) => {
+        res.json({ status: delstatus })
+    }).catch(function() {
+        res.json({ status: "invalid" });
+    })
+
+});
+
 app.post("/removeTempProj", (req, res) => {
     const { em, agent, key_serv, proj } = req.body;
     removeProject(key_serv, agent, getEmail(em), proj).then(() => {
@@ -1395,14 +1593,15 @@ app.post("/removeTempProj", (req, res) => {
 });
 
 
+
 app.post("/chartsload", (req, res) => {
     const { em, agent, key_serv, persTeam } = req.body;
     loadChartsData(key_serv, agent, getEmail(em), persTeam).then(c => {
         res.json({ status: "done", chartdata: c.chartdata })
     }).catch(function(err) {
-        if(err == "nochartdata"){
-            res.json({status:"nochart"})
-        }else{
+        if (err == "nochartdata") {
+            res.json({ status: "nochart" })
+        } else {
             res.json({ status: "invalid" });
         }
     })
@@ -1413,8 +1612,8 @@ app.post("/saveDefaultTheme", (req, res) => {
     const { em, agent, key_serv, theme } = req.body;
     saveDefaultTheme(key_serv, agent, getEmail(em), theme).then(() => {
         res.json({ status: "done" })
-    }).catch(function(err) {        
-        res.json({ status: "invalid" });        
+    }).catch(function(err) {
+        res.json({ status: "invalid" });
     })
 
 });
