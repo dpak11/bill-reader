@@ -1319,10 +1319,10 @@ function getMembersList(_auto) {
                 document.querySelector("#modifyProjectMembers h5").innerText = "Edit Project (" + selectedProjectName + ")";
                 let team = JSON.parse(p.team);
                 let deleteBtnTag = (teamAcRights == "all") ? `<span class="deletemember btn" style="background:red;width:auto">Delete</span>` : "&nbsp;";
-                if (team.teamlist.length > 0) {
+                if (team.teamlist.length > 0 || projectMemberRole == "admin") {
                     document.getElementById("modifyProjectMembers").classList.remove("hide");
-                } else {
-                    showAlertBox(`Admin has not assigned any members under you.`, "OK", null, false);
+                } else{
+                	showAlertBox("Admin has not assigned any members under you.", "OK", null, false);
                 }
                 team.teamlist.forEach(tl => {
                     let approversList = ``;
