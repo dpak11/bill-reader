@@ -980,6 +980,7 @@ let enableAddNewMember = false;
 let isProfilePicModified = false;
 let isLogoModified = false;
 let saveSettingEnabled = false;
+let editProjectMode = false;
 let initAccountVals = { name: "", type: "", projchange: false };
 
 
@@ -1007,12 +1008,12 @@ settingsBtn.addEventListener("click", function() {
     }
 });
 
-
 editProjectBtn.addEventListener("click", function() {
     editProjectBtn.innerText = "please wait...";
     editProjectBtn.classList.add("saving-state");
     editProjectBtn.classList.remove("btn");
     editProjectBtn.classList.remove("btn-editproj");
+    editProjectMode = true;
     getMembersList("");
 
 });
@@ -1144,6 +1145,7 @@ savesettingsBtn.addEventListener("click", function() {
                         }
                         if (editedProjVals != "none") {
                             document.getElementById("modifyProjectMembers").classList.add("hide");
+                            editProjectMode = false;
                             editProjectBtn.classList.remove("hide");
                             if (editedProjVals.projName != "" || editedProjVals.logo != "") {
                                 setTimeout(function() {
@@ -1223,6 +1225,9 @@ function attachProfileImage(imgfile, logoprofile, logoholder) {
 }
 
 function checkEditInsertedOne() {
+    if(!editProjectMode){
+        return "none";
+    }
     let projEditAddOne = document.getElementById("editProjAddOne") || "";
     if (projEditAddOne != "") {
         let mem_email = projEditAddOne.querySelector(".member-email-field");
@@ -1390,13 +1395,14 @@ function getMembersList(_auto) {
                 editProjectBtn.classList.remove("saving-state");
                 editProjectBtn.classList.add("btn");
                 editProjectBtn.classList.add("btn-editproj");
+                editProjectMode = false;
             }
         });
 
 }
 
 function getEditedProjectVals() {
-    if (projectMemberRole == "member") {
+    if (projectMemberRole == "member" || !editProjectMode) {
         return "none";
     }
     let editlist = document.querySelectorAll(".edituserGroup");
@@ -1699,6 +1705,7 @@ myProjectSelect.addEventListener("change", function() {
         initAccountVals.projchange = true;
         editProjectBtn.classList.add("hide");
         document.getElementById("modifyProjectMembers").classList.add("hide");
+        editProjectMode = false;
         removeEditUserGroups();
     } else {
         initAccountVals.projchange = false;
