@@ -100,6 +100,81 @@ input {
     flex-direction: column;
     align-items: center;
 }
+#appintro{
+    z-index: 10;
+    position: absolute;
+    top: 120px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+}
+#appintro > div {
+    width: 70%;
+    background: #dfeaea;
+    padding: 20px;
+    border-radius: 8px;
+    font-size: 1em
+}
+#appintro p{
+    line-height: 1.3em;
+    text-align: justify;
+    margin: 0
+
+}
+#appintro h3{
+    text-align: center;
+    border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+}
+#appintro h4{
+    text-align: center;
+    background: rgba(255, 255, 255, 0.45);
+    padding: 15px;
+    color: rgba(0, 0, 0, 0.6);
+    letter-spacing: 2px;
+}
+#appintro img{
+    padding: 10px
+}
+#closeIntro{
+    padding: 8px
+}
+#aboutapp{
+    margin: 0;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    text-align: center;
+    padding-bottom: 5px;
+    font-size: .8em;
+}
+
+.fadein-intro {
+    animation: fadein 1.5s linear;
+}
+
+.fadeout-intro {
+    animation: fadeout 1s linear;
+}
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
 
 
 @media (max-width:450px) {    
@@ -110,4 +185,11 @@ input {
         width: 50%
     }
     
+}
+
+@media (max-width:385px) {
+    #appintro > div {
+        width: 80%;
+    }
+
 }

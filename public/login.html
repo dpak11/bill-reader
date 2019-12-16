@@ -6,15 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
     <title>Login | Bill Vault</title>
     <link rel="stylesheet" href="css/resets.css">
     <link rel="stylesheet" href="css/styles-login.css">
     <link rel="manifest" href="manifest.json">
-  <!-- ios support -->
-  <link rel="apple-touch-icon" href="images/icons/icon-96x96.png">
-  <meta name="apple-mobile-web-app-status-bar" content="#850689">
-  <meta name="theme-color" content="#850689">
+    <!-- ios support -->
+    <link rel="apple-touch-icon" href="images/icons/icon-96x96.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#850689">
+    <meta name="theme-color" content="#850689">
 </head>
 
 <body>
@@ -45,13 +45,41 @@
             </div>
         </div>
     </div>
+    <div id="appintro" class="">
+        <div>
+            <h3 style="
+    ">Welcome to BillVault</h3>
+            <p style="text-align:center"><img src="images/happy.png"></p>
+            <p>
+                Easiest way to keep track of all your expenses. Just click a picture of your paper bill receipt. All the important information will be automatically extracted from the bill. </p>
+            <p style="text-align:center"><img src="images/statistics.png"></p>
+            <p>You can save your bill, and view all categories of expenses like fuel, food, travel, Medical etc in colored Charts.</p>
+            <p>&nbsp;</p>
+            <p>BillVault is available for your personal and business use.
+            </p>
+            <h4>Personal Use</h4>
+            <p>Your bill receipt and information can never be viewed by anyone, except you. How does it work? The password you use to sign into your account will be used to encrypt your bill. This means your bill will be scrambled into unreadable junk using your password and the junk is saved in server. </p>
+            <p style="text-align:center"><img src="images/lockicon.png"></p>
+            <p>To unscramble the junk, it again requires password. This password only stays on your personal device, and never goes to server. So you alone have access to your password. In case you have signed out, and you forgot your password, you will not be able to get it back. Sorry about that.</p>
+            <p></p>
+            <h4>Business Use:</h4>
+            <p style="text-align:center"><img src="images/group.png"></p>
+            <p>- Administrators of business account can create a maximum of 5 projects. And add logo, members, managers to the project.
+                <br>
+                - Team members can submit bill receipts to managers for approval.<br>
+                - Managers can approve or reject the bill.<br>
+                - Administrators can approve or reject manager's bills.<br>
+                - Receive email notification if your bill gets rejected or approved.<br>
+                - Managers will receive notification if a member has submitted bill for approval</p>
+            <p style="margin-top: 30px"><span class="btn" id="closeIntro">CLOSE</span></p>
+        </div>
+    </div>
+    <div id="aboutapp"><a href="about.html" target="_blank">About BillVault</a></div>
     <script src="modernizr.js"></script>
     <script src="auth.js"></script>
     <script src="crypts.js"></script>
     <script src="pwa.js"></script>
     <script src="userlogin.js"></script>
-    
 </body>
-
 
 </html>

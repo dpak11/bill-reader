@@ -6,6 +6,7 @@ const email = document.getElementById("email");
 const confirm = document.getElementById("confirm");
 const activation = document.getElementById("act_code");
 const statusBox = document.getElementById("statusbox");
+const closeIntroBtn = document.getElementById("closeIntro");
 let buttonsActive = true;
 let user_mode = "";
 
@@ -182,7 +183,7 @@ function passwordStrength(pswd) {
     if (errorlog != "") {
         let err = errorlog.split(",");
         err.pop();
-        showStatus("Password must contain at least " +err.join(",") , 5000);
+        showStatus("Password must contain at least " + err.join(","), 5000);
         return false;
     }
     return true;
@@ -202,6 +203,24 @@ function showStatus(msg, duration) {
         buttonsActive = true;
     }, duration);
 }
+
+closeIntroBtn.addEventListener("click", function() {
+    let introDiv = document.getElementById("appintro");
+    introDiv.classList.remove("fadein-intro");
+    introDiv.classList.add("fadeout-intro");
+    setTimeout(function() {
+        introDiv.style.display = "none"
+        introDiv.remove();
+    }, 900);
+});
+setTimeout(function() {
+    document.getElementById("appintro").classList.add("fadein-intro");
+}, 2000);
+
+setTimeout(function() {
+    document.getElementById("appintro").style.opacity = 1;
+}, 3500);
+
 
 user_validate().then(function(status) {
     if (status == "valid") {
