@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
+    <title>About Bill Vault</title>
+    <link rel="stylesheet" href="css/resets.css">
+    <style>
+    html,
+    body {
+        width: 100%;
+    }
+
+    body,
+    .container {
+        min-height: 100vh;
+        background: #c3bfd4;
+        font-size: 1em
+    }
+
+    header {
+        height: 100px;
+        width: 100%;
+        display: block;
+        background: #850689;
+        border-bottom: solid 4px #adaceb;
+    }
+
+
+    header img {
+        width: 150px;
+        height: auto;
+        margin: 6px 0 0 30px
+    }
+
+    p {
+        padding: 0;
+        margin: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 8px 0;
+        background: #3354e6;
+        text-align: center;
+        margin-bottom: 6px;
+        color: #d5dde3;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+    #appintro{
+        padding: 30px;
+        font-size: 1em;
+        font-family: Arial;
+        text-align: justify;
+    }
+    #appintro > div {
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.5);
+        line-height: 1.6em;
+    }
+    p span{
+        background: #f3e7e7;
+        border: 1px solid #000;
+        border-style: dashed;
+        padding: 2px 5px;
+    }
+    h2{
+        text-align: left;
+    }
+
+@media (max-width:385px) {
+    #appintro  {
+        padding: 20px;
+        font-size: .9em
+    }
+
+}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo-sq.png" alt="Logo">
+        </header>
+        <div id="appintro" class="">
+        <div>
+            <h2>Your Password and Personal Bills</h2>
+            <p>
+                Your password is important not only to Log into your account, but also to scramble your Personal Bill information such that no one else can view it, except you. (Not even the developer of this application can view you bill). 
+            </p>
+            <br>
+            <p><b>This is how it works:</b><br>
+                Say for example, your password is <span>Abcde123</span>.
+                When you sign into your account, your password is converted to unreadable string that looks something like this. <span>1aXNoZWQsIG5vdCBvbmx</span> (approx 20 characters in length, it can be more depending on password). </p>
+
+                <p>This is broken into 2 equal halfs. First half of this string <span>1aXNoZWQsI</span> is sent to a server which is located in some other country, and second half <span>G5vdCBvbmx</span> is stored on your device(mobile, laptop etc). Everytime you enter a correct password, it always generates exactly the same string which will be compared with your email address to see if it matches. You will be successfully logged into your account if it matches. The steps/algorithm used to generate the 20-character string is a bit more complex and beyond the scope of this section. 
+                <p>
+                But the point to note is, there is no reverse-algorithm available to convert 20-character string back to original password. Every time you sign out of your account, the unreadbale password stored on your device gets deleted. So if you have lost or forgotten your password then there is no way to Sign into your account but completely reset/wipe your account and get registered from start. </p>
+                <br><br>
+                <b>... and now coming to your Personal Bills:</b>
+                <br>
+                As soon as you take a snap of your Bill receipt using your mobile camera, or upload a Bill receipt from your laptop, the receipt image(JPG or PNG file), will be immediately converted to a very large chunk of unreadble string(technically called a <a href="https://en.wikipedia.org/wiki/Base64" target="_blank">"base64"</a> string) approximately 50,000 to 80,000 characters in length depending on the size, resolution quality of your receipt bill.
+            </p>
+            <p>
+                Now when you save your Bill, the base64 string is scrambled using the unreadable half of your password already stored on your device. The scrambled string is sent to server for storage. Next time, you want to view your saved Bill, the scrambled string is fetched from server and unscrambled using the password on your device.W<br><br>
+                Scrambling the base64 string basically involves 3 steps:<br><br>
+                1. Breaking it to "N" number of blocks. If N is 6, then 50,000 characters is broken into 6 equal blocks each approx 8333 characters long. The value of "N" is derived from the unreadable password on your device (steps on how it is derived from password is beyond the scope of this section)<br><br>
+                2. From each of the 6 blocks, X number of characters are extracted from Y position (X and Y are also derived from the unreadable password)<br><br>
+                3. Gather all the extracted characters and insert it to the end of the modified base64 string.
+            </p>
+            <p>&nbsp;</p><p>&nbsp;</p>
+            <p>Please note that, if you are using a <b>Business account</b>, your Bill Information <b>will not be kept private</b> as it needs to be viewed by managers and admin of your respective project.</p>
+        </div>
+    </div>
+    </div>
+    
+</body>
+
+</html>

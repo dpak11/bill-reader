@@ -1641,6 +1641,10 @@ app.post("/missingfeature", (req, res) => {
 
 });
 
+app.get("/about", (req, res) => {
+    res.sendFile(__dirname + "/public/about.html");
+});
+
 app.get("/*", (req, res) => {
     res.redirect("https://" + req.headers.host + "/404.html");
 
