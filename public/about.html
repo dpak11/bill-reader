@@ -111,10 +111,10 @@
                 <br><br>
                 <b>... and now coming to your Personal Bills:</b>
                 <br>
-                As soon as you take a snap of your Bill receipt using your mobile camera, or upload a Bill receipt from your laptop, the receipt image(JPG or PNG file), will be immediately converted to a very large chunk of unreadble string(technically called a <a href="https://en.wikipedia.org/wiki/Base64" target="_blank">"base64"</a> string) approximately 50,000 to 80,000 characters in length depending on the size, resolution quality of your receipt bill.
+                As soon as you take a snap of your Bill receipt using your mobile camera, or upload a Bill receipt from your laptop, the receipt image(JPG or PNG file), will be immediately converted to a very large chunk of alphanumeric string(technically called a <a href="https://en.wikipedia.org/wiki/Base64" target="_blank">"base64"</a> string) approximately 50,000 to 80,000 characters in length depending on the size, resolution quality of your receipt bill.
             </p>
             <p>
-                Now when you save your Bill, the base64 string is scrambled using the unreadable half of your password already stored on your device. The scrambled string is sent to server for storage. Next time, you want to view your saved Bill, the scrambled string is fetched from server and unscrambled using the password on your device.W<br><br>
+                Now when you save your Bill, the base64 string is scrambled using the unreadable half of your password already stored on your device. The scrambled string is sent to server for storage. Next time, you want to view your saved Bill, the scrambled string is fetched from server and unscrambled using the password on your device.<br><br>
                 Scrambling the base64 string basically involves 3 steps:<br><br>
                 1. Breaking it to "N" number of blocks. If N is 6, then 50,000 characters is broken into 6 equal blocks each approx 8333 characters long. The value of "N" is derived from the unreadable password on your device (steps on how it is derived from password is beyond the scope of this section)<br><br>
                 2. From each of the 6 blocks, X number of characters are extracted from Y position (X and Y are also derived from the unreadable password)<br><br>
