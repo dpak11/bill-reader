@@ -98,7 +98,7 @@
         <div>
             <h2>Your Password and Personal Bills</h2>
             <p>
-                Your password is important not only to Log into your account, but also to scramble your Personal Bill information such that no one else can view it, except you. (Not even the developer of this application can view you bill). 
+                Your password is important not only to Log into your account, but also to scramble your Personal Bill information such that no one else can view it, except you. (Not even the developer of this application can view your bill). 
             </p>
             <br>
             <p><b>This is how it works:</b><br>
@@ -107,7 +107,7 @@
 
                 <p>This is broken into 2 equal halfs. First half of this string <span>1aXNoZWQsI</span> is sent to a server which is located in some other country, and second half <span>G5vdCBvbmx</span> is stored on your device(mobile, laptop etc). Everytime you enter a correct password, it always generates exactly the same string which will be compared with your email address to see if it matches. You will be successfully logged into your account if it matches. The steps/algorithm used to generate the 20-character string is a bit more complex and beyond the scope of this section. 
                 <p>
-                But the point to note is, there is no reverse-algorithm available to convert 20-character string back to original password. Every time you sign out of your account, the unreadbale password stored on your device gets deleted. So if you have lost or forgotten your password then there is no way to Sign into your account but completely reset/wipe your account and get registered from start. </p>
+                But the point to note is, there is no reverse-algorithm available to convert 20-character string back to original password (Somewhat similar to how <a href="https://medium.com/tech-tales/what-is-hashing-6edba0ebfa67" target="_blank">hashing works</a>) Every time you sign out of your account, the unreadbale password stored on your device gets deleted. So if you have lost or forgotten your password then there is no way to Sign into your account but completely reset/wipe your account and get registered from start. </p>
                 <br><br>
                 <b>... and now coming to your Personal Bills:</b>
                 <br>
@@ -116,8 +116,8 @@
             <p>
                 Now when you save your Bill, the base64 string is scrambled using the unreadable half of your password already stored on your device. The scrambled string is sent to server for storage. Next time, you want to view your saved Bill, the scrambled string is fetched from server and unscrambled using the password on your device.<br><br>
                 Scrambling the base64 string basically involves 3 steps:<br><br>
-                1. Breaking it to "N" number of blocks. If N is 6, then 50,000 characters is broken into 6 equal blocks each approx 8333 characters long. The value of "N" is derived from the unreadable password on your device (steps on how it is derived from password is beyond the scope of this section)<br><br>
-                2. From each of the 6 blocks, X number of characters are extracted from Y position (X and Y are also derived from the unreadable password)<br><br>
+                1. Breaking it to "N" number of blocks. If value of N is 5, then 50,000 characters is broken into 5 equal blocks each approx 10,000 characters long. The value of "N" is derived from the unreadable password stored on your device (algorithm on how its derived from password is beyond the scope of this section)<br><br>
+                2. From each of the 5 blocks, X number of characters are extracted from Y position (X and Y are also derived from the unreadable password)<br><br>
                 3. Gather all the extracted characters and insert it to the end of the modified base64 string.
             </p>
             <p>&nbsp;</p><p>&nbsp;</p>
