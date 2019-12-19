@@ -195,3 +195,9 @@ input {
     }
 
 }
+
+@media (min-width: 765px){
+    #appintro > div {
+        width: 580px
+    }
+}
