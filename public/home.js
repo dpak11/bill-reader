@@ -191,7 +191,6 @@ function imageProcess(imgfile) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 4) {
             currentUploadStatus = "";
-
             showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 4 MB", "OK", null, false)
             return;
         }
@@ -203,9 +202,7 @@ function imageProcess(imgfile) {
         fileReader.onload = function(fileLoadedEvent) {
             let srcData = fileLoadedEvent.target.result; // <--- data: base64          
             document.querySelector('.previewimg img').src = srcData;
-            console.log("Init processing....\n");
             getOrientation(imgfile, function(orient) {
-                console.log("got orientation val:" + orient);
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
                 if (byteSize < 3 && orient <= 1) {
                     BillImgProcessing(srcData);
@@ -302,10 +299,8 @@ function getOrientation(file, callback) {
 
 
 function resetOrientation(srcBase64, srcOrientation, callback) {
-    console.log("reset orientation");
     let img = new Image();
     img.onload = function() {
-        console.log("reset orientation img onload");
         let width = img.width,
             height = img.height,
             canvas = document.createElement('canvas'),
@@ -319,8 +314,6 @@ function resetOrientation(srcBase64, srcOrientation, callback) {
             canvas.width = width;
             canvas.height = height;
         }
-
-        console.log("reset orientation img onload");
 
         // transform context before drawing image
         switch (srcOrientation) {
@@ -430,7 +423,6 @@ function fetchBills() {
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "invalid") {
-                    console.log("invalid");
                     sessionStorage.clear();
                     preloader.classList.add("hide");
                 }
@@ -1963,12 +1955,12 @@ function loadCharts() {
 
 
 function filterChart(days) {
-    console.log(all_chart_data);
+    //console.log(all_chart_data);
     let pieChartList = all_chart_data.slice(0);
     let markerPoint = 0;
     let todate1 = pieChartList[0].date;
     let fromdate1 = "";
-    pieChartList = pieChartList.filter(function(dx, p) {
+    pieChartList = pieChartList.filter((dx, p) => {
         let tot_days = dateDifference(pieChartList[0].date, dx.date);
         if (tot_days <= days) {
             markerPoint = p;
@@ -1986,7 +1978,7 @@ function filterChart(days) {
         barChartList1 = all_chart_data.slice(0);
         barChartList1 = barChartList1.splice(markerPoint + 1);
         todate2 = barChartList1.length > 0 ? barChartList1[0].date : "";
-        barChartList1Filter = barChartList1.filter(function(dx, p) {
+        barChartList1Filter = barChartList1.filter((dx, p) => {
             let tot_days = dateDifference(barChartList1[0].date, dx.date);
             if (tot_days <= 30) {
                 markerPoint = p;
@@ -2005,7 +1997,7 @@ function filterChart(days) {
     if (days == 90) {
         barChartList2Filter = barChartList1.splice(markerPoint + 1);
         todate3 = barChartList2Filter.length > 0 ? barChartList2Filter[0].date : "";
-        barChartList2Filter = barChartList2Filter.filter(function(dx, p) {
+        barChartList2Filter = barChartList2Filter.filter((dx, p) => {
             let tot_days = dateDifference(barChartList2Filter[0].date, dx.date);
             if (tot_days <= 30) {
                 fromdate3 = dx.date;
