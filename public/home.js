@@ -1149,7 +1149,7 @@ savesettingsBtn.addEventListener("click", function() {
                                 removeEditUserGroups()
                             }
                         }
-                        if(insertedOneVals != "none"){
+                        if (insertedOneVals != "none") {
                             location.reload();
                         }
                         closesettingsBtn.click();
@@ -1217,7 +1217,7 @@ function attachProfileImage(imgfile, logoprofile, logoholder) {
 }
 
 function checkEditInsertedOne() {
-    if(!editProjectMode){
+    if (!editProjectMode) {
         return "none";
     }
     let projEditAddOne = document.getElementById("editProjAddOne") || "";
@@ -1318,8 +1318,8 @@ function getMembersList(_auto) {
                 let deleteBtnTag = (teamAcRights == "all") ? `<span class="deletemember btn" style="background:red;width:auto">Delete</span>` : "&nbsp;";
                 if (team.teamlist.length > 0 || projectMemberRole == "admin") {
                     document.getElementById("modifyProjectMembers").classList.remove("hide");
-                } else{
-                	showAlertBox("Admin has not assigned any members under you.", "OK", null, false);
+                } else {
+                    showAlertBox("Admin has not assigned any members under you.", "OK", null, false);
                 }
                 team.teamlist.forEach(tl => {
                     let approversList = ``;
@@ -1615,27 +1615,20 @@ function createNewProjectName(projname) {
         });
 }
 
-function validateProjectName(proj) {
-    let allowed = "1234567890 mnbvcxzasdfghjklpoiuytrewq_QWERTYUIOPLKJHGFDSAZXCVBNM-";
+function validateProjectName(proj) {    
     if (proj.length < 3) {
-        showAlertBox("Project Name Invalid", "OK", null, false);
-        return false;
-    }
-    if (!/[a-z0-9]/gi.test(proj)) {
-        showAlertBox("Project Name Invalid", "OK", null, false);
+        showAlertBox("Project Name is too Small", "OK", null, false);
         return false;
     }
     if (proj.length > 40) {
         showAlertBox("Project Name can not exceed 40 Characters", "OK", null, false);
         return false;
     }
-
-    for (let i = 0; i < proj.length; i++) {
-        if (allowed.indexOf(proj.substr(i, 1)) == -1) {
-            showAlertBox("Project Name Invalid", "OK", null, false);
-            return false;
-        }
+    if (!(/^([a-z0-9]+[a-z0-9\.\s-_]*)$/i).test(proj)) {
+        showAlertBox("Project Name Invalid", "OK", null, false);
+        return false;
     }
+
     return true;
 }
 
