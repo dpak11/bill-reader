@@ -128,30 +128,8 @@ function addUserToDB(e_mail, actCode) {
 }
 
 
-
-
-
-
 function isValidEmail(em) {
-    let validchars = "0123456789qwertyuioplkjhgfdsazxcvbnm_.@";
-    let indexes = [];
-    indexes.push(em.indexOf("@"));
-    indexes.push(em.lastIndexOf("."));
-    indexes.push(em.lastIndexOf("@"));
-    if (em.length < 10 || indexes[2] <= 2 || indexes[0] !== indexes[2] || indexes[1] < indexes[2]) {
-        return false;
-    }
-    for (let i = 0; i < em.length; i++) {
-        if (validchars.indexOf(em.substr(i, 1)) == -1) {
-            return false;
-        }
-    }
-    let domain = em.split(".").pop();
-    if (domain !== "org" && domain !== "com" && domain !== "net" && domain !== "in") {
-        return false;
-    }
-
-    return true;
+    return (/(^[.a-z0-9_-]{3,40})@[a-z]{3,}\.(com|in|co.in|org|net)/g).test(em);
 }
 
 
