@@ -1,5 +1,5 @@
-const staticCacheName = 'billvault-static-ver1';
-const dynamicCacheName = 'billvault-dynamic-ver1';
+const staticCacheName = 'static-ver1_01';
+const dynamicCacheName = 'dynamic-ver1_01';
 const assets = [ 
   '/',
   '/home', 
