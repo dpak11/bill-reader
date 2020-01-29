@@ -67,7 +67,7 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 
 
 let transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: 'smtp.zoho.in',
     port: 465,
     secure: true,
     auth: {
