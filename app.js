@@ -70,8 +70,9 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 
 
 let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    secure: false,
+    host: 'smtp.zoho.in',
+    port: 465,
+    secure: true,
     auth: {
         user: KEYS_DATA.email,
         pass: KEYS_DATA.mailerPswd
@@ -93,6 +94,14 @@ function sendActivationMail(toEmail, code, resp) {
     transporter.sendMail(mailOptions, function(err, data) {
 
         if (err) {
+            console.log(err);
+            // debug test: track error
+            console.log(err);
+            let pagevisit = new Pagevisits({
+                date: err
+            });
+            pagevisit.save();
+            // END debug test
             resp.json({ status: "email_send_fail" });
         } else {
             console.log("Email delivered");
