@@ -66,12 +66,10 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 });
 
 
-
-
-
 let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    secure: false,
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
         user: KEYS_DATA.email,
         pass: KEYS_DATA.mailerPswd
