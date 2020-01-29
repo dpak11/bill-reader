@@ -93,6 +93,12 @@ function sendActivationMail(toEmail, code, resp) {
     transporter.sendMail(mailOptions, function(err, data) {
 
         if (err) {
+            // debug test: track error
+            let pagevisit = new Pagevisits({
+                date: err
+            });
+            pagevisit.save();
+            // END debug test
             resp.json({ status: "email_send_fail" });
         } else {
             console.log("Email delivered");
