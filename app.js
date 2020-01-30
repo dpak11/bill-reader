@@ -85,14 +85,15 @@ function sendActivationMail(toEmail, code, resp) {
     let mailOptions = {
         from: KEYS_DATA.email,
         to: toEmail,
-        subject: "Your Activation Code",
-        html: `<h3>Hi there</h3>
-        <p>Thank You for your interest in trying out Bill Vault.</p>
-        <p>Your activation code is: <b>${code}</b></p> 
+        subject: "BillVault Activation Code",
+        html: `<h3>Welcome to Bill Vault</h3>
+        <p>Confirm your account by entering the activation code.</p>
+        <h4 style="color:blue">Your activation code is: ${code}</h4> 
         <p>&nbsp;</p>
-        <p>&nbsp;</p>
-		<h4>Sincerely,</h4>
-		<h4>Billvault (Admin)</h4>
+        <p style="color:grey">Feel free to explore BillVault, and let us know if you have any suggestions that will help us improve.</p>
+        <p>&nbsp;</p><p>&nbsp;</p>
+		<p><b>Sincerely,</b></p>
+		<b>Billvault (Admin)</b>
         `
     }
 
