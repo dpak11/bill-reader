@@ -86,9 +86,14 @@ function sendActivationMail(toEmail, code, resp) {
         from: KEYS_DATA.email,
         to: toEmail,
         subject: "Your Activation Code",
-        html: `<h3>Hello!</h3>
-        <p>Thank You for your interest in trying out Bill Vault</p>
-        <p>Your activation code is: <b>${code}</b></p> `
+        html: `<h3>Hi there</h3>
+        <p>Thank You for your interest in trying out Bill Vault.</p>
+        <p>Your activation code is: <b>${code}</b></p> 
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+		<h4>Sincerely,</h4>
+		<h4>Billvault (Admin)</h4>
+        `
     }
 
     transporter.sendMail(mailOptions, function(err, data) {

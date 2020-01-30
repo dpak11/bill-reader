@@ -1676,7 +1676,7 @@ userAccField.addEventListener("change", function() {
         document.getElementById("active_account_txt").innerText = initAccountVals.type;
         document.getElementById("new_account_txt").innerText = userAccField.value;
         if (userAccField.value == "team" && teamAcRights == "none") {
-            showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact billvault.app@gmail.com for Full Membership", "OK", null, false);
+            showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact billvault@zohomail.in to get Full Membership account details", "OK", null, false);
         }
 
     } else {
