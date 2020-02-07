@@ -1191,8 +1191,8 @@ function attachProfileImage(imgfile, logoprofile, logoholder) {
         if (logoprofile == "logo") {
             tempImg = new Image();
             tempImg.onload = function() {
-                if (tempImg.width > 196 || tempImg.heigth > 100 || tempImg.width < 150) {
-                    showAlertBox("Logo Dimension must be 196 X 100", "OK", null, false);
+                if (tempImg.width > 196 || tempImg.height > 105 || tempImg.width < 150) {
+                    showAlertBox("Logo Width:Height must be 195px:100px (approx)", "OK", null, false);
                 } else {
                     document.getElementById(logoholder).src = srcData;
                     if (logoholder == "teamlogoImgModify") {
@@ -1463,12 +1463,13 @@ function loadAccountSettings() {
                     if (!globalAdminRight) {
                         if (teamAcRights == "none") {
                             if (projectMemberRole == "member") {
-                                document.querySelector("#addUserPanel p").remove();
+                                if(document.querySelector("#addUserPanel p")){ 
+                                    document.querySelector("#addUserPanel p").remove()
+                                }                                
                                 editProjectBtn.classList.add("hide");
                             }
                             document.querySelector('.team-sub-setting').remove();
                             createNewTeamBtn.remove();
-
                         }
                     }
                 } else {

@@ -14,6 +14,7 @@ header {
     display: block;
     background: #850689;
     border-bottom: solid 4px #adaceb;
+    overflow: hidden;
 
 }
 header img {
@@ -343,9 +344,11 @@ section.main {
     padding: 20px
 }
 
+.topfloater section.side-nav #billshome img{
+    padding-top: 5px
+}
 
 #imageuploader {
-
     padding: 10px;
     width: 100%;
     height: 105px;
@@ -790,6 +793,7 @@ div#ui-datepicker-div {
 .edituserGroup{
     width: 45%
 }
+
 
 
 @media (min-width: 1024px) {
