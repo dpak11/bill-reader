@@ -1444,7 +1444,7 @@ function loadAccountSettings() {
                     document.getElementById("userprofilepic").setAttribute("src", settingdata.user_photo);
                 }
                 if (initAccountVals.type == "team") {
-                    if (settingdata.teamlist.length > 0) {
+                    if (settingdata.teamlist.length > 0 || globalAdminRight) {
                         projectsListBlock.classList.remove("hide");
                         teamSettingLink.classList.remove("hide");
                         let options = ``;
@@ -1457,6 +1457,7 @@ function loadAccountSettings() {
                         }, 1000);
                         initAccountVals.projchange = false;
                     }
+                    if(settingdata.teamlist.length == 0){ editProjectBtn.classList.add("hide") }
 
                     document.querySelector(".user_role").classList.remove("hide");
                     document.getElementById("userrole_field").value = projectMemberRole || "--";
@@ -1625,7 +1626,7 @@ function validateProjectName(proj) {
         showAlertBox("Project Name can not exceed 40 Characters", "OK", null, false);
         return false;
     }
-    if (!(/^([a-z0-9]+[a-z0-9\.\s-_]*)$/i).test(proj)) {
+    if (!(/^([a-z0-9]+[a-z0-9\.\s\-_]*)$/i).test(proj)) {
         showAlertBox("Project Name Invalid", "OK", null, false);
         return false;
     }
