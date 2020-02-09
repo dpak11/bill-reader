@@ -1067,6 +1067,7 @@ div#ui-datepicker-div {
     color: #bcbcd5;
     background-color: #9a7197;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #c7adb9;
 }
 
 .skin1 .thumbnail {
@@ -1085,6 +1086,13 @@ div#ui-datepicker-div {
 .skin1 #saveCloseSetting{
     border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
+
+
+.skin1 #team_setting_link, 
+.skin1 #user_setting_link {
+    color: #e2c1c6
+}
+
 
 
 
@@ -1357,14 +1365,15 @@ div#ui-datepicker-div {
 }
 
 .skin4 .input-image+label {
-    color: #c0813b;
+    color: #da8222;
     background-color: #a6091d;
-    border-bottom: 1px solid #1d1d23;
+    border-bottom: 1px solid #2a0207;
+    border-top: 1px solid #ef4355;
 }
 
 .skin4 .thumbnail {
-    border: 3px solid #d11c2f;
-    background: #b50e20;
+    border: 3px solid #bc0e20;
+    background: #a20d1d;
 }
 
 .skin4 .thumb-date-bill {
@@ -1391,6 +1400,10 @@ div#ui-datepicker-div {
 }
 
 
+.skin4 #team_setting_link, 
+.skin4 #user_setting_link {
+    color: #81454f
+}
 
 
 
@@ -1474,6 +1487,7 @@ div#ui-datepicker-div {
     color: #e3b8b8;
     background-color: #9a8282;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #c7adb9;
 }
 
 .skin5 .thumbnail {
@@ -1586,6 +1600,7 @@ div#ui-datepicker-div {
     color: #e9d8d0;
     background-color: #837f7d;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #d1e2d5;
 }
 
 .skin6 .thumbnail {
@@ -1688,6 +1703,7 @@ div#ui-datepicker-div {
     color: #e9bb87;
     background-color: #b55f02;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #debc97;
 }
 
 .skin7 .thumbnail {
@@ -1712,9 +1728,14 @@ div#ui-datepicker-div {
     color: #81988a !important;
     background: #9fceaa !important;
 }
+.skin7 p.tip-info{
+    color: #583f2f
+}
 
-
-
+.skin7 #team_setting_link, 
+.skin7 #user_setting_link {
+    color: #36345a
+}
 
 
 
@@ -1796,6 +1817,7 @@ div#ui-datepicker-div {
     color: #dfa564;
     background-color: #7f5425;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #e0d0be;
 }
 
 .skin8 .thumbnail {
