@@ -33,12 +33,8 @@ let totalThemes = document.querySelector(".container").getAttribute("data-themes
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
-    let paramObj = {
-        em: authVars.em,
-        agent: authVars.agent,
-        key_serv: authVars.key_serv
-    };
-    params.forEach(function(p) {
+    let paramObj = {...authVars};
+    params.forEach((p) => {
         paramObj[Object.keys(p)[0]] = Object.values(p)[0];
     });
     return paramObj;
@@ -1678,7 +1674,7 @@ userAccField.addEventListener("change", function() {
         document.getElementById("active_account_txt").innerText = initAccountVals.type;
         document.getElementById("new_account_txt").innerText = userAccField.value;
         if (userAccField.value == "team" && teamAcRights == "none") {
-            showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact billvault@zohomail.in to get Full Membership account details", "OK", null, false);
+            showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact 'billvault@zohomail.in' to get Full Membership account details", "OK", null, false);
         }
 
     } else {

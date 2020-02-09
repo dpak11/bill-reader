@@ -5,29 +5,27 @@ function user_validate() {
     if (client && serv && sessionemail) {
         return fetch("../userAuth/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ em: sessionemail, agent: btoa(navigator.userAgent), key_serv: serv }) })
             .then(data => data.json())
-            .then(function(res) {
+            .then((res) => {
                 if (res.status == "invalid") {
                     sessionStorage.clear();
-                    return new Promise(function(resolve, reject) {
+                    return new Promise((resolve, reject) => {
                         reject("invalid");
                     });
 
                 }
                 if (res.status == "verified") {
-                    return new Promise(function(resolve, reject) {
-                        resolve("valid");
-                    });
+                    return Promise.resolve("valid");
 
                 }
-            }).catch(function() {
+            }).catch(() => {
                 sessionStorage.clear();
-                return new Promise(function(resolve, reject) {
+                return new Promise((resolve, reject) => {
                     reject("Server_error");
                 });
             });
     } else {
         sessionStorage.clear();
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             reject("new_user");
         });
     }

@@ -99,7 +99,7 @@ function sendActivationMail(toEmail, code, resp) {
 
     transporter.sendMail(mailOptions, (err, data) => {
 
-        if (err) {            
+        if (err) {
             resp.json({ status: "email_send_fail" });
         } else {
             console.log("Email delivered");
@@ -690,11 +690,11 @@ async function addMemberToProject(pskey, agent, email, newMemberEmail, memberRol
         let s1 = await teamMemberValidation(newMemberEmail);
         let userState = s1.state;
         if (userState == "nouser") {
-            return Promise.resolve({ status: userState, msg: `${newMemberEmail} is not yet registered.` })
+            return Promise.resolve({ status: userState, msg: `${newMemberEmail} is not registered to BillVault` })
         }
         let s2 = await teamMemberValidation(approver);
         if (s2.state == "nouser") {
-            return Promise.resolve({ status: s2.state, msg: `${approver} is not yet registered.` });
+            return Promise.resolve({ status: s2.state, msg: `${approver} is not registered to BillVault` });
         }
         let teamem1 = await Teams.findOne({ user_email: newMemberEmail, teamid: project });
         if (!teamem1) {
@@ -1102,31 +1102,39 @@ async function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, m
             bill.status = mode;
         }
     });
-    return team.save().then(() => Promise.resolve({ status: mode }));
+    let saveStatus = await team.save();
+    let notification = await sendBillStatusNotification(email, user, mode, team.title);
+    console.log(notification);
+    return Promise.resolve({ status: mode });
 
 }
 
-/*function rejectUserBill(pskey, agent, email, bill_id, proj, user) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else {
-            return Teams.findOne({ user_email: user, teamid: proj }).exec().then(team => {
-                if (team == null) {
-                    return new Promise((resolve, rej) => rej());
-                } else {
-                    team.bills.map(bill => {
-                        if (bill.billid === bill_id) {
-                            bill.logs.push("Bill Rejected by " + doc.name + " (" + email + ") on: " + getIndDate());
-                            bill.status = "rejected";
-                        }
-                    });
-                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
-                }
-            });
-        }
+function sendBillStatusNotification(approver, member, billstatus, projName) {
+    let mailOptions = {
+        from: KEYS_DATA.email,
+        to: member,
+        subject: `Your Bill was ${billstatus}`,
+        html: `
+        <p>Your Bill was <b>${billstatus}</b> by ${approver}</p>
+        <p>Project Name: ${projName}</p>
+        <p>&nbsp;</p>
+        <p>(For further information please log into BillVault app)</p>
+        <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+        <p>Sincerely,<br>
+        BillVault (Admin)</p>
+        `
+    };
+    return new Promise((resolve, rej) => {
+        transporter.sendMail(mailOptions, (err, data) => {
+            if (err) {
+                resolve("failed")
+            } else {
+                resolve("notified")
+            }
+        });
     });
-}*/
+
+}
 
 function saveDefaultTheme(pskey, agent, email, theme) {
     return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
