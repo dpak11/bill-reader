@@ -12,13 +12,12 @@ const port = process.env.PORT || 3000;
 const KEYS_DATA = require("./keys");
 
 app.use(express.static(__dirname + "/public"));
-app.use(bodyParser.json({ limit: '5mb' })); // support json encoded bodies
+app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 mongoose.Promise = global.Promise;
 const mongoURL = KEYS_DATA.mongodb;
-
 
 let Users = null;
 let Teams = null;
@@ -60,7 +59,7 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 
     }));
 
-}).catch(function(err) {
+}).catch((err) => {
     console.log("MongoDB error");
     console.log(err)
 });
@@ -134,7 +133,7 @@ async function addUserToDB(e_mail, actCode) {
 
 
 function isValidEmail(em) {
-    return (/(^[.a-z0-9_-]{3,40})@[a-z]{3,12}\.(com|in|co.in|org|net)$/).test(em);
+    return (/(^[.a-z0-9_\-]{3,40})@[a-z]{3,12}\.(com|in|co.in|org|net)$/).test(em);
 }
 
 
@@ -157,7 +156,7 @@ function processBillText(datarray) {
     let receiptTitle = sanitiser(datarray[0], false) + " " + sanitiser(datarray[1], false);
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
-    let totalsList = arr.filter(function(txt) {
+    let totalsList = arr.filter((txt) => {
         return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("amt") || txt.includes("payable") || txt.includes("rate"));
     });
 
@@ -199,7 +198,7 @@ function dateSearch(lines) {
         }
     };
 
-    lines.forEach(function(line) {
+    lines.forEach((line) => {
         let l1 = line.match(pattern1);
         let l2 = line.match(pattern2);
         let l3 = line.match(pattern3);
@@ -245,7 +244,7 @@ function dateSearch(lines) {
 function extractTotalVal(totals, alltexts) {
     let totalValue = "";
     let subs = "";
-    totals.forEach(function(_total) {
+    totals.forEach((_total) => {
         let total = _total.trim();
         if (total.indexOf("subtotal") >= 0) {
             subs = total.split("subtotal")[1];
@@ -307,14 +306,14 @@ function extractTotalVal(totals, alltexts) {
                     return { found: "string", value: subs };
                 } else {
                     newlist = alltexts.filter(txt => !isNaN(txt.trim()));
-                    newlist.sort(function(a, b) { return b - a });
+                    newlist.sort((a, b) => { return b - a });
                     return { found: "list", value: newlist }
                 }
 
             }
         }
         newlist = alltexts.filter(txt => !isNaN(txt.trim()));
-        newlist.sort(function(a, b) { return b - a });
+        newlist.sort((a, b) => { return b - a });
         return { found: "list", value: newlist }
 
 
@@ -1298,7 +1297,7 @@ app.post("/loadBills", (req, res) => {
     const { em, agent, key_serv, mode, ptype } = req.body;
     loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
         res.json({ status: "done", user_data: d.data });
-    }).catch(function(s) {
+    }).catch((s) => {
         if (s.status == "notinteam") {
             res.json({ status: "notinteam", user_data: s.data });
         } else {
@@ -1313,7 +1312,7 @@ app.post("/saveBill", (req, res) => {
     const { em, agent, key_serv, receipt } = req.body;
     saveUserBill(key_serv, agent, getEmail(em), receipt).then(() => {
         res.json({ status: "saved" });
-    }).catch(function(s) {
+    }).catch((s) => {
         if (s == "duplicate") {
             res.json({ status: "duplicate_bill" })
         } else {
@@ -1373,7 +1372,7 @@ app.post("/settingsave", (req, res) => {
         } else {
             res.json(s)
         }
-    }).catch(function(e) {
+    }).catch(() => {
         res.json({ status: "invalid" });
     });
 
@@ -1398,7 +1397,7 @@ app.post("/addNewProjMember", (req, res) => {
             } else {
                 res.json({ status: ss.status, msg: ss.msg });
             }
-        }).catch(function(s) {
+        }).catch(() => {
             res.json({ status: "invalid" });
         });
     } else {
@@ -1411,7 +1410,7 @@ app.post("/addNewProject", (req, res) => {
     const { em, agent, key_serv, project, logo } = req.body;
     createNewProject(key_serv, agent, getEmail(em), project, logo).then(projid => {
         res.json({ status: "created", projid: projid })
-    }).catch(function(s) {
+    }).catch((s) => {
         if (s.state == "maxlimit") {
             res.json({ status: "limitreached", max: s.maxVal });
         } else if (s.state == "duplicateProject") {
@@ -1448,7 +1447,7 @@ app.post("/chartsload", (req, res) => {
     const { em, agent, key_serv, persTeam } = req.body;
     loadChartsData(key_serv, agent, getEmail(em), persTeam).then(c => {
         res.json({ status: "done", chartdata: c.chartdata })
-    }).catch(function(err) {
+    }).catch((err) => {
         if (err == "nochartdata") {
             res.json({ status: "nochart" })
         } else {
@@ -1462,7 +1461,7 @@ app.post("/saveDefaultTheme", (req, res) => {
     const { em, agent, key_serv, theme } = req.body;
     saveDefaultTheme(key_serv, agent, getEmail(em), theme).then(() => {
         res.json({ status: "done" })
-    }).catch(function(err) {
+    }).catch((err) => {
         res.json({ status: "invalid" });
     })
 
@@ -1481,7 +1480,7 @@ app.post("/missingfeature", (req, res) => {
             ${Buffer.from(req.body.agent, "base64").toString('ascii')}
         `
     };
-    transporter.sendMail(mailOptions, function(err, data) {
+    transporter.sendMail(mailOptions, (err, data) => {
         if (err) {
             res.json({ status: "??" });
         } else {
@@ -1507,8 +1506,6 @@ http.listen(port, () => {
 });
 
 
-
-
 /* -----------------------------------------------------------------------
  ---------------- (Not for Production deployment)  ----------------------- 
  ------------------------------------------------------------------------- 
@@ -1518,7 +1515,7 @@ app.post("/listUsers", (req, res) => {
     if (req.body.pass == KEYS_DATA.allUsersPswd) {
         fetchAllUsers().then((alldocs) => {
             res.json({ status: "done", results: alldocs })
-        }).catch(function(err) {
+        }).catch((err) => {
             res.json({ status: "serverbusy" });
         });
     } else {
