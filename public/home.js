@@ -33,7 +33,7 @@ let totalThemes = document.querySelector(".container").getAttribute("data-themes
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
-    let paramObj = {...authVars};
+    let paramObj = { ...authVars };
     params.forEach((p) => {
         paramObj[Object.keys(p)[0]] = Object.values(p)[0];
     });
@@ -349,6 +349,7 @@ function resetOrientation(srcBase64, srcOrientation, callback) {
 
 function imageProcessDone(imgdata) {
     preloader.classList.add("hide");
+    document.querySelector(".bill-status-approval").classList.add("hide");
     document.getElementById("billThumbnails").classList.add("hide");
     exitBillBtn.classList.remove("hide");
     saveBillBtn.classList.remove("hide");
@@ -514,8 +515,6 @@ function displayBillingTable(data) {
 
 
 }
-
-
 
 function displayBillThumbnails() {
     let thumbnails = document.getElementById("billThumbnails");
@@ -804,6 +803,8 @@ function saveBill(bill, email, serv) {
 
 
 function approveRejectBill(mode) {
+    let billAmount = document.getElementById("amount_field").value;
+    let billName = document.getElementById("merchant_field").value;
     let useremail = document.querySelector("#billTable .table-head span");
     if (useremail == null) {
         useremail = atob(authVars.em);
@@ -811,7 +812,7 @@ function approveRejectBill(mode) {
         useremail = useremail.innerText;
     }
 
-    fetch("../approveRejectBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ billid: selectedBillId }, { proj: selectedProjectID }, { user: useremail }, { mode: mode }])) })
+    fetch("../approveRejectBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ billid: selectedBillId }, { proj: selectedProjectID }, { user: useremail }, { mode: mode }, { amount: billAmount }, { billname: billName }])) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "approved") {
@@ -1453,16 +1454,16 @@ function loadAccountSettings() {
                         }, 1000);
                         initAccountVals.projchange = false;
                     }
-                    if(settingdata.teamlist.length == 0){ editProjectBtn.classList.add("hide") }
+                    if (settingdata.teamlist.length == 0) { editProjectBtn.classList.add("hide") }
 
                     document.querySelector(".user_role").classList.remove("hide");
                     document.getElementById("userrole_field").value = projectMemberRole || "--";
                     if (!globalAdminRight) {
                         if (teamAcRights == "none") {
                             if (projectMemberRole == "member") {
-                                if(document.querySelector("#addUserPanel p")){ 
+                                if (document.querySelector("#addUserPanel p")) {
                                     document.querySelector("#addUserPanel p").remove()
-                                }                                
+                                }
                                 editProjectBtn.classList.add("hide");
                             }
                             document.querySelector('.team-sub-setting').remove();
@@ -1613,7 +1614,7 @@ function createNewProjectName(projname) {
         });
 }
 
-function validateProjectName(proj) {    
+function validateProjectName(proj) {
     if (proj.length < 3) {
         showAlertBox("Project Name is too Small", "OK", null, false);
         return false;

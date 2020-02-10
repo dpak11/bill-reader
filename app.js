@@ -1085,7 +1085,7 @@ async function updateUserBill(pskey, agent, email, bill_id, bill_data) {
     }
 }
 
-async function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, mode) {
+async function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, mode, bill_amt, bill_name) {
     let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
     if (!userDoc) {
         return new Promise((resolve, rej) => rej());
@@ -1102,20 +1102,23 @@ async function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, m
         }
     });
     let saveStatus = await team.save();
-    let notification = await sendBillStatusNotification(email, user, mode, team.title);
+    let notification = await sendBillStatusNotification(email, user, mode, team.title, bill_amt, bill_name);
     console.log(notification);
     return Promise.resolve({ status: mode });
 
 }
 
-function sendBillStatusNotification(approver, member, billstatus, projName) {
+function sendBillStatusNotification(approver, member, billstatus, projName, billAmt, billName) {
+    let capsBillStatus = (billstatus == "approved") ? "Approved" : "Rejected";
     let mailOptions = {
         from: KEYS_DATA.email,
         to: member,
-        subject: `Your Bill was ${billstatus}`,
+        subject: `Your Bill receipt got ${capsBillStatus}`,
         html: `
-        <p>Your Bill was <b>${billstatus}</b> by ${approver}</p>
+        <p>Your Bill <b>${billName}</b> got <b>${billstatus}</b></p>
         <p>Project Name: ${projName}</p>
+        <p>${capsBillStatus} by: ${approver}</p>
+        <p>Bill Amount: ${billAmt}</p>
         <p>&nbsp;</p>
         <p>(For further information please log into BillVault app)</p>
         <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
@@ -1343,8 +1346,8 @@ app.post("/updateBill", (req, res) => {
 });
 
 app.post("/approveRejectBill", (req, res) => {
-    const { em, agent, key_serv, billid, proj, user, mode } = req.body;
-    approveRejectUserBill(key_serv, agent, getEmail(em), billid, proj, user, mode).then((s) => {
+    const { em, agent, key_serv, billid, proj, user, mode, amount, billname } = req.body;
+    approveRejectUserBill(key_serv, agent, getEmail(em), billid, proj, user, mode, amount, billname).then((s) => {
         res.json({ status: s.status });
     }).catch(() => {
         res.json({ status: "invalid" });
