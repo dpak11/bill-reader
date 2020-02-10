@@ -12,13 +12,12 @@ const port = process.env.PORT || 3000;
 const KEYS_DATA = require("./keys");
 
 app.use(express.static(__dirname + "/public"));
-app.use(bodyParser.json({ limit: '5mb' })); // support json encoded bodies
+app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 mongoose.Promise = global.Promise;
 const mongoURL = KEYS_DATA.mongodb;
-
 
 let Users = null;
 let Teams = null;
@@ -66,6 +65,9 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 });
 
 
+
+
+
 let transporter = nodemailer.createTransport({
     host: 'smtp.zoho.in',
     port: 465,
@@ -78,7 +80,6 @@ let transporter = nodemailer.createTransport({
 
 
 function sendActivationMail(toEmail, code, resp) {
-
     let mailOptions = {
         from: KEYS_DATA.email,
         to: toEmail,
@@ -94,15 +95,8 @@ function sendActivationMail(toEmail, code, resp) {
         `
     }
 
-    transporter.sendMail(mailOptions, function(err, data) {
-
+    transporter.sendMail(mailOptions, (err, data) => {
         if (err) {
-            // debug test: track error
-            let pagevisit = new Pagevisits({
-                date: err
-            });
-            pagevisit.save();
-            // END debug test
             resp.json({ status: "email_send_fail" });
         } else {
             console.log("Email delivered");
@@ -112,7 +106,7 @@ function sendActivationMail(toEmail, code, resp) {
     });
 }
 
-function addUserToDB(e_mail, actCode) {
+async function addUserToDB(e_mail, actCode) {
     const users = new Users({
         email: e_mail,
         activation: actCode,
@@ -129,17 +123,15 @@ function addUserToDB(e_mail, actCode) {
             bills: [{ billid: String, encr_img: String, data: String, submitdate: String }]
         })
     });
-    return users.save().then(function(data) {
-        return new Promise((resolve, rej) => resolve());
+    let saveduser = await users.save();
+    if (saveduser) { return new Promise((resolve, rej) => resolve()) }
+    return new Promise((res, rej) => rej());
 
-    }).catch(function() {
-        return new Promise((res, rej) => rej());
-    })
 }
 
 
 function isValidEmail(em) {
-    return (/(^[.a-z0-9_-]{3,40})@[a-z]{3,}\.(com|in|co.in|org|net)/g).test(em);
+    return (/(^[.a-z0-9_\-]{3,40})@[a-z]{3,12}\.(com|in|co.in|org|net)$/).test(em);
 }
 
 
@@ -343,23 +335,19 @@ function sanitiser(str, isNumber) {
 }
 
 
-function emailDBcheck(em, usermode) {
-
-    return Users.find({ email: em, activation: "_ENABLED_" }).exec().then(docs => {
-
-        if (docs.length == 1) {
-            if (usermode == "register") {
-                return new Promise((resolve, reject) => reject({ error: "email" }));
-            } else {
-                return new Promise((resolve, reject) => resolve());
-            }
-        } else if (usermode == "register") {
-            return new Promise((resolve, reject) => resolve());
-        } else {
+async function emailDBcheck(em, usermode) {
+    let activatedUser = await Users.find({ email: em, activation: "_ENABLED_" });
+    if (activatedUser.length == 1) {
+        if (usermode == "register") {
             return new Promise((resolve, reject) => reject({ error: "email" }));
+        } else {
+            return new Promise((resolve, reject) => resolve());
         }
-    });
-
+    } else if (usermode == "register") {
+        return new Promise((resolve, reject) => resolve());
+    } else {
+        return new Promise((resolve, reject) => reject({ error: "email" }));
+    }
 }
 
 function genActivationCode(em, apiresponse) {
@@ -368,238 +356,202 @@ function genActivationCode(em, apiresponse) {
         actvCode = `${actvCode}${Math.floor(Math.random()*10)}`;
     }
 
-    addUserToDB(em, actvCode).then(function() {
+    addUserToDB(em, actvCode).then(() => {
         sendActivationMail(em, actvCode, apiresponse);
-    }).catch(function() {
+    }).catch(() => {
         apiresponse.json({ status: "email_send_fail" });
 
     })
 
 }
 
-function activation_code_verify(em, code) {
-
+async function activation_code_verify(em, code) {
     if (code.trim() == "") {
         return new Promise((resolve, reject) => reject());
-    } else {
-        return Users.findOne({ email: em, activation: code }).exec().then(doc => {
-            doc.activation = "_ENABLED_";
-            return doc.save().then(function() {
-                return new Promise((resolve, rej) => resolve());
-            })
-        }).catch(err => {
-            return new Promise((resolve, reject) => reject());
-        });
     }
-
+    let actCodeUser = await Users.findOne({ email: em, activation: code });
+    if (!actCodeUser) { return new Promise((resolve, reject) => reject()) }
+    actCodeUser.activation = "_ENABLED_";
+    let savedActivation = await actCodeUser.save();
+    if (savedActivation) { return Promise.resolve() }
+    return new Promise((resolve, reject) => reject());
 }
 
-function saveRegisterationDB(key, agent, email) {
-    return Users.findOne({ email: email }).exec().then(doc => {
-        doc.lastlogin = getIndDate();
-        doc.browser = agent;
-        doc.key = key;
-        return doc.save().then(function() {
-            return new Promise((resolve, rej) => resolve());
-        }).catch(function() {
-            return new Promise((resolve, rej) => rej());
-        })
-
-    });
-
+async function saveRegisterationDB(key, agent, email) {
+    let userEmail = await Users.findOne({ email: email });
+    if (userEmail) {
+        userEmail.lastlogin = getIndDate();
+        userEmail.browser = agent;
+        userEmail.key = key;
+        savedEmail = await userEmail.save();
+        if (savedEmail) { return Promise.resolve() }
+        return new Promise((resolve, rej) => rej());
+    }
 }
 
-function userAuthenticate(pskey, agent, email, mode) {
+async function userAuthenticate(pskey, agent, email, mode) {
 
     if (mode == "login") {
-        return Users.findOne({ email: email, key: pskey }).exec().then(doc => {
-            doc.lastlogin = getIndDate();
-            doc.browser = agent;
-            return doc.save().then(function() {
-                return new Promise((resolve, rej) => resolve());
-            }).catch(function() {
-                return new Promise((resolve, rej) => rej());
-            })
-        });
+        let userAuthKey = await Users.findOne({ email: email, key: pskey });
+        if (!userAuthKey) { return new Promise((resolve, rej) => rej()) }
+        userAuthKey.lastlogin = getIndDate();
+        userAuthKey.browser = agent;
+        let userSave = await userAuthKey.save();
+        if (userSave) { return Promise.resolve() }
+        return new Promise((resolve, rej) => rej());
+
     } else {
-        return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
-            if (doc == null) {
-                return new Promise((resolve, rej) => rej());
-            } else {
-                return new Promise((resolve, rej) => resolve());
-            }
-
-        })
-
+        let autoUserAuth = await Users.findOne({ email: email, key: pskey, browser: agent });
+        if (autoUserAuth) { return new Promise((resolve, rej) => resolve()) }
+        return new Promise((resolve, rej) => rej());
     }
 
 }
 
-function loadProjectMembers(pskey, agent, email, proj) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+async function loadProjectMembers(pskey, agent, email, proj) {
+    let getValidUser = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!getValidUser) { return new Promise((resolve, rej) => rej()) }
+    let getProjects = await Teams.find({ teamid: proj });
+    let myrole = getProjects.filter(m => m.user_email == email)[0].role;
+    let approvers = getProjects.map(t => {
+        if (t.role == "manager" || t.role == "admin") {
+            return t.user_email;
+        }
+        return false;
+    }).filter(f => f != false);
 
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else {
-            return Teams.find({ teamid: proj }).exec().then(myteam => {
-                let myrole = myteam.filter(m => m.user_email == email)[0].role;
-                let approvers = myteam.map(t => {
-                    if (t.role == "manager" || t.role == "admin") {
-                        return t.user_email;
-                    }
-                    return false;
-                }).filter(f => f != false);
-                let list = myteam.map(tm => {
-                    if (myrole == "manager") {
-                        if (tm.approver == email) {
-                            return {
-                                role: tm.role,
-                                member: tm.user_email,
-                                approver: tm.approver,
-                                updated: tm.logs
-                            }
-                        }
-                        return false;
-                    }
-                    if (myrole == "admin" && tm.role != "admin") {
-                        return {
-                            role: tm.role,
-                            member: tm.user_email,
-                            approver: tm.approver,
-                            updated: tm.logs
-                        }
-                    }
-                    return false;
-                }).filter(f => f != false);
+    let list = getProjects.map(tm => {
+        if (myrole == "manager") {
+            if (tm.approver == email) {
+                return {
+                    role: tm.role,
+                    member: tm.user_email,
+                    approver: tm.approver,
+                    updated: tm.logs
+                }
+            }
+            return false;
+        }
+        if (myrole == "admin" && tm.role != "admin") {
+            return {
+                role: tm.role,
+                member: tm.user_email,
+                approver: tm.approver,
+                updated: tm.logs
+            }
+        }
+        return false;
+    }).filter(f => f != false);
+    return Promise.resolve({ data: JSON.stringify({ approvers: approvers, teamlist: list }) });
 
-                return new Promise((resolve, rej) => resolve({ data: JSON.stringify({ approvers: approvers, teamlist: list }) }));
+}
+
+async function loadSettingsData(pskey, agent, email) {
+    let getValidUser = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!getValidUser) {
+        return new Promise((resolve, rej) => rej());
+    }
+
+    let obj = {
+        user_name: getValidUser.name,
+        user_photo: getValidUser.photo,
+        user_default: getValidUser.default,
+        user_email: getValidUser.email
+    };
+    let objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
+    if (getValidUser.default == "team") {
+        let myteam = await Teams.find({ user_email: getValidUser.email });
+        obj.teamlist = [];
+        objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
+        if (myteam.length > 0) {
+            let teams = myteam.map(tm => {
+                return {
+                    id: tm.teamid,
+                    projname: tm.title
+                }
+            });
+            obj.teamlist = teams;
+            objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
+            return Promise.resolve({ data: objdata });
+        }
+        return Promise.resolve({ data: objdata });
+    }
+    return Promise.resolve({ data: objdata });
+
+}
+
+
+async function saveSettingsData(pskey, agent, email, acc_setting) {
+    let getValidUser = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!getValidUser) {
+        return new Promise((resolve, rej) => rej());
+    }
+    let settings = JSON.parse(Buffer.from(acc_setting, "base64").toString('ascii'));
+    getValidUser.photo = settings.profile_img;
+    getValidUser.name = settings.displayname;
+    getValidUser.default = settings.account;
+    if (settings.isSwitchedProj == "yes") {
+        let allpromises = [];
+        let mydocs = await Teams.find({ user_email: email });
+        if (mydocs.length > 0) {
+            mydocs.map((mydoc, i) => {
+                if (mydoc.teamid == settings.newProjectID) {
+                    mydoc.default = "yes";
+                } else {
+                    mydoc.default = "no";
+                }
+                allpromises[i] = mydoc.save().then(() => Promise.resolve({ status: "done" }));
+            });
+            return Promise.all(allpromises).then(() => {
+                return getValidUser.save().then(() => Promise.resolve({ status: "done" }))
 
             });
-
         }
-    });
-
-}
-
-function loadSettingsData(pskey, agent, email) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
-
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else {
-            let obj = {
-                user_name: doc.name,
-                user_photo: doc.photo,
-                user_default: doc.default,
-                user_email: doc.email
-            };
-            let objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
-            if (doc.default == "team") {
-                return Teams.find({ user_email: doc.email }).exec().then(myteam => {
-                    if (myteam == null || myteam.length == 0) {
-                        obj.teamlist = [];
-                        objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
-                        return new Promise((resolve, rej) => resolve({ data: objdata }));
-                    } else {
-                        let teams = myteam.map(tm => {
-                            return {
-                                id: tm.teamid,
-                                projname: tm.title
-                            }
-                        });
-                        obj.teamlist = teams;
-                        objdata = Buffer.from(JSON.stringify(obj)).toString('base64');
-                        return new Promise((resolve, rej) => resolve({ data: objdata }));
-                    }
-                });
-            } else {
-                return new Promise((resolve, rej) => resolve({ data: objdata }));
+    } else {
+        if (settings.insertedOneVals != "none") {
+            if (!isValidEmail(settings.insertedOneVals.member) || !isValidEmail(settings.insertedOneVals.approver)) {
+                return Promise.resolve({ status: "invalidEmail" });
             }
 
-        }
-    })
-
-}
-
-
-function saveSettingsData(pskey, agent, email, acc_setting) {
-
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
-
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else {
-            let settings = JSON.parse(Buffer.from(acc_setting, "base64").toString('ascii'));
-            doc.photo = settings.profile_img;
-            doc.name = settings.displayname;
-            doc.default = settings.account;
-
-            if (settings.isSwitchedProj == "yes") {
-                let allpromises = [];
-                return Teams.find({ user_email: email }).exec().then(mydocs => {
-                    mydocs.map((mydoc, i) => {
-                        if (mydoc.teamid == settings.newProjectID) {
-                            mydoc.default = "yes";
-                        } else {
-                            mydoc.default = "no";
-                        }
-
-                        allpromises[i] = mydoc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })));
-                    });
-
-                    return Promise.all(allpromises).then(() => {
-                        return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
-
-                    });
-                });
-            } else {
-                if (settings.insertedOneVals != "none") {
-                    if (isValidEmail(settings.insertedOneVals.member) && isValidEmail(settings.insertedOneVals.approver)) {
-                        let projname = settings.insertedOneVals.projName;
-                        let projlogo = settings.insertedOneVals.logo;
-                        if (settings.editedProjectVals != "none") {
-                            if (settings.editedProjectVals.logo != "") { projlogo = settings.editedProjectVals.logo }
-                            if (settings.editedProjectVals.projName != "") { projlogo = settings.editedProjectVals.projName }
-                        }
-                        return addMemberToProject(pskey, agent, email, settings.insertedOneVals.member, settings.insertedOneVals.role, settings.insertedOneVals.approver, settings.insertedOneVals.projid, projname, projlogo).then((ss) => {
-                            
-                            if (ss.status == "done") {
-                                if (settings.editedProjectVals != "none") {
-                                    return updateEditedProject(settings.editedProjectVals, email).then(() => {
-                                        return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
-                                    });
-                                } else {
-                                    return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
-                                }
-                            } else {
-                                return new Promise((resolve, rej) => resolve(ss));
-                            }
-                        });
-                    } else {
-                        return new Promise((resolve, rej) => resolve({ status: "invalidEmail" }));
-                    }
-                } else if (settings.editedProjectVals != "none") {
+            let projname = settings.insertedOneVals.projName;
+            let projlogo = settings.insertedOneVals.logo;
+            if (settings.editedProjectVals != "none") {
+                if (settings.editedProjectVals.logo != "") { projlogo = settings.editedProjectVals.logo }
+                if (settings.editedProjectVals.projName != "") { projlogo = settings.editedProjectVals.projName }
+            }
+            let addMemberProj = await addMemberToProject(pskey, agent, email, settings.insertedOneVals.member, settings.insertedOneVals.role, settings.insertedOneVals.approver, settings.insertedOneVals.projid, projname, projlogo);
+            if (addMemberProj.status == "done") {
+                if (settings.editedProjectVals != "none") {
                     return updateEditedProject(settings.editedProjectVals, email).then(() => {
-                        return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
+                        return getValidUser.save().then(() => Promise.resolve({ status: "done" }))
                     });
-
-                }else{
-                    return doc.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
+                } else {
+                    return getValidUser.save().then(() => Promise.resolve({ status: "done" }))
                 }
-
+            } else {
+                return Promise.resolve(addMemberProj);
             }
-        }
 
-    });
+        } else if (settings.editedProjectVals != "none") {
+            return updateEditedProject(settings.editedProjectVals, email).then(() => {
+                return getValidUser.save().then(() => Promise.resolve({ status: "done" }))
+            });
+
+        } else {
+            return getValidUser.save().then(() => Promise.resolve({ status: "done" }))
+        }
+    }
+
 }
 
 
-function updateEditedProject(editedproj, manager_admin) {
-    return Teams.find({ teamid: editedproj.projid }).exec().then(tmdoc => {
+async function updateEditedProject(editedproj, manager_admin) {
+    let projEditedList = await Teams.find({ teamid: editedproj.projid });
+    if (projEditedList.length > 0) {
         let promises = [];
         let users = editedproj.users;
         let counter = 0;
-        tmdoc.forEach((team) => {
+        projEditedList.forEach((team) => {
             if (editedproj.logo != "") {
                 team.logo = editedproj.logo;
             }
@@ -619,321 +571,267 @@ function updateEditedProject(editedproj, manager_admin) {
 
         });
         return Promise.all(promises).then(() => {
-            return new Promise((resolve, rej) => resolve());
+            return Promise.resolve();
 
         });
-    });
+    }
 }
 
-function loadChartsData(pskey, agent, email, perMode) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else if (doc.default == "personal") {
-            let datas = [];
-            doc.personal.bills.forEach(function(bill) {
-                datas.push({ data: bill.data, date: bill.submitdate })
-            });
-            let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
-            return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
-        } else if (perMode == "private") {
-            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(onedoc => {
-                if (onedoc == null) {
-                    return new Promise((resolve, rej) => rej("nochartdata"));
-                } else {
-                    let datas = [];
-                    onedoc.bills.forEach(bill => {
-                        if (bill.status == "approved") {
-                            datas.push({ data: bill.data, date: bill.submitdate });
-                        }
-                    });
-                    let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
-                    return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
-                }
-            });
-        } else if (perMode == "team") {
-            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(tdoc => {
-                if (tdoc == null) {
-                    return new Promise((resolve, rej) => rej("nochartdata"));
-                } else {
-                    let project = tdoc.teamid;
-                    let myrole = tdoc.role;
-                    return Teams.find({ teamid: project }).exec().then(tdoc1 => {
-                        if (tdoc1 == null || tdoc1.length == 0) {
-                            return new Promise((resolve, rej) => rej("invalid"));
-                        } else {
-                            let team = null;
-                            if (myrole == "admin") {
-                                team = tdoc1.filter(docs => (docs.role != "admin"));
-                            }
-                            if (myrole == "manager") {
-                                team = tdoc1.filter(docs => (docs.approver == email));
-                            }
-                            if (myrole == "member") {
-                                team = tdoc1.filter(docs => (docs.user_email == email));
-                            }
-
-                            let datas = [];
-                            team.forEach(tm => {
-                                tm.bills.filter(bill => (bill.status == "approved")).forEach(bdoc => {
-                                    datas.push({
-                                        date: bdoc.submitdate,
-                                        data: bdoc.data,
-                                        user: tm.user_email,
-                                        role: tm.role
-                                    });
-                                });
-                            });
-
-                            let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
-                            return new Promise((resolve, rej) => resolve({ chartdata: objdata }));
-
-                        }
-                    });
-
-                }
-            });
+async function loadChartsData(pskey, agent, email, perMode) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
+        return new Promise((resolve, rej) => rej());
+    }
+    if (userDoc.default == "personal") {
+        let datas = [];
+        userDoc.personal.bills.forEach((bill) => {
+            datas.push({ data: bill.data, date: bill.submitdate })
+        });
+        let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+        return Promise.resolve({ chartdata: objdata });
+    } else if (perMode == "private") {
+        let onedoc = await Teams.findOne({ user_email: email, default: "yes" });
+        if (!onedoc) {
+            return new Promise((resolve, rej) => rej("nochartdata"));
         }
-    });
+        let datas = [];
+        onedoc.bills.forEach(bill => {
+            if (bill.status == "approved") {
+                datas.push({ data: bill.data, date: bill.submitdate });
+            }
+        });
+        let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+        return Promise.resolve({ chartdata: objdata });
+
+    } else if (perMode == "team") {
+        let tdoc = await Teams.findOne({ user_email: email, default: "yes" });
+        if (!tdoc) {
+            return new Promise((resolve, rej) => rej("nochartdata"));
+        }
+        let project = tdoc.teamid;
+        let myrole = tdoc.role;
+        let tdoc1 = await Teams.find({ teamid: project });
+        if (tdoc1.length == 0) {
+            return new Promise((resolve, rej) => rej("invalid"));
+        }
+        let team = null;
+        if (myrole == "admin") {
+            team = tdoc1.filter(docs => (docs.role != "admin"));
+        }
+        if (myrole == "manager") {
+            team = tdoc1.filter(docs => (docs.approver == email));
+        }
+        if (myrole == "member") {
+            team = tdoc1.filter(docs => (docs.user_email == email));
+        }
+
+        let datas = [];
+        team.forEach(tm => {
+            tm.bills.filter(bill => (bill.status == "approved")).forEach(bdoc => {
+                datas.push({
+                    date: bdoc.submitdate,
+                    data: bdoc.data,
+                    user: tm.user_email,
+                    role: tm.role
+                });
+            });
+        });
+        let objdata = Buffer.from(JSON.stringify(datas)).toString('base64');
+        return Promise.resolve({ chartdata: objdata });
+    }
 
 }
 
-function createNewProject(pskey, agent, email, proj, logoimg) {
+async function createNewProject(pskey, agent, email, proj, logoimg) {
     let maxProjLimit = 5;
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(function(doc) {
-        if (doc.default == "team" && doc.privilege == "all") {
-            return Teams.find({ user_email: email, role: "admin" }).exec().then(doc1 => {
-                if (doc1 == null || doc1.length < maxProjLimit) {
-                    let isDefault = (doc1 == null || doc1.length == 0) ? "yes" : "no";
-                    return Teams.find({ title: proj }).exec().then(onedoc => {
-                        if (onedoc == null || onedoc.length == 0) {
-                            let projID = idRandomise("teamid");
-                            let date_now = getIndDate();
-                            let newproject = new Teams({
-                                teamid: projID,
-                                logo: logoimg,
-                                title: proj,
-                                user_email: email,
-                                role: "admin",
-                                default: isDefault,
-                                created: date_now,
-                                lastlogin: date_now,
-                                approver: email,
-                                logs: [],
-                                bills: []
-                            });
-                            return newproject.save().then(function() {
-                                return new Promise((resolve, rej) => resolve(projID));
-                            }).catch(function() {
-                                return new Promise((res, rej) => rej());
-                            })
-                        } else {
-                            return new Promise((res, rej) => rej({ state: "duplicateProject" }));
-                        }
-                    });
-
-                } else if (doc1.length == maxProjLimit) {
-                    return new Promise((res, rej) => rej({ state: "maxlimit", maxVal: maxProjLimit }));
-                }
-            });
+    let userdoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (userdoc.default == "team" && userdoc.privilege == "all") {
+        let doc1 = await Teams.find({ user_email: email, role: "admin" });
+        if (doc1.length == maxProjLimit) {
+            return new Promise((res, rej) => rej({ state: "maxlimit", maxVal: maxProjLimit }));
         }
-    });
+        if (doc1.length < maxProjLimit) {
+            let isDefault = (doc1 == null || doc1.length == 0) ? "yes" : "no";
+            let onedoc = await Teams.find({ title: proj });
+            if (onedoc.length == 0) {
+                let projID = idRandomise("teamid");
+                let date_now = getIndDate();
+                let newproject = new Teams({
+                    teamid: projID,
+                    logo: logoimg,
+                    title: proj,
+                    user_email: email,
+                    role: "admin",
+                    default: isDefault,
+                    created: date_now,
+                    lastlogin: date_now,
+                    approver: email,
+                    logs: [],
+                    bills: []
+                });
+                return newproject.save().then(() => {
+                    return Promise.resolve(projID);
+                });
+            } else {
+                return new Promise((res, rej) => rej({ state: "duplicateProject" }));
+            }
+
+        }
+    }
 
 }
 
-function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, approver, project, project_name, logoimg) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(function(doc) {
-        if (doc.default == "team" && doc.privilege == "all") {
-            return teamMemberValidation(newMemberEmail).then(s1 => {
-                let userState = s1.state;
-                if (userState == "nouser") {
-                    return new Promise((res, reject) => res({ status: userState, msg: `${newMemberEmail} is not yet registered.` }));
+async function addMemberToProject(pskey, agent, email, newMemberEmail, memberRole, approver, project, project_name, logoimg) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (userDoc.default == "team" && userDoc.privilege == "all") {
+        let s1 = await teamMemberValidation(newMemberEmail);
+        let userState = s1.state;
+        if (userState == "nouser") {
+            return Promise.resolve({ status: userState, msg: `${newMemberEmail} is not registered to BillVault` })
+        }
+        let s2 = await teamMemberValidation(approver);
+        if (s2.state == "nouser") {
+            return Promise.resolve({ status: s2.state, msg: `${approver} is not registered to BillVault` });
+        }
+        let teamem1 = await Teams.findOne({ user_email: newMemberEmail, teamid: project });
+        if (!teamem1) {
+            return addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver).then(async () => {
+                let teamem2 = await Teams.findOne({ user_email: approver, teamid: project });
+                if (!teamem2) {
+                    return addToTeam(project, logoimg, project_name, approver, "manager", email).then(() => Promise.resolve({ status: "done" }));
+                } else if (teamem2.role == "member") {
+                    return Teams.deleteOne({ user_email: newMemberEmail, teamid: project }).exec().then(() => {
+                        return Promise.resolve({ status: "declineMemberRole", msg: `Already assigned Member(${approver}) can not be re-assigned "Manager" Role` });
+                    });
+
                 } else {
-                    return teamMemberValidation(approver).then(s2 => {
-                        if (s2.state == "nouser") {
-                            return new Promise((res, reject) => res({ status: s2.state, msg: `${approver} is not yet registered.` }));
-                        } else {
-                            return Teams.findOne({ user_email: newMemberEmail, teamid: project }).exec().then(teamem1 => {
-                                if (teamem1 == null) {
-                                    //if (userState != "admin") {
-                                    return addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver).then(() => {
+                    teamem2.role = (teamem2.role == "admin") ? "admin" : "manager";
+                    return teamem2.save().then(() => Promise.resolve({ status: "done" }))
 
-                                        return Teams.findOne({ user_email: approver, teamid: project }).exec().then(teamem2 => {
-                                            if (teamem2 == null) {
-                                                return addToTeam(project, logoimg, project_name, approver, "manager", email)
-                                                    .then(() => new Promise((resolve, rej) => resolve({ status: "done" })));
-                                            } else if (teamem2.role == "member") {
-                                                return Teams.deleteOne({ user_email: newMemberEmail, teamid: project }).exec().then((del) => {
-                                                    return new Promise((res, reject) => res({ status: "declineMemberRole", msg: `Already assigned Member(${approver}) can not be re-assigned "Manager" Role` }));
-                                                });
-
-                                            } else {
-                                                teamem2.role = (teamem2.role == "admin") ? "admin" : "manager";
-                                                return teamem2.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
-
-                                            }
-                                        });
-                                    });
-                                    /*} else {
-                                        return new Promise((res, reject) => reject({ status: "adminreject", msg: `Can not Add "${newMemberEmail}", who is an Admin to other project(s)` }))
-                                    }*/
-
-                                } else if (teamem1.role == "manager") {
-                                    if (memberRole == "member") {
-                                        return new Promise((res, reject) => res({ status: "preassigned", msg: `Can not re-assign Manager "${newMemberEmail}" as a Member` }))
-                                    } else {
-                                        return Teams.findOne({ user_email: approver, teamid: project }).exec().then(tc => {
-                                            if (tc == null) {
-                                                return addToTeam(project, logoimg, project_name, approver, "manager", email)
-                                                    .then(() => {
-                                                        teamem1.approver = approver;
-                                                        return teamem1.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
-                                                    });
-                                            } else if (tc.role == "manager" || tc.role == "admin") {
-                                                if (teamem1.approver == approver) {
-                                                    return new Promise((res, reject) => res({ status: "preassigned", msg: `Error: Duplicate Assignment` }))
-                                                } else {
-                                                    teamem1.approver = approver;
-                                                    return teamem1.save().then(() => new Promise((resolve, rej) => resolve({ status: "done" })))
-                                                }
-                                            } else {
-                                                return new Promise((res, reject) => res({ status: "preassigned", msg: `Can not re-assign Member "${approver}" as approver` }))
-                                            }
-                                        });
-                                    }
-
-                                } else {
-                                    return new Promise((res, reject) => res({ status: "preassigned", msg: `${newMemberEmail} is already assigned to this Project` }))
-                                }
-                            });
-                        }
-                    });
                 }
-
             });
-        }
-    });
-}
 
-function teamMemberValidation(member) {
-    return Users.findOne({ email: member, activation: "_ENABLED_" }).exec().then(function(memdoc) {
-        if (memdoc == null) {
-            return new Promise((resolve, rej) => resolve({ state: "nouser" }));
-        }
-        /*else if (memdoc.privilege == "all") {
-                   return new Promise((resolve, rej) => resolve({ state: "admin" }));
-               }*/
-        else {
-            return new Promise((resolve, rej) => resolve({ state: "allowuser" }));
-        }
-    });
-}
+        } else if (teamem1.role == "manager") {
+            if (memberRole == "member") {
+                return Promise.resolve({ status: "preassigned", msg: `Can not re-assign Manager "${newMemberEmail}" as a Member` });
+            } else {
+                let team_appr = await Teams.findOne({ user_email: approver, teamid: project });
+                if (!team_appr) {
+                    return addToTeam(project, logoimg, project_name, approver, "manager", email).then(() => {
+                        teamem1.approver = approver;
+                        return teamem1.save().then(() => Promise.resolve({ status: "done" }));
+                    });
+                } else if (team_appr.role == "manager" || team_appr.role == "admin") {
+                    if (teamem1.approver == approver) {
+                        return Promise.resolve({ status: "preassigned", msg: `Error: Duplicate Assignment` });
+                    } else {
+                        teamem1.approver = approver;
+                        return teamem1.save().then(() => Promise.resolve({ status: "done" }));
+                    }
+                } else {
+                    return Promise.resolve({ status: "preassigned", msg: `Can not re-assign Member "${approver}" as approver` });
+                }
+            }
 
-function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver) {
-    return getDefaultTeam(newMemberEmail).then((state) => {
-        let date_now = getIndDate();
-        let newproject = new Teams({
-            teamid: project,
-            logo: logoimg,
-            title: project_name,
-            user_email: newMemberEmail,
-            role: memberRole,
-            default: state.default,
-            created: date_now,
-            lastlogin: "",
-            approver: approver,
-            logs: [],
-            bills: []
-        });
-        //bills: [{ billid: "", imgsrc: "", data: "", submitdate: "", status: "", logs: [] }]
-        return newproject.save().then(function(data) {
-            return new Promise((resolve, rej) => resolve());
-        }).catch(function() {
-            return new Promise((res, rej) => rej());
-        });
-    });
-
-}
-
-function getDefaultTeam(user) {
-    return Teams.findOne({ user_email: user }).exec().then(listeam => {
-        if (listeam == null) {
-            return new Promise((res, rej) => res({ default: "yes" }));
         } else {
-            return new Promise((res, rej) => res({ default: "no" }));
-
+            return Promise.resolve({ status: "preassigned", msg: `${newMemberEmail} is already assigned to this Project` })
         }
-    })
+
+    }
 }
 
-function setDefaultTeam(user) {
-    return Teams.find({ user_email: user }).exec().then(listeam => {
-        if (listeam == null || listeam.length == 0) {
-            return new Promise((resolve, rej) => resolve());
-        } else {
-            let defaults = listeam.filter(tm => (tm.default == "yes"));
-            if (defaults.length == 0) {
-                listeam[0].default = "yes";
-                return listeam[0].save().then(() => new Promise((resolve, rej) => resolve()));
+async function teamMemberValidation(member) {
+    let memdoc = await Users.findOne({ email: member, activation: "_ENABLED_" });
+    if (!memdoc) {
+        return Promise.resolve({ state: "nouser" });
+    }
+    return Promise.resolve({ state: "allowuser" });
+}
+
+async function addToTeam(project, logoimg, project_name, newMemberEmail, memberRole, approver) {
+    let state = await getDefaultTeam(newMemberEmail);
+    let date_now = getIndDate();
+    let newproject = new Teams({
+        teamid: project,
+        logo: logoimg,
+        title: project_name,
+        user_email: newMemberEmail,
+        role: memberRole,
+        default: state.default,
+        created: date_now,
+        lastlogin: "",
+        approver: approver,
+        logs: [],
+        bills: []
+    });
+    return newproject.save().then(() => Promise.resolve());
+}
+
+async function getDefaultTeam(user) {
+    let listeam = await Teams.findOne({ user_email: user });
+    if (!listeam) {
+        return Promise.resolve({ default: "yes" });
+    } else {
+        return Promise.resolve({ default: "no" });
+    }
+}
+
+async function setDefaultTeam(user) {
+    let listeam = await Teams.find({ user_email: user });
+    if (listeam.length == 0) {
+        return Promise.resolve();
+    }
+    let defaults = listeam.filter(tm => (tm.default == "yes"));
+    if (defaults.length == 0) {
+        listeam[0].default = "yes";
+        return listeam[0].save().then(() => Promise.resolve());
+    } else {
+        return Promise.resolve();
+    }
+
+}
+
+async function removeProjectMember(pwdkey, useragent, email, project, member) {
+    let doc = await Users.findOne({ email: email, key: pwdkey, browser: useragent });
+    if (!doc) { return new Promise((resolve, rej) => rej()) }
+    let teamdoc = await Teams.findOne({ user_email: member, teamid: project });
+    if (teamdoc) {
+        let allowdeletion = true;
+        teamdoc.bills.forEach(bill => {
+            if (bill.status == "approved") {
+                allowdeletion = false;
+            }
+        });
+        if (!allowdeletion) {
+            return Promise.resolve("denied");
+        }
+
+        let deleteProj = await Teams.deleteOne({ user_email: member, teamid: project });
+        return setDefaultTeam(member).then(async () => {
+            if (teamdoc.role == "manager") {
+                // If manager is deleted, then assign admin as the default bill approver to replace this manager
+                let promises = [];
+                let tm = await Teams.find({ approver: member, teamid: project });
+                if (tm.length == 0) {
+                    return Promise.resolve("deleted-manager");
+                }
+                tm.forEach((mem, i) => {
+                    mem.approver = email; // set admin email as approver
+                    mem.logs = [`<b>Modified by:</b> ${email} on ${getIndDate()}`];
+                    promises[i] = mem.save().then(() => Promise.resolve());
+                });
+
+                return Promise.all(promises).then(() => {
+                    return Promise.resolve("deleted-manager");
+                });
 
             } else {
-                return new Promise((resolve, rej) => resolve());
+                return Promise.resolve("deleted-member");
             }
-        }
-    })
-}
+        });
 
+    }
 
-
-function removeProjectMember(pwdkey, useragent, email, project, member) {
-    return Users.findOne({ email: email, key: pwdkey, browser: useragent }).exec().then(doc => {
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else {
-            return Teams.findOne({ user_email: member, teamid: project }).exec().then(teamdoc => {
-                if (teamdoc != null) {
-                    let allowdeletion = true;
-                    teamdoc.bills.forEach(bill => {
-                        if (bill.status == "approved") {
-                            allowdeletion = false;
-                        }
-                    });
-                    if (!allowdeletion) {
-                        return new Promise((resolve, rej) => resolve("denied"));
-                    } else {
-                        return Teams.deleteOne({ user_email: member, teamid: project }).exec().then(() => {
-                            return setDefaultTeam(member).then(() => {
-                                if (teamdoc.role == "manager") {
-                                    // If manager is deleted, then assign admin as the default bill approver to replace this manager
-                                    let promises = [];
-                                    return Teams.find({ approver: member, teamid: project }).exec().then(tm => {
-                                        if (tm == null || tm.length == 0) {
-                                            return new Promise((resolve, rej) => resolve("deleted-manager"));
-                                        } else {
-                                            tm.forEach((mem, i) => {
-                                                mem.approver = email; // set admin email as approver
-                                                mem.logs = [`<b>Modified by:</b> ${email} on ${getIndDate()}`];
-                                                promises[i] = mem.save().then(() => new Promise((resolve, rej) => resolve()));
-                                            });
-                                            return Promise.all(promises).then(() => {
-                                                return new Promise((resolve, rej) => resolve("deleted-manager"));
-                                            });
-                                        }
-
-                                    });
-                                } else {
-                                    return new Promise((resolve, rej) => resolve("deleted-member"));
-                                }
-                            });
-
-                        });
-                    }
-
-                }
-            });
-        }
-
-    });
 }
 
 
@@ -944,123 +842,108 @@ function removeProject(pwdkey, useragent, email, project) {
 
 }
 
-function loadUserBills(pskey, agent, email, mode) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
+async function loadUserBills(pskey, agent, email, mode) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) { return new Promise((resolve, rej) => rej()) }
+    let obj = {};
+    obj.account = userDoc.default;
+    obj.controls = userDoc.privilege;
+    obj.defaultskin = userDoc.theme;
+    obj.isGlobalAdmin = (userDoc.privilege == "all") ? "yes" : "no";
+    if (userDoc.default == "personal") {
+        obj.user_bills = userDoc.personal.bills.map((bill) => {
+            return {
+                img: bill.encr_img,
+                data: bill.data,
+                id: bill.billid,
+                lastdate: bill.submitdate
+            }
+        });
+        return Promise.resolve({ data: obj });
 
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else {
-            let obj = {};
-            obj.account = doc.default;
-            obj.controls = doc.privilege;
-            obj.defaultskin = doc.theme;
-            obj.isGlobalAdmin = (doc.privilege == "all") ? "yes" : "no";
-            if (doc.default == "personal") {
-                obj.user_bills = doc.personal.bills.map(function(bill) {
-                    return {
-                        img: bill.encr_img,
-                        data: bill.data,
-                        id: bill.billid,
-                        lastdate: bill.submitdate
-                    }
-                });
-                return new Promise((resolve, rej) => resolve({ data: obj }));
+    } else {
+        let teamdoc = await Teams.find({ user_email: email });
+        if (teamdoc.length == 0) {
+            return new Promise((resolve, rej) => rej({ status: "notinteam", data: obj }));
+        }
+        obj.activeProjectID = "";
+        if (mode == "private") {
+            teamdoc.forEach((tdoc) => {
+                if (tdoc.default == "yes") {
+                    obj.activeProjectID = tdoc.teamid;
+                    obj.logo = tdoc.logo;
+                    obj.projname = tdoc.title;
+                    obj.role = tdoc.role;
+                    obj.controls = (tdoc.role == "admin") ? "all" : "none";
+                    obj.user_bills = tdoc.bills.filter(b => (b.imgsrc != "")).map((bill) => {
+                        return {
+                            img: bill.imgsrc,
+                            data: bill.data,
+                            id: bill.billid,
+                            lastdate: bill.submitdate,
+                            status: bill.status,
+                            history: bill.logs,
+                            approver: tdoc.approver,
+                            useremail: tdoc.user_email
+                        }
+                    });
+                }
+            });
+            return Promise.resolve({ data: obj });
+        }
 
+        if (mode == "team") {
+            teamdoc.forEach((tdoc) => {
+                if (tdoc.default == "yes") {
+                    obj.activeProjectID = tdoc.teamid;
+                    obj.role = tdoc.role;
+                    obj.logo = tdoc.logo;
+                    obj.projname = tdoc.title;
+                    obj.controls = (tdoc.role == "admin") ? "all" : "none";
+                }
+            });
+
+            if (obj.activeProjectID == "") {
+                return Promise.resolve({ data: obj });
             } else {
-                return Teams.find({ user_email: email }).exec().then(teamdoc => {
-                    if (teamdoc == null || teamdoc.length == 0) {
-                        return new Promise((resolve, rej) => rej({ status: "notinteam", data: obj }));
-                    } else {
-                        obj.activeProjectID = "";
-                        if (mode == "private") {
-                            teamdoc.forEach(function(tdoc) {
-                                if (tdoc.default == "yes") {
-
-                                    obj.activeProjectID = tdoc.teamid;
-                                    obj.logo = tdoc.logo;
-                                    obj.projname = tdoc.title;
-                                    obj.role = tdoc.role;
-                                    obj.controls = (tdoc.role == "admin") ? "all" : "none";
-                                    obj.user_bills = tdoc.bills.filter(b => (b.imgsrc != "")).map(function(bill) {
-                                        return {
-                                            img: bill.imgsrc,
-                                            data: bill.data,
-                                            id: bill.billid,
-                                            lastdate: bill.submitdate,
-                                            status: bill.status,
-                                            history: bill.logs,
-                                            approver: tdoc.approver,
-                                            useremail: tdoc.user_email
-                                        }
-                                    });
-                                }
-                            });
-                            return new Promise((resolve, rej) => resolve({ data: obj }));
-                        }
-
-                        if (mode == "team") {
-                            teamdoc.forEach(function(tdoc) {
-                                if (tdoc.default == "yes") {
-                                    obj.activeProjectID = tdoc.teamid;
-                                    obj.role = tdoc.role;
-                                    obj.logo = tdoc.logo;
-                                    obj.projname = tdoc.title;
-                                    obj.controls = (tdoc.role == "admin") ? "all" : "none";
-                                }
-                            });
-
-                            if (obj.activeProjectID == "") {
-                                return new Promise((resolve, rej) => resolve({ data: obj }));
-                            } else {
-                                return findInProjectID(obj.activeProjectID, obj.controls, email, obj.role).then(function(alldocs) {
-                                    obj.allProjMembers = JSON.stringify(alldocs);
-                                    return new Promise((resolve, rej) => resolve({ data: obj }));
-                                }).catch(function() {
-                                    return new Promise((res, rej) => rej());
-                                })
-                            }
-                        }
-
-                    }
-                });
+                let alldocs = await findInProjectID(obj.activeProjectID, obj.controls, email, obj.role);
+                obj.allProjMembers = JSON.stringify(alldocs);
+                return Promise.resolve({ data: obj });
             }
         }
-    });
 
+    }
 }
 
-function findInProjectID(id, controls, email, roles) {
-    return Teams.find({ teamid: id }).exec().then(teamdoc => {
-        let allProjMembers = [];
-        teamdoc.forEach(function(doc) {
-            if (controls == "all") {
-                if (doc.role !== "admin") {
-                    let teamdata = getTeamData(doc);
-                    teamdata.forEach(bills => {
-                        allProjMembers.push(bills);
-                    });
-                }
+async function findInProjectID(id, controls, email, roles) {
+    let teamdoc = await Teams.find({ teamid: id });
+    let allProjMembers = [];
+    teamdoc.forEach((doc) => {
+        if (controls == "all") {
+            if (doc.role !== "admin") {
+                let teamdata = getTeamData(doc);
+                teamdata.forEach(bills => {
+                    allProjMembers.push(bills);
+                });
+            }
 
-            } else if (roles == "manager") {
-                if (doc.approver == email) {
-                    let teamdata = getTeamData(doc);
-                    teamdata.forEach(bills => {
-                        allProjMembers.push(bills);
-                    });
-
-                }
-            } else if (doc.user_email == email) {
+        } else if (roles == "manager") {
+            if (doc.approver == email) {
                 let teamdata = getTeamData(doc);
                 teamdata.forEach(bills => {
                     allProjMembers.push(bills);
                 });
 
             }
-
-        });
-        return new Promise((resolve, rej) => resolve(allProjMembers));
+        } else if (doc.user_email == email) {
+            let teamdata = getTeamData(doc);
+            teamdata.forEach(bills => {
+                allProjMembers.push(bills);
+            });
+        }
 
     });
+    return new Promise((resolve, rej) => resolve(allProjMembers));
 }
 
 function getTeamData(team_doc) {
@@ -1082,196 +965,172 @@ function getTeamData(team_doc) {
 }
 
 
-
-function saveUserBill(pskey, agent, email, receipt) {
-
-    return Users.findOne({ email: email, key: pskey, browser: agent }).exec().then(doc => {
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else if (doc.default == "personal") {
-            let docBills = doc.personal.bills;
-            let isDuplicates = false;
-            docBills.forEach(function(bill) {
-                let half1 = receipt.bill.substr(0, 2000);
-                let half2 = bill.encr_img.substr(0, 2000);
-                if (half1 == half2) {
-                    isDuplicates = true;
-                }
-            });
-            if (!isDuplicates) {
-                docBills.push({ billid: idRandomise("bill"), encr_img: receipt.bill, data: receipt.billFields, submitdate: getIndDate() });
-                doc.personal.bills = docBills;
-                return doc.save().then(function() {
-                    return new Promise((resolve, rej) => resolve());
-                }).catch(function() {
-                    return new Promise((resolve, rej) => rej());
-                })
-            } else {
-                return new Promise((resolve, rej) => rej("duplicate"));
-            }
-
-        } else {
-            return Teams.find({ user_email: email }).exec().then(teamdoc => {
-                let promisecall = [];
-                if (teamdoc == null || teamdoc.length == 0) {
-                    return new Promise((resolve, rej) => rej());
-                } else {
-                    teamdoc.forEach((tdoc, i) => {
-                        if (tdoc.default == "yes") {
-                            let isDuplicates = false;
-                            tdoc.bills.forEach(function(bill) {
-                                let half1 = receipt.bill.substr(0, 2000);
-                                let half2 = bill.imgsrc.substr(0, 2000);
-                                if (half1 == half2) {
-                                    isDuplicates = true;
-                                }
-                            });
-                            if (!isDuplicates) {
-                                let submDate = getIndDate();
-                                tdoc.lastlogin = submDate;
-                                tdoc.bills.push({
-                                    billid: idRandomise("bill"),
-                                    imgsrc: receipt.bill,
-                                    data: receipt.billFields,
-                                    submitdate: submDate,
-                                    status: "pending",
-                                    logs: ["Bill Submitted on: " + submDate]
-                                });
-                                promisecall[i] = tdoc.save().then(() => new Promise((resolve, rej) => resolve()));
-
-                            } else {
-                                promisecall[i] = new Promise((resolve, rej) => rej("duplicate"));
-                            }
-                        }
-                    });
-
-                    return Promise.all(promisecall).then(() => {
-                        return new Promise((resolve, rej) => resolve());
-                    });
-
-                }
-
-            });
-        }
-
-    })
-}
-
-
-function deleteUserBill(pskey, agent, email, bill_id) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else if (doc.default == "personal") {
-            let deletedBills = doc.personal.bills.filter(bill => (bill.billid != bill_id));
-            doc.personal.bills = deletedBills;
-            return doc.save().then(function() {
-                return new Promise((resolve, rej) => resolve());
-            }).catch(function() {
-                return new Promise((resolve, rej) => rej());
-            })
-        } else {
-            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(teamdoc => {
-                if (teamdoc == null) {
-                    return new Promise((resolve, rej) => rej());
-                } else {
-                    let deletedBills = teamdoc.bills.filter(bill => (bill.billid != bill_id));
-                    teamdoc.bills = deletedBills;
-                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
-                }
-            });
-        }
-
-    })
-}
-
-
-function updateUserBill(pskey, agent, email, bill_id, bill_data) {
-
-    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {
-            return new Promise((resolve, rej) => rej());
-        } else if (doc.default == "personal") {
-            doc.personal.bills.map(bill => {
-                if (bill.billid === bill_id) {
-                    bill.data = bill_data;
-                    bill.submitdate = getIndDate();
-                }
-            });
-            return doc.save().then(function() {
-                return new Promise((resolve, rej) => resolve());
-            }).catch(function() {
-                return new Promise((resolve, rej) => rej());
-            })
-
-        } else {
-            return Teams.findOne({ user_email: email, default: "yes" }).exec().then(teamdoc => {
-                let promisecall = [];
-                if (teamdoc == null || teamdoc.length == 0) {
-                    return new Promise((resolve, rej) => rej());
-                } else {
-
-                    teamdoc.bills.map(bill => {
-                        if (bill.billid === bill_id) {
-                            let modDate = getIndDate();
-                            bill.data = bill_data;
-                            bill.submitdate = modDate;
-                            bill.status = "pending";
-                            bill.logs.push("Bill Updated on: " + modDate);
-                        }
-                    });
-                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
-                }
-            });
-        }
-    }).catch(function() {
+async function saveUserBill(pskey, agent, email, receipt) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
         return new Promise((resolve, rej) => rej());
-    })
+    }
+    if (userDoc.default == "personal") {
+        let docBills = userDoc.personal.bills;
+        let isDuplicates = false;
+        docBills.forEach((bill) => {
+            let half1 = receipt.bill.substr(0, 2000);
+            let half2 = bill.encr_img.substr(0, 2000);
+            if (half1 == half2) {
+                isDuplicates = true;
+            }
+        });
+        if (!isDuplicates) {
+            docBills.push({ billid: idRandomise("bill"), encr_img: receipt.bill, data: receipt.billFields, submitdate: getIndDate() });
+            userDoc.personal.bills = docBills;
+            return userDoc.save().then(() => Promise.resolve());
+        } else {
+            return new Promise((resolve, rej) => rej("duplicate"));
+        }
+
+    } else {
+        let teamdoc = await Teams.find({ user_email: email });
+        if (teamdoc.length == 0) {
+            return new Promise((resolve, rej) => rej());
+        }
+        let promisecall = [];
+        teamdoc.forEach((tdoc, i) => {
+            if (tdoc.default == "yes") {
+                let isDuplicates = false;
+                tdoc.bills.forEach((bill) => {
+                    let half1 = receipt.bill.substr(0, 2000);
+                    let half2 = bill.imgsrc.substr(0, 2000);
+                    if (half1 == half2) {
+                        isDuplicates = true;
+                    }
+                });
+                if (!isDuplicates) {
+                    let submDate = getIndDate();
+                    tdoc.lastlogin = submDate;
+                    tdoc.bills.push({
+                        billid: idRandomise("bill"),
+                        imgsrc: receipt.bill,
+                        data: receipt.billFields,
+                        submitdate: submDate,
+                        status: "pending",
+                        logs: ["Bill Submitted on: " + submDate]
+                    });
+                    promisecall[i] = tdoc.save().then(() => Promise.resolve());
+                } else {
+                    promisecall[i] = new Promise((resolve, rej) => rej("duplicate"));
+                }
+            }
+        });
+
+        return Promise.all(promisecall).then(() => {
+            return Promise.resolve();
+        });
+
+    }
+
 }
 
-function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, mode) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {
+
+
+async function deleteUserBill(pskey, agent, email, bill_id) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
+        return new Promise((resolve, rej) => rej());
+    } else if (userDoc.default == "personal") {
+        let deletedBills = userDoc.personal.bills.filter(bill => (bill.billid != bill_id));
+        userDoc.personal.bills = deletedBills;
+        return userDoc.save().then(() => Promise.resolve())
+    } else {
+        let teamdoc = await Teams.findOne({ user_email: email, default: "yes" });
+        if (!teamdoc) {
             return new Promise((resolve, rej) => rej());
-        } else {
-            return Teams.findOne({ user_email: user, teamid: proj }).exec().then(team => {
-                if (team == null) {
-                    return new Promise((resolve, rej) => rej());
-                } else {
-                    team.bills.map(bill => {
-                        if (bill.billid === bill_id) {
-                            let logval = "Bill " + mode + " by " + doc.name + " (" + email + ") on: " + getIndDate();
-                            bill.logs.push(logval);
-                            bill.status = mode;
-                        }
-                    });
-                    return team.save().then(() => new Promise((resolve, rej) => resolve({ status: mode })));
-                }
-            });
         }
-    });
+        let deletedBills = teamdoc.bills.filter(bill => (bill.billid != bill_id));
+        teamdoc.bills = deletedBills;
+        return teamdoc.save().then(() => Promise.resolve());
+    }
 }
 
-function rejectUserBill(pskey, agent, email, bill_id, proj, user) {
-    return Users.findOne({ email: email, key: pskey, browser: agent }).then(doc => {
-        if (doc == null) {
+
+async function updateUserBill(pskey, agent, email, bill_id, bill_data) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
+        return new Promise((resolve, rej) => rej());
+    }
+    if (userDoc.default == "personal") {
+        userDoc.personal.bills.map(bill => {
+            if (bill.billid === bill_id) {
+                bill.data = bill_data;
+                bill.submitdate = getIndDate();
+            }
+        });
+        return userDoc.save().then(() => Promise.resolve());
+    } else {
+        let teamdoc = await Teams.findOne({ user_email: email, default: "yes" });
+        if (!teamdoc) {
             return new Promise((resolve, rej) => rej());
-        } else {
-            return Teams.findOne({ user_email: user, teamid: proj }).exec().then(team => {
-                if (team == null) {
-                    return new Promise((resolve, rej) => rej());
-                } else {
-                    team.bills.map(bill => {
-                        if (bill.billid === bill_id) {
-                            bill.logs.push("Bill Rejected by " + doc.name + " (" + email + ") on: " + getIndDate());
-                            bill.status = "rejected";
-                        }
-                    });
-                    return teamdoc.save().then(() => new Promise((resolve, rej) => resolve()));
-                }
-            });
+        }
+        teamdoc.bills.map(bill => {
+            if (bill.billid === bill_id) {
+                let modDate = getIndDate();
+                bill.data = bill_data;
+                bill.submitdate = modDate;
+                bill.status = "pending";
+                bill.logs.push("Bill Updated on: " + modDate);
+            }
+        });
+        return teamdoc.save().then(() => Promise.resolve());
+    }
+}
+
+async function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, mode) {
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
+        return new Promise((resolve, rej) => rej());
+    }
+    let team = await Teams.findOne({ user_email: user, teamid: proj });
+    if (!team) {
+        return new Promise((resolve, rej) => rej());
+    }
+    team.bills.map(bill => {
+        if (bill.billid === bill_id) {
+            let logval = "Bill " + mode + " by " + userDoc.name + " (" + email + ") on: " + getIndDate();
+            bill.logs.push(logval);
+            bill.status = mode;
         }
     });
+    let saveStatus = await team.save();
+    let notification = await sendBillStatusNotification(email, user, mode, team.title);
+    console.log(notification);
+    return Promise.resolve({ status: mode });
+
+}
+
+function sendBillStatusNotification(approver, member, billstatus, projName) {
+    let mailOptions = {
+        from: KEYS_DATA.email,
+        to: member,
+        subject: `Your Bill was ${billstatus}`,
+        html: `
+        <p>Your Bill was <b>${billstatus}</b> by ${approver}</p>
+        <p>Project Name: ${projName}</p>
+        <p>&nbsp;</p>
+        <p>(For further information please log into BillVault app)</p>
+        <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+        <p>Sincerely,<br>
+        BillVault (Admin)</p>
+        `
+    };
+    return new Promise((resolve, rej) => {
+        transporter.sendMail(mailOptions, (err, data) => {
+            if (err) {
+                resolve("failed")
+            } else {
+                resolve("notified")
+            }
+        });
+    });
+
 }
 
 function saveDefaultTheme(pskey, agent, email, theme) {
@@ -1345,13 +1204,13 @@ app.post("/emailreq", (req, res) => {
     let email = getEmail(req.body.email);
     let mode = req.body.mode;
     if (isValidEmail(email)) {
-        emailDBcheck(email, mode).then(function() {
+        emailDBcheck(email, mode).then(() => {
             if (mode == "register") {
                 genActivationCode(email, res);
             } else {
                 res.json({ status: "require_pswd", e_mail: email })
             }
-        }).catch(function(s) {
+        }).catch((s) => {
             if (s.error == "email") {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
@@ -1373,20 +1232,20 @@ app.post("/emailreq", (req, res) => {
 app.post("/register", (req, res) => {
     const email = getEmail(req.body.email);
     const code = req.body.a_code;
-    activation_code_verify(email, code).then(function() {
+    activation_code_verify(email, code).then(() => {
         let key = generateEmailConstantKey(email);
         res.json({ status: "activation_verified", serv_em_key: key })
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "code_invalid" })
     })
 
 });
 app.post("/login", (req, res) => {
     const email = getEmail(req.body.email);
-    emailDBcheck(email, "login").then(function() {
+    emailDBcheck(email, "login").then(() => {
         let key = generateEmailConstantKey(email);
         res.json({ status: "email_ok", serv_em_key: key })
-    }).catch(function(s) {
+    }).catch((s) => {
         if (s.error == "email") {
             res.json({ status: "email_invalid" })
         } else {
@@ -1399,9 +1258,9 @@ app.post("/storekey", (req, res) => {
     const pwdkey = req.body.serv_copy;
     const useragent = req.body.agent;
     const email = getEmail(req.body.email);
-    saveRegisterationDB(pwdkey, useragent, email).then(function() {
+    saveRegisterationDB(pwdkey, useragent, email).then(() => {
         res.json({ status: "registered" });
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "server_error" });
     })
 
@@ -1412,9 +1271,9 @@ app.post("/checkloginkey", (req, res) => {
     const pwdkey = req.body.serv_copy;
     const useragent = req.body.agent;
     const email = getEmail(req.body.email);
-    userAuthenticate(pwdkey, useragent, email, "login").then(function() {
+    userAuthenticate(pwdkey, useragent, email, "login").then(() => {
         res.json({ status: "verified" });
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1424,9 +1283,9 @@ app.post("/userAuth", (req, res) => {
     const pwdkey = req.body.key_serv;
     const useragent = req.body.agent;
     const email = getEmail(req.body.em);
-    userAuthenticate(pwdkey, useragent, email, "auto").then(function() {
+    userAuthenticate(pwdkey, useragent, email, "auto").then(() => {
         res.json({ status: "verified" });
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1465,7 +1324,7 @@ app.post("/deleteBill", (req, res) => {
     const { em, agent, key_serv, receiptid } = req.body;
     deleteUserBill(key_serv, agent, getEmail(em), receiptid).then(() => {
         res.json({ status: "deleted" });
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1475,7 +1334,7 @@ app.post("/updateBill", (req, res) => {
     const { em, agent, key_serv, receiptid, bdata } = req.body;
     updateUserBill(key_serv, agent, getEmail(em), receiptid, bdata).then(() => {
         res.json({ status: "updated" });
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1485,7 +1344,7 @@ app.post("/approveRejectBill", (req, res) => {
     const { em, agent, key_serv, billid, proj, user, mode } = req.body;
     approveRejectUserBill(key_serv, agent, getEmail(em), billid, proj, user, mode).then((s) => {
         res.json({ status: s.status });
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1497,7 +1356,7 @@ app.post("/settingsload", (req, res) => {
     const { em, agent, key_serv } = req.body;
     loadSettingsData(key_serv, agent, getEmail(em)).then(d => {
         res.json({ status: "done", accdata: d.data })
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1521,7 +1380,7 @@ app.post("/getProjMembers", (req, res) => {
     const { em, agent, key_serv, project } = req.body;
     loadProjectMembers(key_serv, agent, getEmail(em), project).then(d => {
         res.json({ status: "done", team: d.data })
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 
@@ -1566,7 +1425,7 @@ app.post("/removeMember", (req, res) => {
     const { em, agent, key_serv, project, member } = req.body;
     removeProjectMember(key_serv, agent, getEmail(em), project, member).then((delstatus) => {
         res.json({ status: delstatus })
-    }).catch(function() {
+    }).catch(() => {
         res.json({ status: "invalid" });
     })
 

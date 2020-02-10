@@ -5,7 +5,11 @@ body {
 
 body,
 .container {
-    min-height: 100vh
+    min-height: 100vh;
+    background: #CEDFE5;
+}
+body, .container {
+    background: #CEDFE5;
 }
 
 header {
@@ -14,6 +18,7 @@ header {
     display: block;
     background: #850689;
     border-bottom: solid 4px #adaceb;
+    overflow: hidden;
 
 }
 header img {
@@ -83,7 +88,7 @@ header img {
     display: none
 }
 #projectNameHead b{
-    color:#8883c5;
+    color:#9f9bd7;
 }
 
 #addmemberEdit{
@@ -343,9 +348,11 @@ section.main {
     padding: 20px
 }
 
+.topfloater section.side-nav #billshome img{
+    padding-top: 5px
+}
 
 #imageuploader {
-
     padding: 10px;
     width: 100%;
     height: 105px;
@@ -414,8 +421,9 @@ p.tip-info {
     font-weight: normal;
     color: #5e6756;
     font-size: small;
-    background: #bddeea;
+    background: #ace2f4;
     padding: 2px 5px;
+    box-shadow: 2px 1px 3px 0px rgba(0, 0, 0, 0.27);
     border: 1px solid rgba(94, 103, 86, 0.45);
 }
 
@@ -667,6 +675,7 @@ span.pick-amount{
 .thumb-title-bill {
     max-width: 82%;
     text-align: center;
+    font-weight: bold;
 }
 
 .thumb-date-bill {
@@ -790,6 +799,7 @@ div#ui-datepicker-div {
 .edituserGroup{
     width: 45%
 }
+
 
 
 @media (min-width: 1024px) {
@@ -1000,6 +1010,9 @@ div#ui-datepicker-div {
     background: #533a48;
     border-bottom: solid 2px #816373
 }
+body.skin1, .skin1 .container {
+    background: #7c5869;
+}
 
 .skin1 .profile_info h2 {
     border-bottom: 2px solid rgba(92, 83, 92, 0.3);    
@@ -1063,6 +1076,7 @@ div#ui-datepicker-div {
     color: #bcbcd5;
     background-color: #9a7197;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #c7adb9;
 }
 
 .skin1 .thumbnail {
@@ -1083,6 +1097,17 @@ div#ui-datepicker-div {
 }
 
 
+.skin1 #team_setting_link, 
+.skin1 #user_setting_link {
+    color: #e2c1c6
+}
+
+.skin1 .table-head span {
+    background: #bbb5d3
+}
+
+
+
 
 
 
@@ -1091,6 +1116,9 @@ div#ui-datepicker-div {
 .skin2 header{
     background: #1c6e8c;
     border-bottom: solid 2px #3d5a58;
+}
+body.skin2, .skin2 .container {
+    background: #d3d0cf;
 }
 
 .skin2 .profile_info h2 {
@@ -1191,6 +1219,10 @@ div#ui-datepicker-div {
     border-bottom: solid 2px #e8f0e0;
 }
 
+body.skin3, .skin3 .container {
+    background: #c7efcf;
+}
+
 .skin3 .profile_info h2 {
     border-bottom: 2px solid rgba(92, 83, 92, 0.3);
     color: #806a82;
@@ -1280,6 +1312,10 @@ div#ui-datepicker-div {
     background: #d7e0e2 !important;
 }
 
+.skin3 .table-head span {
+    background: #e3eec7
+}
+
 
 
 
@@ -1289,6 +1325,10 @@ div#ui-datepicker-div {
 .skin4 header{
     background: #6a152a;
     border-bottom: solid 3px #b7414d;
+}
+
+body.skin4, .skin4 .container {
+    background: #c52233;
 }
 
 
@@ -1353,14 +1393,15 @@ div#ui-datepicker-div {
 }
 
 .skin4 .input-image+label {
-    color: #c0813b;
+    color: #da8222;
     background-color: #a6091d;
-    border-bottom: 1px solid #1d1d23;
+    border-bottom: 1px solid #2a0207;
+    border-top: 1px solid #ef4355;
 }
 
 .skin4 .thumbnail {
-    border: 3px solid #d11c2f;
-    background: #b50e20;
+    border: 3px solid #bc0e20;
+    background: #a20d1d;
 }
 
 .skin4 .thumb-date-bill {
@@ -1386,8 +1427,17 @@ div#ui-datepicker-div {
     background: #6fce85 !important;
 }
 
+.skin4 p.tip-info{
+    color: #753941
+}
+.skin4 #team_setting_link, 
+.skin4 #user_setting_link {
+    color: #81454f
+}
 
-
+.skin4 .table-head span {
+    background: #f498a1
+}
 
 
 
@@ -1404,6 +1454,10 @@ div#ui-datepicker-div {
 .skin5 header{
     background: #3f5c5b;
     border-bottom: solid 1px #2c403f;
+}
+
+body.skin5, .skin5 .container {
+    background: #586b5f;
 }
 
 .skin5 .profile_info h2 {
@@ -1470,6 +1524,7 @@ div#ui-datepicker-div {
     color: #e3b8b8;
     background-color: #9a8282;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #c7adb9;
 }
 
 .skin5 .thumbnail {
@@ -1496,6 +1551,11 @@ div#ui-datepicker-div {
 }
 
 
+.skin5 .table-head span {
+    background: #d3e1d8
+}
+
+
 
 
 
@@ -1507,8 +1567,14 @@ div#ui-datepicker-div {
     border-bottom: solid 3px #4f6655;
 }
 
+
+body.skin6, .skin6 .container {
+    background: #a8c5af;
+}
+
+
 .skin6 #projectNameHead{
-    border: 1px solid #3a5340;
+    border: 1px solid #a9bbae;
     color: #e1e2ef
 }
 
@@ -1582,6 +1648,7 @@ div#ui-datepicker-div {
     color: #e9d8d0;
     background-color: #837f7d;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #d1e2d5;
 }
 
 .skin6 .thumbnail {
@@ -1607,6 +1674,10 @@ div#ui-datepicker-div {
     background: #9fceaa !important;
 }
 
+.skin6 .table-head span {
+    background: #cbe1d0
+}
+
 
 
 
@@ -1617,6 +1688,11 @@ div#ui-datepicker-div {
     background: #4d2a2d;
     border-bottom: solid 3px #311c05;
 }
+
+body.skin7, .skin7 .container {
+    background: #d58936;
+}
+
 
 
 .skin7 .profile_info h2 {
@@ -1684,6 +1760,7 @@ div#ui-datepicker-div {
     color: #e9bb87;
     background-color: #b55f02;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #debc97;
 }
 
 .skin7 .thumbnail {
@@ -1708,9 +1785,17 @@ div#ui-datepicker-div {
     color: #81988a !important;
     background: #9fceaa !important;
 }
+.skin7 p.tip-info{
+    color: #583f2f
+}
 
-
-
+.skin7 #team_setting_link, 
+.skin7 #user_setting_link {
+    color: #36345a
+}
+.skin7 .table-head span {
+    background: #f0bd86
+}
 
 
 
@@ -1723,6 +1808,9 @@ div#ui-datepicker-div {
     border-bottom: solid 3px #623a0b;
 }
 
+body.skin8, .skin8 .container {
+    background: #d89f62;
+}
 
 .skin8 .profile_info h2 {
     border-bottom: 2px solid rgba(174, 112, 70, 0.57);
@@ -1792,6 +1880,7 @@ div#ui-datepicker-div {
     color: #dfa564;
     background-color: #7f5425;
     border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #e0d0be;
 }
 
 .skin8 .thumbnail {
@@ -1815,6 +1904,10 @@ div#ui-datepicker-div {
 .skin8 .member-fields-disable {
     color: #2ca95d !important;
     background: #6fce85 !important;
+}
+
+.skin8 .table-head span {
+    background: #eac195
 }
 
 
