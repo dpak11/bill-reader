@@ -44,7 +44,7 @@ function getCryptVals(encr) {
     let allchars = [...enckey.split(""), ...chars.split("")];
     let uniqueKey = new Set(allchars);
     let uKey = [...uniqueKey];
-    console.log("Unique key:" + uKey.join(""));
+    //console.log("Unique key:" + uKey.join(""));
     for (let i = 0; i < cli_key.length; i++) {
         totalextract = totalextract + uKey.indexOf(cli_key.substr(i, 1));
     }
@@ -72,7 +72,7 @@ function getCryptVals(encr) {
 
 function encryptImg(_imgdata, enc_key) {
     let cryptoVals = getCryptVals(enc_key);
-    console.log(cryptoVals);
+    //console.log(cryptoVals);
     let img_data = _imgdata.split(";base64,");
     let imgdata = img_data[1];
     let imgBlocks = Math.ceil(imgdata.length / cryptoVals.divBlocks);
@@ -100,7 +100,7 @@ function encryptImg(_imgdata, enc_key) {
 
 function decryptImg(encryptedImg, enc_key) {
     let cryptoVals = getCryptVals(enc_key);
-    console.log(cryptoVals);
+    //console.log(cryptoVals);
     let splitter = encryptedImg.split("__");
     let base = atob(splitter[1]);
     let blocks = splitPartition(cryptoVals.partition, splitter[0]);

@@ -1454,7 +1454,9 @@ function loadAccountSettings() {
                         }, 1000);
                         initAccountVals.projchange = false;
                     }
-                    if (settingdata.teamlist.length == 0) { editProjectBtn.classList.add("hide") }
+                    if (settingdata.teamlist.length == 0 || projectMemberRole == "member") { 
+                        editProjectBtn.classList.add("hide")
+                    }
 
                     document.querySelector(".user_role").classList.remove("hide");
                     document.getElementById("userrole_field").value = projectMemberRole || "--";
@@ -1463,8 +1465,7 @@ function loadAccountSettings() {
                             if (projectMemberRole == "member") {
                                 if (document.querySelector("#addUserPanel p")) {
                                     document.querySelector("#addUserPanel p").remove()
-                                }
-                                editProjectBtn.classList.add("hide");
+                                }                                
                             }
                             document.querySelector('.team-sub-setting').remove();
                             createNewTeamBtn.remove();
@@ -1615,6 +1616,10 @@ function createNewProjectName(projname) {
 }
 
 function validateProjectName(proj) {
+    if(proj == ""){
+        showAlertBox("Please enter Name of the Project", "OK", null, false);
+        return false;
+    }
     if (proj.length < 3) {
         showAlertBox("Project Name is too Small", "OK", null, false);
         return false;
@@ -1672,7 +1677,6 @@ function removeTempProject(pID) {
 userAccField.addEventListener("change", function() {
     if (initAccountVals.type !== userAccField.value) {
         document.querySelector(".tip-info").classList.remove("hide");
-        document.getElementById("active_account_txt").innerText = initAccountVals.type;
         document.getElementById("new_account_txt").innerText = userAccField.value;
         if (userAccField.value == "team" && teamAcRights == "none") {
             showAlertBox("Business Account lets you create Multiple projects. You must have Full Membership to use Business Account. Please contact 'billvault@zohomail.in' to get Full Membership account details", "OK", null, false);
@@ -1689,10 +1693,12 @@ myProjectSelect.addEventListener("change", function() {
         initAccountVals.projchange = true;
         editProjectBtn.classList.add("hide");
         document.getElementById("modifyProjectMembers").classList.add("hide");
+        document.querySelector(".user_role").classList.add("hide");
         editProjectMode = false;
         removeEditUserGroups();
     } else {
         initAccountVals.projchange = false;
+        document.querySelector(".user_role").classList.remove("hide");
         if (projectMemberRole !== "member") {
             editProjectBtn.classList.remove("hide");
         }
@@ -1892,8 +1898,6 @@ function loadCharts() {
         .then(function(c) {
             if (c.status == "done") {
                 preloader.classList.add("hide");
-                //document.getElementById("chartdaysFilter").classList.remove("hide");
-
                 const bData = JSON.parse(atob(c.chartdata));
                 const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
                 all_chart_data = [];
