@@ -971,11 +971,16 @@ div#ui-datepicker-div {
     #editProject{
         margin-left:0 !important;
     }
-    .profile_info #projectsList input, .profile_info #projectsList select{
+    .profile_info #projectsList input, 
+    .profile_info #projectsList select{
         width: 175px;
     }
-    .profile_info .newuserGroup input, .profile_info .newuserGroup select{
+    .profile_info .newuserGroup input, 
+    .profile_info .newuserGroup select{
         width: 155px;
+    }
+    #alertBoxWindow h4, #confirmAmountWindow h4{
+        font-size: .9em;
     }
 
 }
@@ -1356,7 +1361,7 @@ body.skin4, .skin4 .container {
 .skin4 #profile_img_browse+label,
 .skin4 #team_img_browse+label,
 .skin4 #team_imgEdit+label {
-        background-color: #693f22;
+    background-color: #693f22;
 }
 
 .skin4 #settingsBlock {

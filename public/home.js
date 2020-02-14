@@ -12,25 +12,6 @@ let selectedProjectID = "";
 let projectMemberRole = "";
 let selectedProjectName = "";
 
-let billshomeBtn = document.getElementById("billshome");
-let saveBillBtn = document.getElementById("savebill");
-let deleteBillBtn = document.getElementById("deletebill");
-let exitBillBtn = document.getElementById("exitbill");
-let updateBillBtn = document.getElementById("updatebill");
-let approveBillBtn = document.getElementById("approvebill");
-let rejectBillBtn = document.getElementById("rejectbill");
-let infotipcloseBtn = document.getElementById("infotipclose");
-let myBill_allMembs = document.querySelector("#mybillORall p");
-let amountStatusSkip = document.getElementById("amountStatusSkip");
-
-let captureImg = document.getElementById('captureImg');
-let fileImg = document.getElementById('fileImg');
-let header_layout = document.querySelector("header img");
-let preloader = document.querySelector(".lds-roller");
-let headerLogo = document.querySelector("header > img");
-let themechooser = document.getElementById("themechooser");
-let totalThemes = document.querySelector(".container").getAttribute("data-themes");
-
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
     let paramObj = { ...authVars };
@@ -42,6 +23,45 @@ const bodyParams = (params) => {
 
 
 
+//-------------------------------------------------------------------------
+//              HOME PAGE
+//-------------------------------------------------------------------------
+
+
+const billshomeBtn = document.getElementById("billshome");
+const saveBillBtn = document.getElementById("savebill");
+const deleteBillBtn = document.getElementById("deletebill");
+const exitBillBtn = document.getElementById("exitbill");
+const updateBillBtn = document.getElementById("updatebill");
+const approveBillBtn = document.getElementById("approvebill");
+const rejectBillBtn = document.getElementById("rejectbill");
+const infotipcloseBtn = document.getElementById("infotipclose");
+const myBill_allMembs = document.querySelector("#mybillORall p");
+const amountStatusSkip = document.getElementById("amountStatusSkip");
+const previewBillImage = document.querySelector(".previewimg");
+const billThumbNails = document.getElementById("billThumbnails");
+const billTable = document.getElementById("billTable");
+const billStatusBlock = document.querySelector(".bill-status-approval");
+const captureImg = document.getElementById('captureImg');
+const fileImg = document.getElementById('fileImg');
+const imageUploader = document.getElementById("imageuploader");
+
+
+billshomeBtn.addEventListener("click", function() {
+    if (currentPage !== "bills") {
+        fetchBills();
+        currentPage = "bills";        
+        document.querySelector("title").text = "Bill Vault";
+        activeNavTab(billshomeBtn);
+        hideElements([chartsBlock, settingsBlock]);
+        mainContainer.classList.remove("settingMode");
+        preloader.classList.remove("hide");
+        
+        document.getElementById("mybillORall").style.display = "none";
+        
+    }
+
+});
 
 myBill_allMembs.addEventListener("click", function() {
     let pvt = sessionStorage.getItem("is_private_team");
@@ -61,79 +81,15 @@ myBill_allMembs.addEventListener("click", function() {
 
 });
 
-
-
-
-header_layout.addEventListener("click", function() {
-    let containerdiv = document.querySelector(".container");
-    if (containerdiv.getAttribute("class").includes("topfloater")) {
-        // for devices smaller than 375px width, do not remove topfloater class in Settings Mode
-        if (window.innerWidth > 375) {
-            containerdiv.classList.remove("topfloater")
-        } else {
-            let settingmodeclass = document.querySelector(".container").getAttribute("class");
-            if (settingmodeclass.indexOf("settingMode") == -1) {
-                containerdiv.classList.remove("topfloater")
-            }
-        }
-    } else {
-        containerdiv.classList.add("topfloater")
-    }
-
+billStatusBlock.addEventListener("click", function(){
+    document.getElementById("infoTipBox").classList.remove("hide");
+    let history = document.getElementById("infoTipBox").getAttribute("data-history");
+    let historyLog = JSON.parse(atob(history));
+    document.getElementById("infocontent").innerHTML = historyLog.join("<br><br>");
 });
 
 amountStatusSkip.addEventListener("click", function() {
     confirmAmountWindow.classList.add("hide");
-
-});
-
-let themeChanged = false;
-let themeTrackInterval;
-
-let themeName = localStorage.getItem("theme") || "";
-if (themeName != "") {
-    document.querySelector("body").setAttribute("class", themeName);
-}
-
-themechooser.addEventListener("click", function() {
-    themeChanged = true;
-    let maxThemes = Number(totalThemes);
-    let bodyElt = document.querySelector("body");
-    let bodyclass = bodyElt.getAttribute("class");
-    clearInterval(themeTrackInterval);
-    themeTrackInterval = setInterval(themeUpdateTracker, 5000);
-    if (!bodyclass || bodyclass.indexOf("skin") == -1) {
-        bodyElt.classList.add("skin1");
-        themeName = "skin1";
-    } else {
-        let skinNum = Number(bodyclass.split("skin")[1]);
-        if (skinNum < maxThemes) {
-            skinNum++;
-            bodyElt.setAttribute("class", "skin" + skinNum);
-            themeName = "skin" + skinNum;
-        } else {
-            bodyclass = bodyElt.setAttribute("class", "");
-            themeName = "";
-        }
-    }
-
-});
-
-
-billshomeBtn.addEventListener("click", function() {
-    if (currentPage !== "bills") {
-        fetchBills();
-        currentPage = "bills";
-        document.querySelector("title").text = "Bill Vault";
-        preloader.classList.remove("hide");
-        billshomeBtn.classList.add("nav-selected");
-        chartsBtn.classList.remove("nav-selected");
-        settingsBtn.classList.remove("nav-selected");
-        document.querySelector(".container").classList.remove("settingMode");
-        document.getElementById("settingsBlock").classList.add("hide");
-        document.getElementById("chartsBlock").classList.add("hide");
-        document.getElementById("mybillORall").style.display = "none";
-    }
 
 });
 
@@ -162,24 +118,6 @@ fileImg.addEventListener('change', () => {
 
 });
 
-function themeUpdateTracker() {
-    if (themeChanged) {
-        themeChanged = false;
-        showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
-    }
-}
-
-function saveTheme() {
-    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
-        .then(dat => dat.json())
-        .then(() => {
-            showAlertBox("Default Theme Saved!", "OK", null, false);
-            localStorage.setItem("theme", themeName);
-        }).catch(function(s) {
-            console.log("theme failed");
-        });
-
-}
 
 
 function imageProcess(imgfile) {
@@ -190,9 +128,7 @@ function imageProcess(imgfile) {
             showAlertBox("File size is too Large.\nYour Bill Receipt must be less than 4 MB", "OK", null, false)
             return;
         }
-
         currentUploadStatus = "progress";
-
         preloader.classList.remove("hide");
         let fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent) {
@@ -345,18 +281,9 @@ function resetOrientation(srcBase64, srcOrientation, callback) {
     img.src = srcBase64;
 };
 
-
-
 function imageProcessDone(imgdata) {
-    preloader.classList.add("hide");
-    document.querySelector(".bill-status-approval").classList.add("hide");
-    document.getElementById("billThumbnails").classList.add("hide");
-    exitBillBtn.classList.remove("hide");
-    saveBillBtn.classList.remove("hide");
-    deleteBillBtn.classList.add("hide");
-    updateBillBtn.classList.add("hide");
-    approveBillBtn.classList.add("hide");
-    rejectBillBtn.classList.add("hide");
+    hideElements([billStatusBlock,approveBillBtn, rejectBillBtn, updateBillBtn, deleteBillBtn, preloader, billThumbNails]);
+    showElements([exitBillBtn, saveBillBtn]);
     displayBillingTable(imgdata);
     currentUploadStatus = "unsaved";
     billMode = "save";
@@ -446,7 +373,7 @@ function fetchBills() {
                         selectedProjectID = res.user_data.activeProjectID || "";
                         projectMemberRole = res.user_data.role || "";
                         let header_logo_img = res.user_data.logo || "";
-                        headerLogo.src = (header_logo_img == "") ? "images/logo-sq.png" : header_logo_img;
+                        document.querySelector("header > img").src = (header_logo_img == "") ? "images/logo-sq.png" : header_logo_img;
                         selectedProjectName = res.user_data.projname || "";
                         projectNameHead.innerHTML = "<b>Project:</b>&nbsp;" + selectedProjectName;
                         projectNameHead.style.display = "block";
@@ -499,8 +426,8 @@ function displayBillingTable(data) {
     } else {
         document.getElementById("amount_field").value = "Rs " + totalamount;
     }
-    document.querySelector('.previewimg').classList.remove("hide");
-    document.getElementById("billTable").classList.remove("hide");
+
+    showElements([billTable, previewBillImage]);
     document.getElementById("date_field").value = data.date || "";
     document.getElementById("merchant_field").value = data.title || "";
     document.getElementById("descr_field").value = data.descr || "";
@@ -574,14 +501,8 @@ function displayBillThumbnails() {
         thumbnails.appendChild(div);
         div.addEventListener("click", function(ev) {
             billMode = "update";
-            document.getElementById("imageuploader").classList.add("hide");
-            document.getElementById("billThumbnails").classList.add("hide");
-            saveBillBtn.classList.add("hide");
-            exitBillBtn.classList.remove("hide");
-            updateBillBtn.classList.remove("hide");
-            deleteBillBtn.classList.remove("hide");
-            approveBillBtn.classList.add("hide");
-            rejectBillBtn.classList.add("hide");
+            hideElements([rejectBillBtn, approveBillBtn, saveBillBtn, billThumbNails, imageUploader]);
+            showElements([exitBillBtn, updateBillBtn, deleteBillBtn]);
             let values = ev.currentTarget.getAttribute("data-billvals");
             selectedBillId = ev.currentTarget.getAttribute("id").split("mb_")[1];
             document.querySelector('.previewimg img').setAttribute("src", billsObjRef[selectedBillId]);
@@ -589,15 +510,13 @@ function displayBillThumbnails() {
             if (userAcType == "team") {
                 let _status = ev.currentTarget.getAttribute("data-billstatus");
                 let _approver = ev.currentTarget.getAttribute("data-billapprover");
-                let billStatusTxt = document.querySelector(".bill-status-approval");
-                billStatusTxt.classList.remove("approved");
-                billStatusTxt.classList.remove("rejected");
-                billStatusTxt.classList.remove("pending");
-                billStatusTxt.classList.add(_status);
+                billStatusBlock.classList.remove("approved");
+                billStatusBlock.classList.remove("rejected");
+                billStatusBlock.classList.remove("pending");
+                billStatusBlock.classList.add(_status);
                 let privateTeam = sessionStorage.getItem("is_private_team") || "private";
                 if (_status == "approved" || (projectMemberRole != "member" && privateTeam == "team")) {
-                    updateBillBtn.classList.add("hide");
-                    deleteBillBtn.classList.add("hide");
+                    hideElements([updateBillBtn, deleteBillBtn]);
                     resetTableFields("disable");
                 }
                 if (_status == "approved") {
@@ -612,11 +531,9 @@ function displayBillThumbnails() {
                 if (projectMemberRole != "member" && privateTeam == "team") {
                     if (_status !== "approved") {
                         if (projectMemberRole == "admin" && _approver != atob(authVars.em)) {
-                            approveBillBtn.classList.add("hide");
-                            rejectBillBtn.classList.add("hide");
+                            hideElements([approveBillBtn, rejectBillBtn]);
                         } else {
-                            approveBillBtn.classList.remove("hide");
-                            rejectBillBtn.classList.remove("hide");
+                            showElements([approveBillBtn, rejectBillBtn]);
                         }
                     }
                     if (_status == "rejected") {
@@ -633,16 +550,10 @@ function displayBillThumbnails() {
                 }
 
                 document.getElementById("billTable").classList.add("teamTable");
-                document.querySelector(".bill-status-approval").classList.remove("hide");
-                document.querySelector(".bill-status-approval").innerHTML = `This Bill${_status}<span>${_approver}</span><i>&nbsp;</i>`;
+                billStatusBlock.classList.remove("hide");
+                billStatusBlock.innerHTML = `This Bill${_status}<span>${_approver}</span><i>&nbsp;</i>`;
                 document.getElementById("infoTipBox").setAttribute("data-history", ev.currentTarget.getAttribute("data-history"));
-                setTimeout(function() {
-                    document.querySelector(".bill-status-approval i").addEventListener("click", getHistoryInfo)
-                }, 1000);
-
             }
-
-
         });
     });
 
@@ -720,16 +631,14 @@ function updateBill() {
             if (res.status == "updated") {
                 updateBillBtn.innerText = "Update";
                 updateBillBtn.classList.remove("saving-state");
-                deleteBillBtn.classList.remove("hide");
-                exitBillBtn.classList.remove("hide");
+                showElements([deleteBillBtn, exitBillBtn]);
                 location.reload();
 
             }
         }).catch(function() {
             updateBillBtn.innerText = "Update";
             updateBillBtn.classList.remove("saving-state");
-            deleteBillBtn.classList.remove("hide");
-            exitBillBtn.classList.remove("hide");
+            showElements([deleteBillBtn, exitBillBtn]);
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
         });
@@ -739,8 +648,7 @@ function updateBill() {
 function deleteBill() {
     deleteBillBtn.innerText = "Deleting...";
     deleteBillBtn.classList.add("saving-state");
-    updateBillBtn.classList.add("hide");
-    exitBillBtn.classList.add("hide");
+    hideElements([updateBillBtn, exitBillBtn]);
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
@@ -753,16 +661,14 @@ function deleteBill() {
             if (res.status == "deleted") {
                 deleteBillBtn.innerText = "Delete";
                 deleteBillBtn.classList.remove("saving-state");
-                exitBillBtn.classList.remove("hide");
-                updateBillBtn.classList.remove("hide");
+                showElements([exitBillBtn, updateBillBtn]);
                 location.reload();
 
             }
         }).catch(function() {
             deleteBillBtn.innerText = "Delete";
             deleteBillBtn.classList.remove("saving-state");
-            exitBillBtn.classList.remove("hide");
-            updateBillBtn.classList.remove("hide");
+            showElements([exitBillBtn, updateBillBtn]);
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
         });
 
@@ -834,14 +740,6 @@ function approveRejectBill(mode) {
         });
 }
 
-function getHistoryInfo() {
-    document.getElementById("infoTipBox").classList.remove("hide");
-    let history = document.getElementById("infoTipBox").getAttribute("data-history");
-    let historyLog = JSON.parse(atob(history));
-    document.getElementById("infocontent").innerHTML = historyLog.join("<br><br>");
-}
-
-
 
 saveBillBtn.addEventListener("click", function() {
     const date = document.getElementById("date_field").value;
@@ -873,8 +771,7 @@ saveBillBtn.addEventListener("click", function() {
 
     saveBillBtn.innerText = "Saving, please wait...";
     saveBillBtn.classList.add("saving-state");
-    deleteBillBtn.classList.add("hide");
-    exitBillBtn.classList.add("hide");
+    hideElements([exitBillBtn, deleteBillBtn]);
     saveBill(billObj, sessEmail, serv);
 });
 
@@ -882,16 +779,14 @@ saveBillBtn.addEventListener("click", function() {
 updateBillBtn.addEventListener("click", function() {
     updateBillBtn.innerText = "Updating, please wait...";
     updateBillBtn.classList.add("saving-state");
-    deleteBillBtn.classList.add("hide");
-    exitBillBtn.classList.add("hide");
+    hideElements([exitBillBtn, deleteBillBtn]);
     updateBill();
 });
 
 approveBillBtn.addEventListener("click", function() {
     approveBillBtn.innerText = "Approving...";
     approveBillBtn.classList.add("saving-state");
-    exitBillBtn.classList.add("hide");
-    rejectBillBtn.classList.add("hide");
+    hideElements([exitBillBtn, rejectBillBtn]);
     approveRejectBill("approved");
 
 
@@ -900,8 +795,7 @@ approveBillBtn.addEventListener("click", function() {
 rejectBillBtn.addEventListener("click", function() {
     rejectBillBtn.innerText = "Rejecting...";
     rejectBillBtn.classList.add("saving-state");
-    exitBillBtn.classList.add("hide");
-    approveBillBtn.classList.add("hide");
+    hideElements([exitBillBtn, approveBillBtn]);
     approveRejectBill("rejected");
 
 
@@ -921,13 +815,11 @@ deleteBillBtn.addEventListener("click", function() {
 });
 
 exitBillBtn.addEventListener("click", function() {
-    document.getElementById("billTable").classList.add("hide");
     document.getElementById("date_field").value = "";
     document.getElementById("merchant_field").value = "";
     document.getElementById("amount_field").value = "";
     document.querySelector('.previewimg img').setAttribute("src", "");
-    document.querySelector('.previewimg').classList.add("hide");
-    preloader.classList.add("hide");
+    hideElements([preloader, previewBillImage, billTable])
     resetTableFields("");
 
     currentUploadStatus = "";
@@ -943,28 +835,33 @@ exitBillBtn.addEventListener("click", function() {
 });
 
 
+
+
+
+
+//-------------------------------------------------------------------------
+//          SETTINGS PAGE
 //-------------------------------------------------------------------------
 
-// SETTINGS 
+const settingsBlock = document.getElementById("settingsBlock")
+const settingsBtn = document.getElementById("settings");
+const profileImgBtn = document.getElementById("profile_img_browse");
+const teamImgBtn = document.getElementById("team_img_browse");
+const teamImgEditBtn = document.getElementById("team_imgEdit");
+const savesettingsBtn = document.getElementById("savesettings");
+const closesettingsBtn = document.getElementById("closesettings");
+const saveCloseSetting = document.getElementById("saveCloseSetting");
+const userSettingLink = document.getElementById("user_setting_link");
+const teamSettingLink = document.getElementById("team_setting_link");
+const createNewTeamBtn = document.getElementById("createNewTeam");
+const addNewMemberProjBtn = document.getElementById("addNewMemberProj");
+const projectsListBlock = document.getElementById("projectsList");
+const editProjectBtn = document.getElementById("editProject");
+const addmemberEditBtn = document.getElementById("addmemberEdit");
 
-
-let settingsBtn = document.getElementById("settings");
-let profileImgBtn = document.getElementById("profile_img_browse");
-let teamImgBtn = document.getElementById("team_img_browse");
-let teamImgEditBtn = document.getElementById("team_imgEdit");
-let savesettingsBtn = document.getElementById("savesettings");
-let closesettingsBtn = document.getElementById("closesettings");
-let saveCloseSetting = document.getElementById("saveCloseSetting");
-let userAccField = document.getElementById("user_account_field");
-let userSettingLink = document.getElementById("user_setting_link");
-let teamSettingLink = document.getElementById("team_setting_link");
-let createNewTeamBtn = document.getElementById("createNewTeam");
-let addNewMemberProjBtn = document.getElementById("addNewMemberProj");
-let projectNameHead = document.getElementById("projectNameHead");
-let projectsListBlock = document.getElementById("projectsList");
 let myProjectSelect = document.getElementById("myProject_select");
-let editProjectBtn = document.getElementById("editProject");
-let addmemberEditBtn = document.getElementById("addmemberEdit");
+let projectNameHead = document.getElementById("projectNameHead");
+let userAccField = document.getElementById("user_account_field");
 let enableAddNewMember = false;
 let isProfilePicModified = false;
 let isLogoModified = false;
@@ -972,26 +869,22 @@ let saveSettingEnabled = false;
 let editProjectMode = false;
 let initAccountVals = { name: "", type: "", projchange: false };
 
-
 settingsBtn.addEventListener("click", function() {
     if (currentPage !== "settings" && userAcType !== "") {
         remPreviousActiveTab = currentPage;
         currentPage = "settings";
-        billshomeBtn.classList.remove("nav-selected");
-        chartsBtn.classList.remove("nav-selected");
-        settingsBtn.classList.add("nav-selected");
-        document.getElementById("settingsBlock").classList.remove("hide");
-        savesettingsBtn.classList.add("hide");
-        teamSettingLink.classList.add("hide");
+        activeNavTab(settingsBtn);
+        hideElements([savesettingsBtn, teamSettingLink]);
+        settingsBlock.classList.remove("hide");
         document.querySelector('.settingloadstatus').classList.remove("hide");
-        document.querySelector(".container").classList.add("settingMode");
+        mainContainer.classList.add("settingMode");
         saveSettingEnabled = false;
         userSettingLink.click();
         loadAccountSettings();
         document.querySelector("title").text = "Settings | Bill Vault";
         // for devices smaller than 375px width, always keep topfloater class in Settings Mode
         if (window.innerWidth < 375) {
-            document.querySelector(".container").classList.add("topfloater")
+            mainContainer.classList.add("topfloater")
         }
 
     }
@@ -1093,7 +986,7 @@ savesettingsBtn.addEventListener("click", function() {
 
         fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ usersetting: btoa(JSON.stringify(accountObj)) }])) })
             .then(data => data.json())
-            .then(function(setting) {
+            .then((setting) => {
                 if (setting.status == "invalid") {
                     sessionStorage.clear();
                 }
@@ -1161,7 +1054,7 @@ savesettingsBtn.addEventListener("click", function() {
 
                 }
 
-            }).catch(function(s) {
+            }).catch((s) => {
                 saveSettingEnabled = true;
                 savesettingsBtn.innerText = "Save";
                 savesettingsBtn.classList.remove("saving-state");
@@ -1271,7 +1164,7 @@ function removeProjMember(rem) {
 
     fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }, { member: rem.member }])) })
         .then(data => data.json())
-        .then(function(p) {
+        .then((p) => {
             if (p.status == "deleted-manager") {
                 removeEditUserGroups();
                 getMembersList("refresh");
@@ -1285,7 +1178,7 @@ function removeProjMember(rem) {
             if (p.status == "denied") {
                 mainStatusOK.classList.remove("hide");
                 mainStatusOK.click();
-                setTimeout(function() {
+                setTimeout(() => {
                     showAlertBox(`Can not delete member/manager whose bills are approved`, "OK", null, false);
                 }, 1500);
 
@@ -1427,7 +1320,7 @@ function getEditedProjectVals() {
 function loadAccountSettings() {
     fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([])) })
         .then(data => data.json())
-        .then(function(setting) {
+        .then((setting) => {
             if (setting.status == "invalid") {
                 sessionStorage.clear();
             }
@@ -1454,7 +1347,7 @@ function loadAccountSettings() {
                         }, 1000);
                         initAccountVals.projchange = false;
                     }
-                    if (settingdata.teamlist.length == 0 || projectMemberRole == "member") { 
+                    if (settingdata.teamlist.length == 0 || projectMemberRole == "member") {
                         editProjectBtn.classList.add("hide")
                     }
 
@@ -1465,7 +1358,7 @@ function loadAccountSettings() {
                             if (projectMemberRole == "member") {
                                 if (document.querySelector("#addUserPanel p")) {
                                     document.querySelector("#addUserPanel p").remove()
-                                }                                
+                                }
                             }
                             document.querySelector('.team-sub-setting').remove();
                             createNewTeamBtn.remove();
@@ -1485,7 +1378,7 @@ function loadAccountSettings() {
                 saveSettingEnabled = true;
             }
 
-        }).catch(function(s) {
+        }).catch((s) => {
             document.querySelector('.settingloadstatus').classList.add("hide");
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
@@ -1519,7 +1412,7 @@ function addMemberToProject(member, role, approver) {
 
     fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ member: member.value }, { role: role.value }, { approver: approver.value }, { proj_id: new_projid }, { projname: new_projname }, { logo: logosrc }])) })
         .then(data => data.json())
-        .then(function(projmem) {
+        .then((projmem) => {
             if (projmem.status == "invalid") {
                 sessionStorage.clear();
             } else if (projmem.status == "invalidEmail") {
@@ -1534,7 +1427,7 @@ function addMemberToProject(member, role, approver) {
                 showAlertBox(projmem.msg, "OK", null, false);
             }
 
-        }).catch(function(s) {
+        }).catch((s) => {
             enableAddNewMember = true;
             addNewMemberProjBtn.innerText = "Add Member to Project";
             addNewMemberProjBtn.classList.remove("saving-state");
@@ -1567,7 +1460,7 @@ function createNewProjectName(projname) {
     }
     fetch("../addNewProject/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: projname }, { logo: logosrc }])) })
         .then(data => data.json())
-        .then(function(proj) {
+        .then((proj) => {
             if (proj.status == "invalid") {
                 sessionStorage.clear();
             }
@@ -1603,7 +1496,7 @@ function createNewProjectName(projname) {
                 localStorage.setItem("tempProjID", proj.projid);
             }
 
-        }).catch(function(s) {
+        }).catch((s) => {
             enableAddNewMember = true;
             addNewMemberProjBtn.innerText = "Add Member to Project";
             addNewMemberProjBtn.classList.remove("saving-state");
@@ -1616,7 +1509,7 @@ function createNewProjectName(projname) {
 }
 
 function validateProjectName(proj) {
-    if(proj == ""){
+    if (proj == "") {
         showAlertBox("Please enter Name of the Project", "OK", null, false);
         return false;
     }
@@ -1779,8 +1672,8 @@ addNewMemberProjBtn.addEventListener("click", function() {
 
 
 closesettingsBtn.addEventListener("click", function() {
-    document.getElementById("settingsBlock").classList.add("hide");
-    document.querySelector(".container").classList.remove("settingMode");
+    settingsBlock.classList.add("hide");
+    mainContainer.classList.remove("settingMode");
     settingsBtn.classList.remove("nav-selected");
     if (remPreviousActiveTab == "bills") {
         billshomeBtn.classList.add("nav-selected");
@@ -1796,9 +1689,11 @@ closesettingsBtn.addEventListener("click", function() {
 
 
 
+
+//-------------------------------------------------------------------------
+//              CHARTS PAGE
 //-------------------------------------------------------------------------
 
-// Charts
 
 
 /*let piechartdata = [1075
@@ -1819,8 +1714,8 @@ let barchartdata = [
 ];
 */
 
-
-let chartsBtn = document.getElementById("charts");
+const chartsBlock = document.getElementById("chartsBlock");
+const chartsBtn = document.getElementById("charts");
 let chartsFilterSelect = document.getElementById("chartdaysFilter");
 let all_chart_data = [];
 
@@ -1871,21 +1766,13 @@ chartsFilterSelect.addEventListener("change", function() {
 chartsBtn.addEventListener("click", function() {
     if (currentPage !== "charts" && userAcType !== "") {
         currentPage = "charts";
-        billshomeBtn.classList.remove("nav-selected");
-        settingsBtn.classList.remove("nav-selected");
-        chartsBtn.classList.add("nav-selected");
-        document.querySelector(".container").classList.remove("settingMode");
-        document.getElementById("settingsBlock").classList.add("hide");
-        document.getElementById("imageuploader").classList.add("hide");
-        document.getElementById("billTable").classList.add("hide");
-        document.querySelector(".previewimg").classList.add("hide");
-        document.getElementById("billThumbnails").classList.add("hide");
-        document.getElementById("chartsBlock").classList.add("hide");
-        document.getElementById("mybillORall").style.display = "none";
+        mainContainer.classList.remove("settingMode");
+        activeNavTab(chartsBtn);
         preloader.classList.remove("hide");
-        loadCharts();
+        hideElements([settingsBlock, chartsBlock, billThumbNails, previewBillImage, billTable, imageUploader]);
+        document.getElementById("mybillORall").style.display = "none";
         document.querySelector("title").text = "Chart | Bill Vault";
-
+        loadCharts();
     }
 });
 
@@ -1941,7 +1828,6 @@ function loadCharts() {
                 } else {
                     showAlertBox("No Chart Data", "OK", null, false);
                 }
-
 
             }
 
@@ -2100,14 +1986,94 @@ function showDayMonth(d) {
 
 
 
-//---------------------------------------------------------------------------------------
 
-let logOutBtn = document.getElementById("logout");
-let alertBoxWindow = document.getElementById("alertBoxWindow");
-let confirmAmountWindow = document.getElementById("confirmAmountWindow");
-let mainStatusOK = document.getElementById("mainStatusOK");
-let mainStatusCancel = document.getElementById("mainStatusCancel");
-let mainStatusMsg = document.querySelector("#alertBoxWindow h4");
+
+//-------------------------------------------------------------------------
+//          COMMON CONTROLS
+//-------------------------------------------------------------------------
+
+const mainContainer = document.querySelector(".container");
+const header_layout = document.querySelector("header img");
+const preloader = document.querySelector(".lds-roller");
+const themechooser = document.getElementById("themechooser");
+const alertBoxWindow = document.getElementById("alertBoxWindow");
+const confirmAmountWindow = document.getElementById("confirmAmountWindow");
+const mainStatusOK = document.getElementById("mainStatusOK");
+const mainStatusCancel = document.getElementById("mainStatusCancel");
+const mainStatusMsg = document.querySelector("#alertBoxWindow h4");
+const logOutBtn = document.getElementById("logout");
+
+let themeChanged = false;
+let themeTrackInterval;
+let themeName = localStorage.getItem("theme") || "";
+if (themeName != "") {
+    document.querySelector("body").setAttribute("class", themeName);
+}
+
+themechooser.addEventListener("click", function() {
+    themeChanged = true;
+    let totalThemes = mainContainer.getAttribute("data-themes");
+    let maxThemes = Number(totalThemes);
+    let bodyElt = document.querySelector("body");
+    let bodyclass = bodyElt.getAttribute("class");
+    clearInterval(themeTrackInterval);
+    themeTrackInterval = setInterval(themeUpdateTracker, 5000);
+    if (!bodyclass || bodyclass.indexOf("skin") == -1) {
+        bodyElt.classList.add("skin1");
+        themeName = "skin1";
+    } else {
+        let skinNum = Number(bodyclass.split("skin")[1]);
+        if (skinNum < maxThemes) {
+            skinNum++;
+            bodyElt.setAttribute("class", "skin" + skinNum);
+            themeName = "skin" + skinNum;
+        } else {
+            bodyclass = bodyElt.setAttribute("class", "");
+            themeName = "";
+        }
+    }
+
+});
+
+function themeUpdateTracker() {
+    if (themeChanged) {
+        themeChanged = false;
+        showAlertBox("Do you want to make this your default Theme color?", "Yes", "No", true, saveTheme, null, null, null);
+    }
+}
+
+function saveTheme() {
+    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
+        .then(dat => dat.json())
+        .then(() => {
+            showAlertBox("Default Theme Saved!", "OK", null, false);
+            localStorage.setItem("theme", themeName);
+        }).catch(function(s) {
+            console.log("theme failed");
+        });
+
+}
+
+
+header_layout.addEventListener("click", function() {
+    let containerdiv = document.querySelector(".container");
+    if (containerdiv.getAttribute("class").includes("topfloater")) {
+        // for devices smaller than 375px width, do not remove topfloater class in Settings Mode
+        if (window.innerWidth > 375) {
+            containerdiv.classList.remove("topfloater")
+        } else {
+            let settingmodeclass = containerdiv.getAttribute("class");
+            if (settingmodeclass.indexOf("settingMode") == -1) {
+                containerdiv.classList.remove("topfloater")
+            }
+        }
+    } else {
+        containerdiv.classList.add("topfloater")
+    }
+
+});
+
+
 
 let callbackConfirm = {
     yes: {
@@ -2137,7 +2103,6 @@ mainStatusCancel.addEventListener("click", function() {
         callbackConfirm.no.method(callbackConfirm.no.arg);
     }
     clearCallbacks();
-
 });
 
 mainStatusOK.addEventListener("click", function() {
@@ -2147,7 +2112,6 @@ mainStatusOK.addEventListener("click", function() {
     }
     clearCallbacks();
 });
-
 
 
 function showAlertBox(msg, oktext, canceltext, isConfirmType, okcallback, okparams, cancelcallback, cancelparams) {
@@ -2188,6 +2152,27 @@ function ConfirmAmountBox(amountList) {
 }
 
 
+function hideElements(elements) {
+    elements.forEach(elm => {
+        elm.classList.add("hide")
+    });
+}
+
+function showElements(elements) {
+    elements.forEach(elm => {
+        elm.classList.remove("hide")
+    });
+}
+
+function activeNavTab(elm) {
+    chartsBtn.classList.remove("nav-selected");
+    settingsBtn.classList.remove("nav-selected");
+    billshomeBtn.classList.remove("nav-selected");
+    elm.classList.add("nav-selected");
+}
+
+
+
 function initLoad() {
     billshomeBtn.click();
     $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
@@ -2213,12 +2198,12 @@ function initLoad() {
 
 let initAuthState = sessionStorage.getItem("initAuth") || "";
 if (initAuthState == "") {
-    user_validate().then(function(status) {
+    user_validate().then((status) => {
         if (status == "valid") {
             sessionStorage.setItem("initAuth", "done");
             initLoad();
         }
-    }).catch(function() {
+    }).catch(() => {
         sessionStorage.clear();
         location.replace("/")
     })
@@ -2226,7 +2211,6 @@ if (initAuthState == "") {
 if (initAuthState == "done") {
     initLoad();
 }
-
 
 
 logOutBtn.addEventListener("click", function() {
