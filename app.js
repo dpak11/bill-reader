@@ -156,9 +156,7 @@ function processBillText(datarray) {
     let receiptTitle = sanitiser(datarray[0], false) + " " + sanitiser(datarray[1], false);
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
-    let totalsList = arr.filter((txt) => {
-        return (txt.includes("total") || txt.includes("amount") || txt.includes("amnt") || txt.includes("amt") || txt.includes("payable") || txt.includes("rate"));
-    });
+    let totalsList = arr.filter((txt) => (/(total|amt|amnt|rate|amount|payable)/).test(txt));
 
     let get_total = null;
     if (totalsList.length > 0) {
@@ -170,122 +168,86 @@ function processBillText(datarray) {
 
 }
 
-function dateSearch(lines) {
-    let pattern1 = new RegExp("([0-9]){1,2}/([0-9]){1,2}/([0-9]){2,4}");
-    let pattern2 = new RegExp("([0-9]){1,2}-([0-9]){1,2}-([0-9]){2,4}");
-    let pattern3 = new RegExp("([0-9]){1,2}[\.]([0-9]){1,2}[\.]([0-9]){2,4}");
-    let pattern4 = new RegExp("([0-9]){1,2}-([a-z]){3}-([0-9]){2,4}");
-    let pattern5 = new RegExp("([0-9]){1,2} ([a-z]){3}, ([0-9]){2,4}");
-    let pattern6 = new RegExp("([0-9]){1,2}/([a-z]){3}/([0-9]){2,4}");
-    let dates = [];
-
-    let monthCheck = {
-        vals: function(v) {
+function dateSearch(lines) { 
+    let dateFormatter = {
+        getDate: function(v) {
             if (v[2].length == 2 || v[2].length == 4) {
                 if (Number(v[1]) > 12) {
-                    let formattedMonth = `${v[1]}/${v[0]}/${v[2]}`;
-                    return formattedMonth;
-                } else {
-                    return v.join("/");
+                    return `${v[1]}/${v[0]}/${v[2]}`;
                 }
+                return v.join("/");
             }
             return false;
         },
-        monthNum: function(m) {
-            let month = "jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec";
-            let mlist = month.split(",");
-            return (mlist.indexOf(m) + 1);
+        monthNumeric: function(m) {
+            return (["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(m) + 1);
         }
     };
-
+    
+    let dates = [];
     lines.forEach((line) => {
-        let l1 = line.match(pattern1);
-        let l2 = line.match(pattern2);
-        let l3 = line.match(pattern3);
-        let l4 = line.match(pattern4);
-        let l5 = line.match(pattern5);
-        let l6 = line.match(pattern6);
+        let l1 = line.match(/\d{1,2}\/\d{1,2}\/(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
+        let l2 = line.match(/\d{1,2}\-\d{1,2}\-(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
+        let l3 = line.match(/\d{1,2}\.\d{1,2}\.(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
+        let l4 = line.match(/\d{1,2}\-[a-z]{3}\-(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
+        let l5 = line.match(/\d{1,2}\s[a-z]{3},\s?(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
+        let l6 = line.match(/[a-z]{3}\s\d{1,2},\s?(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
+        let l7 = line.match(/\d{1,2}\/[a-z]{3}\/(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
         if (l1 != null && l1.length > 1) {
-            let m1 = monthCheck.vals(l1[0].split("/"));
+            let m1 = dateFormatter.getDate(l1[0].split("/"));
             if (m1) { dates.push(m1) }
         }
         if (l2 != null && l2.length > 1) {
-            let m2 = monthCheck.vals(l2[0].split("-"));
+            let m2 = dateFormatter.getDate(l2[0].split("-"));
             if (m2) { dates.push(m2) }
         }
         if (l3 != null && l3.length > 1) {
-            let m3 = monthCheck.vals(l3[0].split("."));
+            let m3 = dateFormatter.getDate(l3[0].split("."));
             if (m3) { dates.push(m3) }
         }
         if (l4 != null && l4.length > 1) {
             let dt = l4[0].split("-");
-            dt[1] = monthCheck.monthNum(dt[1]);
-            let m4 = monthCheck.vals(dt);
+            dt[1] = dateFormatter.monthNumeric(dt[1]);
+            let m4 = dateFormatter.getDate(dt);
             if (m4) { dates.push(m4) }
-        } //06 Jun, 2019
+        } // 06 Jun, 2019
         if (l5 != null && l5.length > 1) {
             let dt1 = l5[0].split(","); //[06 Jun, 2019]
             let dt2 = dt1[0].split(" "); //[06,Jun]
-            let dt = `${dt2[0]},${monthCheck.monthNum(dt2[1])},${dt1[1].trim()}`;
-            let m5 = monthCheck.vals(dt.split(","));
+            let dt = `${dt2[0]},${dateFormatter.monthNumeric(dt2[1])},${dt1[1].trim()}`;
+            let m5 = dateFormatter.getDate(dt.split(","));
             if (m5) { dates.push(m5) }
-        }
+        }// jun 12, 2010
         if (l6 != null && l6.length > 1) {
-            let dt = l6[0].split("/");
-            dt[1] = monthCheck.monthNum(dt[1]);
-            let m6 = monthCheck.vals(dt);
+            let dt1 = l6[0].split(","); //[Jun 12, 2010]
+            let dt2 = dt1[0].split(" "); //[Jun,12]
+            let dt = `${dt2[1]},${dateFormatter.monthNumeric(dt2[0])},${dt1[1].trim()}`;
+            let m6 = dateFormatter.getDate(dt.split(","));
             if (m6) { dates.push(m6) }
+        }
+        if (l7 != null && l7.length > 1) {
+            let dt = l7[0].split("/");
+            dt[1] = dateFormatter.monthNumeric(dt[1]);
+            let m7 = dateFormatter.getDate(dt);
+            if (m7) { dates.push(m7) }
         }
 
     });
     return dates[0]
 }
 
+
 function extractTotalVal(totals, alltexts) {
     let totalValue = "";
     let subs = "";
     totals.forEach((_total) => {
         let total = _total.trim();
-        if (total.indexOf("subtotal") >= 0) {
-            subs = total.split("subtotal")[1];
-        } else {
-            if (total.indexOf("sub total") >= 0) {
-                subs = total.split("sub total")[1];
-            }
-        }
+        let subTot = total.match(/sub\s?total/);
+        if (subTot !== null) { subs = total.split(subTot[0])[1] }
 
-        if (total.indexOf("total") >= 0) {
-            totalValue = total.split("total")[1];
-        }
+        let totalMatch = total.match(/(total|amt|amnt|rate|amount|payable)/);
+        if (totalMatch !== null) { totalValue = total.split(totalMatch[0])[1] }
 
-        if (total.indexOf("amt") >= 0) {
-            totalValue = total.split("amt")[1];
-        }
-
-        if (total.indexOf("amnt") >= 0) {
-            totalValue = total.split("amnt")[1];
-        }
-
-
-        if (total.indexOf("rate") >= 0) {
-            totalValue = total.split("rate")[1];
-        }
-
-        if (total.indexOf("amount") >= 0) {
-            totalValue = total.split("amount")[1];
-        }
-        if (total.indexOf("payable") >= 0) {
-            totalValue = total.split("payable")[1];
-        }
-        if (total.indexOf("total amount") >= 0) {
-            totalValue = total.split("total amount")[1];
-        }
-        if (total.indexOf("payable amount") == 0) {
-            totalValue = total.split("payable amount")[1];
-        }
-        if (total.indexOf("amount payable") >= 0) {
-            totalValue = total.split("amount payable")[1];
-        }
     });
 
     if (totalValue.indexOf(",") > 0) {
@@ -316,13 +278,13 @@ function extractTotalVal(totals, alltexts) {
         newlist.sort((a, b) => { return b - a });
         return { found: "list", value: newlist }
 
-
     }
     if (totalValue == "" && subs != "") {
         return { found: "string", value: subs };
     }
     return { found: "string", value: totalValue };
 }
+
 
 function sanitiser(str, isNumber) {
     let chars = isNumber ? "0123456789." : "0123456789qwertyuioplkjhgfdsazxcvbnm &QWERTYUIOPLKJHGFDSAZXCVBNM-";
