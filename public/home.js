@@ -14,10 +14,7 @@ let selectedProjectName = "";
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
-    let paramObj = { ...authVars };
-    params.forEach((p) => {
-        paramObj[Object.keys(p)[0]] = Object.values(p)[0];
-    });
+    let paramObj = { ...authVars, ...params };    
     return paramObj;
 }
 
@@ -341,9 +338,8 @@ function fetchBills() {
     let sessionemail = sessionStorage.getItem("em") || false;
     let type = sessionStorage.getItem("is_private_team") || "private";
 
-    if (client && serv && sessionemail) {
-        authVars
-        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ ptype: type }])) })
+    if (client && serv && sessionemail) {        
+        fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type })) })
             .then(data => data.json())
             .then(function(res) {
                 if (res.status == "invalid") {
@@ -622,7 +618,7 @@ function updateBill() {
     } else {
         encodedBill = btoa(JSON.stringify(billdata));
     }
-    fetch("../updateBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ receiptid: selectedBillId }, { bdata: encodedBill }])) })
+    fetch("../updateBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receiptid: selectedBillId, bdata: encodedBill })) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -652,7 +648,7 @@ function deleteBill() {
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
-    fetch("../deleteBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ receiptid: selectedBillId }])) })
+    fetch("../deleteBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receiptid: selectedBillId })) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -678,7 +674,7 @@ function deleteBill() {
 
 function saveBill(bill, email, serv) {
     let type = sessionStorage.getItem("is_private_team") || "private";
-    fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ receipt: bill }])) })
+    fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receipt: bill })) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -718,7 +714,7 @@ function approveRejectBill(mode) {
         useremail = useremail.innerText;
     }
 
-    fetch("../approveRejectBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ billid: selectedBillId }, { proj: selectedProjectID }, { user: useremail }, { mode: mode }, { amount: billAmount }, { billname: billName }])) })
+    fetch("../approveRejectBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ billid: selectedBillId, proj: selectedProjectID, user: useremail, mode: mode, amount: billAmount, billname: billName })) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "approved") {
@@ -984,7 +980,7 @@ savesettingsBtn.addEventListener("click", function() {
             accountObj.newProjectID = myProjectSelect.value;
         }
 
-        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ usersetting: btoa(JSON.stringify(accountObj)) }])) })
+        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ usersetting: btoa(JSON.stringify(accountObj)) })) })
             .then(data => data.json())
             .then((setting) => {
                 if (setting.status == "invalid") {
@@ -1162,7 +1158,7 @@ function removeProjMember(rem) {
         showAlertBox(`Deleting "${rem.member}" from Project...`, "", null, false);
     }, 1500);
 
-    fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }, { member: rem.member }])) })
+    fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: myProjectSelect.value, member: rem.member })) })
         .then(data => data.json())
         .then((p) => {
             if (p.status == "deleted-manager") {
@@ -1192,7 +1188,7 @@ function removeProjMember(rem) {
 
 function getMembersList(_auto) {
 
-    fetch("../getProjMembers/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: myProjectSelect.value }])) })
+    fetch("../getProjMembers/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: myProjectSelect.value })) })
         .then(data => data.json())
         .then(function(p) {
             if (p.status == "done") {
@@ -1318,7 +1314,7 @@ function getEditedProjectVals() {
 
 
 function loadAccountSettings() {
-    fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([])) })
+    fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams()) })
         .then(data => data.json())
         .then((setting) => {
             if (setting.status == "invalid") {
@@ -1410,7 +1406,7 @@ function addMemberToProject(member, role, approver) {
         logosrc = "";
     }
 
-    fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ member: member.value }, { role: role.value }, { approver: approver.value }, { proj_id: new_projid }, { projname: new_projname }, { logo: logosrc }])) })
+    fetch("../addNewProjMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ member: member.value, role: role.value, approver: approver.value, proj_id: new_projid, projname: new_projname, logo: logosrc })) })
         .then(data => data.json())
         .then((projmem) => {
             if (projmem.status == "invalid") {
@@ -1458,7 +1454,7 @@ function createNewProjectName(projname) {
     if (logosrc.includes("images/user.png")) {
         logosrc = "";
     }
-    fetch("../addNewProject/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ project: projname }, { logo: logosrc }])) })
+    fetch("../addNewProject/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: projname, logo: logosrc })) })
         .then(data => data.json())
         .then((proj) => {
             if (proj.status == "invalid") {
@@ -1558,7 +1554,7 @@ function removeEditUserGroups() {
 }
 
 function removeTempProject(pID) {
-    fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ proj: pID }])) })
+    fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ proj: pID })) })
         .then(data => data.json())
         .then(function(s) {
             if (s.status == "removed") {
@@ -1780,7 +1776,7 @@ chartsBtn.addEventListener("click", function() {
 
 function loadCharts() {
     let type = sessionStorage.getItem("is_private_team") || "private";
-    fetch("../chartsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ persTeam: type }])) })
+    fetch("../chartsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ persTeam: type })) })
         .then(data => data.json())
         .then(function(c) {
             if (c.status == "done") {
@@ -2043,7 +2039,7 @@ function themeUpdateTracker() {
 }
 
 function saveTheme() {
-    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams([{ theme: themeName }])) })
+    fetch("../saveDefaultTheme/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ theme: themeName })) })
         .then(dat => dat.json())
         .then(() => {
             showAlertBox("Default Theme Saved!", "OK", null, false);

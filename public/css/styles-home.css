@@ -1413,13 +1413,15 @@ body.skin4, .skin4 .container {
     color: #d15565;
 }
 
-.skin4 .thumb-title-bill, .skin4 .thumb-date-submit, .skin  {
-    color: #e56576;
+.skin4 .thumb-title-bill, .skin4 .thumb-date-submit  {
+    color: #f4394d;
+
 }
 
 .skin4 .amount-thumb {
-    color: #d11919;
+    color: #6a1c1c;
     box-shadow: inset 1px 1px 4px 1px #000;
+    background: #f93449;
 }
 
 .skin4 #saveCloseSetting{
