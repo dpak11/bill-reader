@@ -333,10 +333,18 @@ function addCategorySelectOptions() {
 
 
 function fetchBills() {
-    let client = sessionStorage.getItem("ckey") || false;
-    let serv = sessionStorage.getItem("skey") || false;
-    let sessionemail = sessionStorage.getItem("em") || false;
-    let type = sessionStorage.getItem("is_private_team") || "private";
+    const client = sessionStorage.getItem("ckey") || false;
+    const serv = sessionStorage.getItem("skey") || false;
+    const sessionemail = sessionStorage.getItem("em") || false;
+    const type = sessionStorage.getItem("is_private_team") || "private";
+    const initData = (bdata) => {
+        userAcType = bdata.user_data.account;
+        teamAcRights = bdata.user_data.controls;
+        globalAdminRight = (bdata.user_data.isGlobalAdmin == "yes") ? true : false;
+        localStorage.setItem("theme", bdata.user_data.defaultskin);
+        document.querySelector("body").setAttribute("class", bdata.user_data.defaultskin);                   
+        preloader.classList.add("hide");
+    }
 
     if (client && serv && sessionemail) {        
         fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type })) })
@@ -347,24 +355,14 @@ function fetchBills() {
                     preloader.classList.add("hide");
                 }
                 if (res.status == "notinteam") {
-                    userAcType = res.user_data.account;
-                    teamAcRights = res.user_data.controls;
-                    globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
-                    document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
-                    localStorage.setItem("theme", res.user_data.defaultskin);
+                    initData(res);
                     showAlertBox("You are not in any Project", "OK", null, false);
-                    preloader.classList.add("hide");
                 }
                 if (res.status == "done") {
                     detectDeviceCam(function(hascam) {
                         if (hascam) { document.getElementById("cameraDevice").classList.remove("hide") }
                     });
-
-                    userAcType = res.user_data.account;
-                    teamAcRights = res.user_data.controls;
-                    globalAdminRight = (res.user_data.isGlobalAdmin == "yes") ? true : false;
-                    document.querySelector("body").setAttribute("class", res.user_data.defaultskin);
-                    localStorage.setItem("theme", res.user_data.defaultskin);
+                    initData(res);
                     if (userAcType == "team") {
                         selectedProjectID = res.user_data.activeProjectID || "";
                         projectMemberRole = res.user_data.role || "";
@@ -393,7 +391,6 @@ function fetchBills() {
 
                     addCategorySelectOptions();
                     displayBillThumbnails();
-                    preloader.classList.add("hide");
 
                 }
             }).catch(function(e) {
@@ -609,7 +606,10 @@ function updateBill() {
         showAlertBox("Please fill in the fields", "OK", null, false);
         return;
     }
-
+    
+    updateBillBtn.innerText = "Updating, please wait...";
+    updateBillBtn.classList.add("saving-state");
+    hideElements([exitBillBtn, deleteBillBtn, approveBillBtn]);
 
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
     let encodedBill = "";
@@ -627,7 +627,7 @@ function updateBill() {
             if (res.status == "updated") {
                 updateBillBtn.innerText = "Update";
                 updateBillBtn.classList.remove("saving-state");
-                showElements([deleteBillBtn, exitBillBtn]);
+                //showElements([deleteBillBtn, exitBillBtn]);
                 location.reload();
 
             }
@@ -644,7 +644,7 @@ function updateBill() {
 function deleteBill() {
     deleteBillBtn.innerText = "Deleting...";
     deleteBillBtn.classList.add("saving-state");
-    hideElements([updateBillBtn, exitBillBtn]);
+    hideElements([updateBillBtn, exitBillBtn, approveBillBtn]);
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
@@ -657,7 +657,7 @@ function deleteBill() {
             if (res.status == "deleted") {
                 deleteBillBtn.innerText = "Delete";
                 deleteBillBtn.classList.remove("saving-state");
-                showElements([exitBillBtn, updateBillBtn]);
+                //showElements([exitBillBtn, updateBillBtn]);
                 location.reload();
 
             }
@@ -772,20 +772,15 @@ saveBillBtn.addEventListener("click", function() {
 });
 
 
-updateBillBtn.addEventListener("click", function() {
-    updateBillBtn.innerText = "Updating, please wait...";
-    updateBillBtn.classList.add("saving-state");
-    hideElements([exitBillBtn, deleteBillBtn]);
+updateBillBtn.addEventListener("click", function() {    
     updateBill();
 });
 
 approveBillBtn.addEventListener("click", function() {
     approveBillBtn.innerText = "Approving...";
     approveBillBtn.classList.add("saving-state");
-    hideElements([exitBillBtn, rejectBillBtn]);
+    hideElements([exitBillBtn, rejectBillBtn, updateBillBtn, deleteBillBtn]);
     approveRejectBill("approved");
-
-
 });
 
 rejectBillBtn.addEventListener("click", function() {
@@ -793,10 +788,7 @@ rejectBillBtn.addEventListener("click", function() {
     rejectBillBtn.classList.add("saving-state");
     hideElements([exitBillBtn, approveBillBtn]);
     approveRejectBill("rejected");
-
-
 });
-
 
 
 infotipcloseBtn.addEventListener("click", function() {

@@ -452,12 +452,15 @@ p.tip-info {
 #rejectbill,
 #approvebill,
 #deletebill {
-    display: inline-block;
-    border-bottom: 1px solid blue;
+    display: inline-block;    
     padding: 5px;
-    color: blue;
     cursor: pointer;
     user-select: none;
+    color: #1b1b1c;
+    border-radius: 4px;
+    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.3);
+    /* border-bottom: 1px solid blue;    
+    color: blue; */
 }
 
 #savebill,
@@ -480,6 +483,7 @@ p.tip-info {
     border-bottom: none;
     cursor: default;
     background: none;
+    box-shadow:none
 }
 #editProject.saving-state{
     font-size: .8em;
@@ -904,7 +908,6 @@ div#ui-datepicker-div {
         display: flex;
         justify-content: space-between;
         width: 100%;
-        /* background: #e8bef6; */
 
     }
 
@@ -1029,7 +1032,7 @@ body.skin1, .skin1 .container {
 }
 
 .skin1 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin1 .profile_info input,
@@ -1136,7 +1139,7 @@ body.skin2, .skin2 .container {
 }
 
 .skin2 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin2 .profile_info input,
@@ -1238,7 +1241,7 @@ body.skin3, .skin3 .container {
 }
 
 .skin3 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin3 .profile_info input,
@@ -1347,7 +1350,7 @@ body.skin4, .skin4 .container {
 }
 
 .skin4 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin4 .profile_info input,
@@ -1477,7 +1480,7 @@ body.skin5, .skin5 .container {
 }
 
 .skin5 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin5 .profile_info input,
@@ -1571,7 +1574,7 @@ body.skin5, .skin5 .container {
 
 .skin6 header{
     background: #617867;
-    border-bottom: solid 3px #4f6655;
+    border-bottom: solid 3px #b8cbbd;
 }
 
 
@@ -1599,7 +1602,7 @@ body.skin6, .skin6 .container {
 }
 
 .skin6 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin6 .profile_info input,
@@ -1693,7 +1696,7 @@ body.skin6, .skin6 .container {
 
 .skin7 header{
     background: #4d2a2d;
-    border-bottom: solid 3px #311c05;
+    border-bottom: solid 3px #d5a064;
 }
 
 body.skin7, .skin7 .container {
@@ -1712,7 +1715,7 @@ body.skin7, .skin7 .container {
 }
 
 .skin7 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin7 .profile_info input,
@@ -1829,7 +1832,7 @@ body.skin8, .skin8 .container {
 }
 
 .skin8 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin8 .table-head{
