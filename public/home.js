@@ -553,22 +553,14 @@ function displayBillThumbnails() {
 }
 
 
-
-function tidyAmount(amount) {
-    let amt = amount;
-    if (amt.indexOf("Rs") >= 0) {
-        amt = amt.split("Rs")[1];
-    }
-    amt = Number(amt.trim());
-    if (isNaN(amt) || amt == "") {
-        return 0;
-    }
-    if (amt < 1 || amt > 9999999) {
-        return 0;
-    }
-    return amt;
+function tidyAmount(amt) {
+    let amount = amt.trim();
+    // example: This RegExp matches 'Rs.230' or 'Rs230' or '230 Rs' or '230Rs'
+    let total = (amount).match(/^((Rs(\.)?\s?)?(\d+\.?\d*)|(\d+\.?\d*)\s?(Rs)?)$/i); 
+    let rupees = total !== null ? total.filter(rs => !isNaN(rs))[0] : total;
+    if (rupees == null || rupees > 999999) { return 0; }
+    return rupees;
 }
-
 
 
 function resetTableFields(state) {
