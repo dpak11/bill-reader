@@ -33,7 +33,7 @@ const updateBillBtn = document.getElementById("updatebill");
 const approveBillBtn = document.getElementById("approvebill");
 const rejectBillBtn = document.getElementById("rejectbill");
 const infotipcloseBtn = document.getElementById("infotipclose");
-const myBill_allMembs = document.querySelector("#mybillORall p");
+const teamOrMyBills = document.querySelector("#mybillORall p");
 const amountStatusSkip = document.getElementById("amountStatusSkip");
 const previewBillImage = document.querySelector(".previewimg");
 const billThumbNails = document.getElementById("billThumbnails");
@@ -60,7 +60,7 @@ billshomeBtn.addEventListener("click", function() {
 
 });
 
-myBill_allMembs.addEventListener("click", function() {
+teamOrMyBills.addEventListener("click", function() {
     let pvt = sessionStorage.getItem("is_private_team");
     if (!pvt || pvt == "private") {
         sessionStorage.setItem("is_private_team", "team");
@@ -376,11 +376,11 @@ function fetchBills() {
                         }
 
                         if (type == "team") {
-                            myBill_allMembs.innerText = "Show only My Bills";
+                            teamOrMyBills.innerText = "Show only My Bills";
                             allBillsData = JSON.parse(res.user_data.allProjMembers);
                         } else {
                             document.getElementById("imageuploader").classList.remove("hide");
-                            myBill_allMembs.innerText = (projectMemberRole == "admin") ? "Show Team's Bills" : "Show my reportess Bills";
+                            teamOrMyBills.innerText = (projectMemberRole == "admin") ? "Show Team's Bills" : "Show my reportess Bills";
                             allBillsData = res.user_data.user_bills;
                         }
 
@@ -1771,9 +1771,9 @@ function loadCharts() {
                         document.getElementById("mybillORall").style.display = "block";
                     }
                     if (type == "team") {
-                        myBill_allMembs.innerText = "Show only My Chart";
+                        teamOrMyBills.innerText = "Show only My Chart";
                     } else {
-                        myBill_allMembs.innerText = (projectMemberRole == "admin") ? "Show Team's Charts" : "Show my Reportees Charts";
+                        teamOrMyBills.innerText = (projectMemberRole == "admin") ? "Show Team's Charts" : "Show my Reportees Charts";
                     }
                 }
 
