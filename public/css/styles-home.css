@@ -471,21 +471,21 @@ p.tip-info {
     margin-right: 15px
 }
 
-#addNewMemberProj.saving-state,
-#editProject.saving-state,
-#savebill.saving-state,
-#updatebill.saving-state,
-#savesettings.saving-state,
-#rejectbill.saving-state,
-#approvebill.saving-state,
-#deletebill.saving-state {
+#addNewMemberProj.processing-state,
+#editProject.processing-state,
+#savebill.processing-state,
+#updatebill.processing-state,
+#savesettings.processing-state,
+#rejectbill.processing-state,
+#approvebill.processing-state,
+#deletebill.processing-state {
     color: #716c6c;
     border-bottom: none;
     cursor: default;
     background: none;
     box-shadow:none
 }
-#editProject.saving-state{
+#editProject.processing-state{
     font-size: .8em;
 }
 

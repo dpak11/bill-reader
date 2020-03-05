@@ -591,7 +591,6 @@ function resetTableFields(state) {
 
 }
 
-
 function updateBill() {
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
@@ -606,9 +605,7 @@ function updateBill() {
         showAlertBox("Please fill in the fields", "OK", null, false);
         return;
     }
-    
-    updateBillBtn.innerText = "Updating, please wait...";
-    updateBillBtn.classList.add("saving-state");
+    inProgressTextStatus(updateBillBtn,"Updating, please wait...", true);
     hideElements([exitBillBtn, deleteBillBtn, approveBillBtn]);
 
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
@@ -625,15 +622,12 @@ function updateBill() {
                 sessionStorage.clear();
             }
             if (res.status == "updated") {
-                updateBillBtn.innerText = "Update";
-                updateBillBtn.classList.remove("saving-state");
-                //showElements([deleteBillBtn, exitBillBtn]);
+                inProgressTextStatus(updateBillBtn,"Update", false);
                 location.reload();
 
             }
         }).catch(function() {
-            updateBillBtn.innerText = "Update";
-            updateBillBtn.classList.remove("saving-state");
+            inProgressTextStatus(updateBillBtn,"Update", false);
             showElements([deleteBillBtn, exitBillBtn]);
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
@@ -642,8 +636,7 @@ function updateBill() {
 }
 
 function deleteBill() {
-    deleteBillBtn.innerText = "Deleting...";
-    deleteBillBtn.classList.add("saving-state");
+    inProgressTextStatus(deleteBillBtn,"Deleting...", true);
     hideElements([updateBillBtn, exitBillBtn, approveBillBtn]);
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
@@ -655,15 +648,12 @@ function deleteBill() {
                 sessionStorage.clear();
             }
             if (res.status == "deleted") {
-                deleteBillBtn.innerText = "Delete";
-                deleteBillBtn.classList.remove("saving-state");
-                //showElements([exitBillBtn, updateBillBtn]);
+                inProgressTextStatus(deleteBillBtn,"Delete", false);
                 location.reload();
 
             }
         }).catch(function() {
-            deleteBillBtn.innerText = "Delete";
-            deleteBillBtn.classList.remove("saving-state");
+            inProgressTextStatus(deleteBillBtn,"Delete", false);
             showElements([exitBillBtn, updateBillBtn]);
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
         });
@@ -681,23 +671,20 @@ function saveBill(bill, email, serv) {
                 sessionStorage.clear();
             }
             if (res.status == "duplicate_bill") {
-                saveBillBtn.innerText = "Save";
-                saveBillBtn.classList.remove("saving-state");
+                inProgressTextStatus(saveBillBtn,"Save", false);
                 exitBillBtn.classList.remove("hide");
                 showAlertBox("Sorry, can not Save.\nThis Bill already exists", "OK", null, false);
             }
             if (res.status == "saved") {
                 exitBillBtn.click();
-                saveBillBtn.innerText = "Save";
-                saveBillBtn.classList.remove("saving-state");
+                inProgressTextStatus(saveBillBtn,"Save", false);
                 exitBillBtn.classList.remove("hide");
                 currentUploadStatus = "";
                 location.reload();
             }
-        }).catch(function() {
+        }).catch(function() {            
+            inProgressTextStatus(saveBillBtn,"Save", false);
             preloader.classList.add("hide");
-            saveBillBtn.innerText = "Save";
-            saveBillBtn.classList.remove("saving-state");
             exitBillBtn.classList.remove("hide");
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
         });
@@ -764,9 +751,7 @@ saveBillBtn.addEventListener("click", function() {
         billObj.bill = btoa(imgSrc);
         billObj.billFields = btoa(JSON.stringify(billdata));
     }
-
-    saveBillBtn.innerText = "Saving, please wait...";
-    saveBillBtn.classList.add("saving-state");
+    inProgressTextStatus(saveBillBtn,"Saving, please wait...", true);
     hideElements([exitBillBtn, deleteBillBtn]);
     saveBill(billObj, sessEmail, serv);
 });
@@ -776,16 +761,14 @@ updateBillBtn.addEventListener("click", function() {
     updateBill();
 });
 
-approveBillBtn.addEventListener("click", function() {
-    approveBillBtn.innerText = "Approving...";
-    approveBillBtn.classList.add("saving-state");
+approveBillBtn.addEventListener("click", function() {    
+    inProgressTextStatus(approveBillBtn,"Approving...", true);
     hideElements([exitBillBtn, rejectBillBtn, updateBillBtn, deleteBillBtn]);
     approveRejectBill("approved");
 });
 
 rejectBillBtn.addEventListener("click", function() {
-    rejectBillBtn.innerText = "Rejecting...";
-    rejectBillBtn.classList.add("saving-state");
+    inProgressTextStatus(rejectBillBtn,"Rejecting...", true);
     hideElements([exitBillBtn, approveBillBtn]);
     approveRejectBill("rejected");
 });
@@ -879,8 +862,7 @@ settingsBtn.addEventListener("click", function() {
 });
 
 editProjectBtn.addEventListener("click", function() {
-    editProjectBtn.innerText = "please wait...";
-    editProjectBtn.classList.add("saving-state");
+    inProgressTextStatus(editProjectBtn,"please wait...", true);
     editProjectBtn.classList.remove("btn");
     editProjectBtn.classList.remove("btn-editproj");
     editProjectMode = true;
@@ -954,8 +936,7 @@ savesettingsBtn.addEventListener("click", function() {
 
     if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none" || insertedOneVals != "none") {
         saveSettingEnabled = false;
-        savesettingsBtn.innerText = "Saving...";
-        savesettingsBtn.classList.add("saving-state");
+        inProgressTextStatus(savesettingsBtn,"Saving...", true);
         closesettingsBtn.classList.add("hide");
 
         let accountObj = {
@@ -981,8 +962,7 @@ savesettingsBtn.addEventListener("click", function() {
                 if (setting.status == "invalidEmail") {
                     showAlertBox(`You have entered Invalid Email`, "OK", null, false);
                     saveSettingEnabled = true;
-                    savesettingsBtn.innerText = "Save";
-                    savesettingsBtn.classList.remove("saving-state");
+                    inProgressTextStatus(savesettingsBtn,"Save", false);
                     closesettingsBtn.classList.remove("hide");
                 }
                 if (setting.status == "saved") {
@@ -999,8 +979,7 @@ savesettingsBtn.addEventListener("click", function() {
                     } else {
                         isProfilePicModified = false;
                         isLogoModified = false;
-                        savesettingsBtn.innerText = "Save";
-                        savesettingsBtn.classList.remove("saving-state");
+                        inProgressTextStatus(savesettingsBtn,"Save", false);
                         closesettingsBtn.classList.remove("hide");
                         initAccountVals.name = disp_name;
                         initAccountVals.type = acc_type;
@@ -1036,16 +1015,14 @@ savesettingsBtn.addEventListener("click", function() {
                 } else if (setting.status && setting.msg) {
                     showAlertBox(setting.msg, "OK", null, false);
                     saveSettingEnabled = true;
-                    savesettingsBtn.innerText = "Save";
-                    savesettingsBtn.classList.remove("saving-state");
+                    inProgressTextStatus(savesettingsBtn,"Save", false);
                     closesettingsBtn.classList.remove("hide");
 
                 }
 
             }).catch((s) => {
                 saveSettingEnabled = true;
-                savesettingsBtn.innerText = "Save";
-                savesettingsBtn.classList.remove("saving-state");
+                inProgressTextStatus(savesettingsBtn,"Save", false);
             });
     } else {
         closesettingsBtn.click();
@@ -1183,9 +1160,8 @@ function getMembersList(_auto) {
     fetch("../getProjMembers/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: myProjectSelect.value })) })
         .then(data => data.json())
         .then(function(p) {
-            if (p.status == "done") {
-                editProjectBtn.innerText = "Edit Project";
-                editProjectBtn.classList.remove("saving-state");
+            if (p.status == "done") {                
+                inProgressTextStatus(editProjectBtn,"Edit Project", false);
                 editProjectBtn.classList.add("btn");
                 editProjectBtn.classList.add("btn-editproj");
                 editProjectBtn.classList.add("hide");
@@ -1261,8 +1237,7 @@ function getMembersList(_auto) {
 
 
             } else {
-                editProjectBtn.innerText = "Edit Project";
-                editProjectBtn.classList.remove("saving-state");
+                inProgressTextStatus(editProjectBtn,"Edit Project", false);
                 editProjectBtn.classList.add("btn");
                 editProjectBtn.classList.add("btn-editproj");
                 editProjectMode = false;
@@ -1375,10 +1350,9 @@ function loadAccountSettings() {
 }
 
 function addMemberToProject(member, role, approver) {
-    const refereshMemberFields = {
-        currentReset: function(memberFieldReset) {
-            addNewMemberProjBtn.innerText = "Add Member to Project";
-            addNewMemberProjBtn.classList.remove("saving-state");
+    const resetMemberFields = {
+        refresh: function(memberFieldReset) {
+            inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
             enableAddNewMember = true;
             if (memberFieldReset) {
@@ -1405,20 +1379,19 @@ function addMemberToProject(member, role, approver) {
                 sessionStorage.clear();
             } else if (projmem.status == "invalidEmail") {
                 showAlertBox(`You have entered Invalid Email`, "OK", null, false);
-                refereshMemberFields.currentReset(true);
+                resetMemberFields.refresh(true);
             } else if (projmem.status == "added") {
                 newMemberInsertFields();
-                refereshMemberFields.currentReset(false);
+                resetMemberFields.refresh(false);
                 localStorage.removeItem("tempProjID");
             } else if (projmem.status && projmem.msg) {
-                refereshMemberFields.currentReset(true);
+                resetMemberFields.refresh(true);
                 showAlertBox(projmem.msg, "OK", null, false);
             }
 
         }).catch((s) => {
             enableAddNewMember = true;
-            addNewMemberProjBtn.innerText = "Add Member to Project";
-            addNewMemberProjBtn.classList.remove("saving-state");
+            inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
@@ -1431,9 +1404,7 @@ function createNewProject() {
         enableAddNewMember = true;
         return false;
     }
-
-    addNewMemberProjBtn.innerText = "Adding Project...";
-    addNewMemberProjBtn.classList.add("saving-state");
+    inProgressTextStatus(addNewMemberProjBtn,"Adding Project...", true);
     addNewMemberProjBtn.classList.remove("btn");
     document.getElementById("displayteamname").classList.add("member-fields-disable");
     document.getElementById("displayteamname").setAttribute("readonly", true);
@@ -1462,8 +1433,7 @@ function createNewProjectName(projname) {
                 showAlertBox(`This Project Name is already taken. Please try a different Name`, "OK", null, false);
                 document.getElementById("displayteamname").classList.remove("member-fields-disable");
                 document.getElementById("displayteamname").removeAttribute("readonly");
-                addNewMemberProjBtn.innerText = "Add Project";
-                addNewMemberProjBtn.classList.remove("saving-state");
+                inProgressTextStatus(addNewMemberProjBtn,"Add Project", false);
                 addNewMemberProjBtn.classList.add("btn");
                 enableAddNewMember = true;
             }
@@ -1477,8 +1447,7 @@ function createNewProjectName(projname) {
                 document.getElementById("addUserPanel").appendChild(rolesPara);
                 newMemberInsertFields();
                 document.querySelector("#team_img_browse+label").remove();
-                addNewMemberProjBtn.innerText = "Add Member to Project";
-                addNewMemberProjBtn.classList.remove("saving-state");
+                inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
                 addNewMemberProjBtn.classList.add("btn");
                 enableAddNewMember = true;
                 localStorage.setItem("tempProjID", proj.projid);
@@ -1486,8 +1455,7 @@ function createNewProjectName(projname) {
 
         }).catch((s) => {
             enableAddNewMember = true;
-            addNewMemberProjBtn.innerText = "Add Member to Project";
-            addNewMemberProjBtn.classList.remove("saving-state");
+            inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
             document.getElementById("displayteamname").classList.remove("member-fields-disable");
             document.getElementById("displayteamname").removeAttribute("readonly");
@@ -1644,15 +1612,14 @@ addNewMemberProjBtn.addEventListener("click", function() {
             return;
         }
 
-        memb_email.setAttribute("readonly", true);
-        appr_email.setAttribute("readonly", true);
         memb_roles.disabled = true;
+        memb_email.setAttribute("readonly", true);
+        appr_email.setAttribute("readonly", true);        
         memb_email.classList.add("member-fields-disable");
         appr_email.classList.add("member-fields-disable");
-        memb_roles.classList.add("member-fields-disable");
-        addNewMemberProjBtn.innerText = "Adding...";
-        addNewMemberProjBtn.classList.add("saving-state");
+        memb_roles.classList.add("member-fields-disable");        
         addNewMemberProjBtn.classList.remove("btn");
+        inProgressTextStatus(addNewMemberProjBtn,"Adding...", true);
         addMemberToProject(memb_email, memb_roles, appr_email);
     }
 
@@ -2022,6 +1989,16 @@ themechooser.addEventListener("click", function() {
     }
 
 });
+
+
+function inProgressTextStatus(elm, text, inProgress) {
+    elm.innerText = text;
+    if(inProgress){
+        elm.classList.add("processing-state");
+    }else{
+        elm.classList.remove("processing-state");
+    }    
+}
 
 function themeUpdateTracker() {
     if (themeChanged) {
