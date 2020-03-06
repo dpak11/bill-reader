@@ -14,7 +14,7 @@ let selectedProjectName = "";
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
-    let paramObj = { ...authVars, ...params };    
+    let paramObj = { ...authVars, ...params };
     return paramObj;
 }
 
@@ -46,16 +46,14 @@ const imageUploader = document.getElementById("imageuploader");
 
 billshomeBtn.addEventListener("click", function() {
     if (currentPage !== "bills") {
-        fetchBills();
-        currentPage = "bills";        
-        document.querySelector("title").text = "Bill Vault";
+        currentPage = "bills";
         activeNavTab(billshomeBtn);
         hideElements([chartsBlock, settingsBlock]);
         mainContainer.classList.remove("settingMode");
-        preloader.classList.remove("hide");
-        
-        document.getElementById("mybillORall").style.display = "none";
-        
+        preloader.classList.remove("hide");        
+        document.querySelector("title").innerText = "Bill Vault";
+        document.getElementById("mybillORall").style.display = "none";        
+        fetchBills();
     }
 
 });
@@ -78,7 +76,7 @@ teamOrMyBills.addEventListener("click", function() {
 
 });
 
-billStatusBlock.addEventListener("click", function(){
+billStatusBlock.addEventListener("click", function() {
     document.getElementById("infoTipBox").classList.remove("hide");
     let history = document.getElementById("infoTipBox").getAttribute("data-history");
     let historyLog = JSON.parse(atob(history));
@@ -114,8 +112,6 @@ fileImg.addEventListener('change', () => {
     }
 
 });
-
-
 
 function imageProcess(imgfile) {
     if (imgfile.type.indexOf("image/") > -1) {
@@ -279,7 +275,7 @@ function resetOrientation(srcBase64, srcOrientation, callback) {
 };
 
 function imageProcessDone(imgdata) {
-    hideElements([billStatusBlock,approveBillBtn, rejectBillBtn, updateBillBtn, deleteBillBtn, preloader, billThumbNails]);
+    hideElements([billStatusBlock, approveBillBtn, rejectBillBtn, updateBillBtn, deleteBillBtn, preloader, billThumbNails]);
     showElements([exitBillBtn, saveBillBtn]);
     displayBillingTable(imgdata);
     currentUploadStatus = "unsaved";
@@ -330,8 +326,6 @@ function addCategorySelectOptions() {
 }
 
 
-
-
 function fetchBills() {
     const client = sessionStorage.getItem("ckey") || false;
     const serv = sessionStorage.getItem("skey") || false;
@@ -342,11 +336,11 @@ function fetchBills() {
         teamAcRights = bdata.user_data.controls;
         globalAdminRight = (bdata.user_data.isGlobalAdmin == "yes") ? true : false;
         localStorage.setItem("theme", bdata.user_data.defaultskin);
-        document.querySelector("body").setAttribute("class", bdata.user_data.defaultskin);                   
+        document.querySelector("body").setAttribute("class", bdata.user_data.defaultskin);
         preloader.classList.add("hide");
     }
 
-    if (client && serv && sessionemail) {        
+    if (client && serv && sessionemail) {
         fetch("../loadBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type })) })
             .then(data => data.json())
             .then(function(res) {
@@ -432,8 +426,6 @@ function displayBillingTable(data) {
             document.querySelector(".previewimg").style.height = previewimgHeight + "px"
         }
     }, 1000);
-
-
 }
 
 function displayBillThumbnails() {
@@ -460,7 +452,6 @@ function displayBillThumbnails() {
         }
         let typeImg = "images/" + billData.type + ".png";
         let submit_date = bill.lastdate.split(",")[0];
-
         let thumbs = `<div class="thumb-top-row ${thumbnailAlign}">
                          <div class="amount-thumb">&#8377;${billData.total}
                      </div>
@@ -476,10 +467,11 @@ function displayBillThumbnails() {
                 <div class="thumb-date-bill">Bill Date: ${billData.date}</div>
             </div> `;
         let div = document.createElement("div");
-        div.className = "thumbnail";
         div.setAttribute("id", "thumb_" + bill.id);
-        div.innerHTML = thumbs;
         div.setAttribute("data-billvals", btoa(JSON.stringify(billData)));
+        div.className = "thumbnail";
+        div.innerHTML = thumbs;
+
         let privateTeam = sessionStorage.getItem("is_private_team");
         if (userAcType == "team" && privateTeam == "team") {
             div.setAttribute("data-owner", bill.useremail);
@@ -494,69 +486,73 @@ function displayBillThumbnails() {
         thumbnails.appendChild(div);
         div.addEventListener("click", function(ev) {
             billMode = "update";
-            hideElements([rejectBillBtn, approveBillBtn, saveBillBtn, billThumbNails, imageUploader]);
-            showElements([exitBillBtn, updateBillBtn, deleteBillBtn]);
-            let values = ev.currentTarget.getAttribute("data-billvals");
-            selectedBillId = ev.currentTarget.getAttribute("id").split("mb_")[1];
-            document.querySelector('.previewimg img').setAttribute("src", billsObjRef[selectedBillId]);
-            displayBillingTable(JSON.parse(atob(values)));
-            if (userAcType == "team") {
-                let _status = ev.currentTarget.getAttribute("data-billstatus");
-                let _approver = ev.currentTarget.getAttribute("data-billapprover");
-                billStatusBlock.classList.remove("approved");
-                billStatusBlock.classList.remove("rejected");
-                billStatusBlock.classList.remove("pending");
-                billStatusBlock.classList.add(_status);
-                let privateTeam = sessionStorage.getItem("is_private_team") || "private";
-                if (_status == "approved" || (projectMemberRole != "member" && privateTeam == "team")) {
-                    hideElements([updateBillBtn, deleteBillBtn]);
-                    resetTableFields("disable");
-                }
-                if (_status == "approved") {
-                    document.querySelector("#billTable .table-head").innerHTML = "Bill Details";
-                }
-                if (_status != "approved" && projectMemberRole == "admin" && privateTeam == "private") {
-                    approveBillBtn.classList.remove("hide");
-                    approveBillBtn.innerText = "Self Approve";
-                } else {
-                    approveBillBtn.innerText = "Approve";
-                }
-                if (projectMemberRole != "member" && privateTeam == "team") {
-                    if (_status !== "approved") {
-                        if (projectMemberRole == "admin" && _approver != atob(authVars.em)) {
-                            hideElements([approveBillBtn, rejectBillBtn]);
-                        } else {
-                            showElements([approveBillBtn, rejectBillBtn]);
-                        }
-                    }
-                    if (_status == "rejected") {
-                        rejectBillBtn.classList.add("hide");
-                    }
-
-                    let owner = ev.currentTarget.getAttribute("data-owner");
-                    document.querySelector("#billTable .table-head").innerHTML = `Bill Details <span>${owner}</span>`;
-                }
-                if (_status == "pending") {
-                    _status = " is <b>pending approval</b> from ";
-                } else {
-                    _status = " was <b>" + _status + "</b> by ";
-                }
-
-                document.getElementById("billTable").classList.add("teamTable");
-                billStatusBlock.classList.remove("hide");
-                billStatusBlock.innerHTML = `This Bill${_status}<span>${_approver}</span><i>&nbsp;</i>`;
-                document.getElementById("infoTipBox").setAttribute("data-history", ev.currentTarget.getAttribute("data-history"));
-            }
+            thumbNailClicked(ev.currentTarget);
         });
     });
 
+}
+
+function thumbNailClicked(thumbnail) {
+    let values = thumbnail.getAttribute("data-billvals");
+    selectedBillId = thumbnail.getAttribute("id").split("mb_")[1];
+    hideElements([rejectBillBtn, approveBillBtn, saveBillBtn, billThumbNails, imageUploader]);
+    showElements([exitBillBtn, updateBillBtn, deleteBillBtn]);
+    document.querySelector('.previewimg img').setAttribute("src", billsObjRef[selectedBillId]);
+    displayBillingTable(JSON.parse(atob(values)));
+    if (userAcType == "team") {
+        let _status = thumbnail.getAttribute("data-billstatus");
+        let _approver = thumbnail.getAttribute("data-billapprover");
+        let privateTeam = sessionStorage.getItem("is_private_team") || "private";
+        billStatusBlock.classList.remove("approved");
+        billStatusBlock.classList.remove("rejected");
+        billStatusBlock.classList.remove("pending");
+        billStatusBlock.classList.add(_status);
+        if (_status == "approved" || (projectMemberRole != "member" && privateTeam == "team")) {
+            hideElements([updateBillBtn, deleteBillBtn]);
+            resetTableFields("disable");
+        }
+        if (_status == "approved") {
+            document.querySelector("#billTable .table-head").innerHTML = "Bill Details";
+        }
+        if (_status != "approved" && projectMemberRole == "admin" && privateTeam == "private") {
+            approveBillBtn.classList.remove("hide");
+            approveBillBtn.innerText = "Self Approve";
+        } else {
+            approveBillBtn.innerText = "Approve";
+        }
+        if (projectMemberRole != "member" && privateTeam == "team") {
+            if (_status !== "approved") {
+                if (projectMemberRole == "admin" && _approver != atob(authVars.em)) {
+                    hideElements([approveBillBtn, rejectBillBtn]);
+                } else {
+                    showElements([approveBillBtn, rejectBillBtn]);
+                }
+            }
+            if (_status == "rejected") {
+                rejectBillBtn.classList.add("hide");
+            }
+
+            let owner = thumbnail.getAttribute("data-owner");
+            document.querySelector("#billTable .table-head").innerHTML = `Bill Details <span>${owner}</span>`;
+        }
+        if (_status == "pending") {
+            _status = " is <b>pending approval</b> from ";
+        } else {
+            _status = " was <b>" + _status + "</b> by ";
+        }
+
+        document.getElementById("billTable").classList.add("teamTable");
+        billStatusBlock.classList.remove("hide");
+        billStatusBlock.innerHTML = `This Bill${_status}<span>${_approver}</span><i>&nbsp;</i>`;
+        document.getElementById("infoTipBox").setAttribute("data-history", thumbnail.getAttribute("data-history"));
+    }
 }
 
 
 function tidyAmount(amt) {
     let amount = amt.trim();
     // example: This RegExp matches 'Rs.230' or 'Rs230' or '230 Rs' or '230Rs'
-    let total = (amount).match(/^((Rs(\.)?\s?)?(\d+\.?\d*)|(\d+\.?\d*)\s?(Rs)?)$/i); 
+    let total = (amount).match(/^((Rs(\.)?\s?)?(\d+\.?\d*)|(\d+\.?\d*)\s?(Rs)?)$/i);
     let rupees = total !== null ? total.filter(rs => !isNaN(rs))[0] : total;
     if (rupees == null || rupees > 999999) { return 0; }
     return rupees;
@@ -597,7 +593,7 @@ function updateBill() {
         showAlertBox("Please fill in the fields", "OK", null, false);
         return;
     }
-    inProgressTextStatus(updateBillBtn,"Updating, please wait...", true);
+    inProgressTextStatus(updateBillBtn, "Updating, please wait...", true);
     hideElements([exitBillBtn, deleteBillBtn, approveBillBtn]);
 
     const billdata = { date: date, title: merchant, total: amt, descr: descr, type: billType };
@@ -614,12 +610,12 @@ function updateBill() {
                 sessionStorage.clear();
             }
             if (res.status == "updated") {
-                inProgressTextStatus(updateBillBtn,"Update", false);
+                inProgressTextStatus(updateBillBtn, "Update", false);
                 location.reload();
 
             }
         }).catch(function() {
-            inProgressTextStatus(updateBillBtn,"Update", false);
+            inProgressTextStatus(updateBillBtn, "Update", false);
             showElements([deleteBillBtn, exitBillBtn]);
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
@@ -628,7 +624,7 @@ function updateBill() {
 }
 
 function deleteBill() {
-    inProgressTextStatus(deleteBillBtn,"Deleting...", true);
+    inProgressTextStatus(deleteBillBtn, "Deleting...", true);
     hideElements([updateBillBtn, exitBillBtn, approveBillBtn]);
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
@@ -640,12 +636,12 @@ function deleteBill() {
                 sessionStorage.clear();
             }
             if (res.status == "deleted") {
-                inProgressTextStatus(deleteBillBtn,"Delete", false);
+                inProgressTextStatus(deleteBillBtn, "Delete", false);
                 location.reload();
 
             }
         }).catch(function() {
-            inProgressTextStatus(deleteBillBtn,"Delete", false);
+            inProgressTextStatus(deleteBillBtn, "Delete", false);
             showElements([exitBillBtn, updateBillBtn]);
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
         });
@@ -663,19 +659,19 @@ function saveBill(bill, email, serv) {
                 sessionStorage.clear();
             }
             if (res.status == "duplicate_bill") {
-                inProgressTextStatus(saveBillBtn,"Save", false);
+                inProgressTextStatus(saveBillBtn, "Save", false);
                 exitBillBtn.classList.remove("hide");
                 showAlertBox("Sorry, can not Save.\nThis Bill already exists", "OK", null, false);
             }
             if (res.status == "saved") {
                 exitBillBtn.click();
-                inProgressTextStatus(saveBillBtn,"Save", false);
+                inProgressTextStatus(saveBillBtn, "Save", false);
                 exitBillBtn.classList.remove("hide");
                 currentUploadStatus = "";
                 location.reload();
             }
-        }).catch(function() {            
-            inProgressTextStatus(saveBillBtn,"Save", false);
+        }).catch(function() {
+            inProgressTextStatus(saveBillBtn, "Save", false);
             preloader.classList.add("hide");
             exitBillBtn.classList.remove("hide");
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
@@ -743,24 +739,24 @@ saveBillBtn.addEventListener("click", function() {
         billObj.bill = btoa(imgSrc);
         billObj.billFields = btoa(JSON.stringify(billdata));
     }
-    inProgressTextStatus(saveBillBtn,"Saving, please wait...", true);
+    inProgressTextStatus(saveBillBtn, "Saving, please wait...", true);
     hideElements([exitBillBtn, deleteBillBtn]);
     saveBill(billObj, sessEmail, serv);
 });
 
 
-updateBillBtn.addEventListener("click", function() {    
+updateBillBtn.addEventListener("click", function() {
     updateBill();
 });
 
-approveBillBtn.addEventListener("click", function() {    
-    inProgressTextStatus(approveBillBtn,"Approving...", true);
+approveBillBtn.addEventListener("click", function() {
+    inProgressTextStatus(approveBillBtn, "Approving...", true);
     hideElements([exitBillBtn, rejectBillBtn, updateBillBtn, deleteBillBtn]);
     approveRejectBill("approved");
 });
 
 rejectBillBtn.addEventListener("click", function() {
-    inProgressTextStatus(rejectBillBtn,"Rejecting...", true);
+    inProgressTextStatus(rejectBillBtn, "Rejecting...", true);
     hideElements([exitBillBtn, approveBillBtn]);
     approveRejectBill("rejected");
 });
@@ -844,7 +840,7 @@ settingsBtn.addEventListener("click", function() {
         saveSettingEnabled = false;
         userSettingLink.click();
         loadAccountSettings();
-        document.querySelector("title").text = "Settings | Bill Vault";
+        document.querySelector("title").innerText = "Settings | Bill Vault";
         // for devices smaller than 375px width, always keep topfloater class in Settings Mode
         if (window.innerWidth < 375) {
             mainContainer.classList.add("topfloater")
@@ -854,7 +850,7 @@ settingsBtn.addEventListener("click", function() {
 });
 
 editProjectBtn.addEventListener("click", function() {
-    inProgressTextStatus(editProjectBtn,"please wait...", true);
+    inProgressTextStatus(editProjectBtn, "please wait...", true);
     editProjectBtn.classList.remove("btn");
     editProjectBtn.classList.remove("btn-editproj");
     editProjectMode = true;
@@ -927,8 +923,7 @@ savesettingsBtn.addEventListener("click", function() {
     let acc_type = document.getElementById("user_account_field").value;
 
     if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none" || insertedOneVals != "none") {
-        saveSettingEnabled = false;
-        inProgressTextStatus(savesettingsBtn,"Saving...", true);
+        saveSettingEnabled = false;        
         closesettingsBtn.classList.add("hide");
 
         let accountObj = {
@@ -939,87 +934,89 @@ savesettingsBtn.addEventListener("click", function() {
             editedProjectVals: editedProjVals,
             insertedOneVals: insertedOneVals
         }
-
         if (initAccountVals.projchange) {
             accountObj.isSwitchedProj = "yes";
             accountObj.newProjectID = myProjectSelect.value;
         }
-
-        fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ usersetting: btoa(JSON.stringify(accountObj)) })) })
-            .then(data => data.json())
-            .then((setting) => {
-                if (setting.status == "invalid") {
-                    sessionStorage.clear();
-                }
-                if (setting.status == "invalidEmail") {
-                    showAlertBox(`You have entered Invalid Email`, "OK", null, false);
-                    saveSettingEnabled = true;
-                    inProgressTextStatus(savesettingsBtn,"Save", false);
-                    closesettingsBtn.classList.remove("hide");
-                }
-                if (setting.status == "saved") {
-                    if (acc_type !== initAccountVals.type) {
-                        setTimeout(function() {
-                            localStorage.setItem("accountchange", acc_type);
-                            location.reload();
-                        }, 1000);
-                    } else if (initAccountVals.projchange) {
-                        setTimeout(function() {
-                            localStorage.setItem("projectchange", "yes");
-                            location.reload();
-                        }, 1000);
-                    } else {
-                        isProfilePicModified = false;
-                        isLogoModified = false;
-                        inProgressTextStatus(savesettingsBtn,"Save", false);
-                        closesettingsBtn.classList.remove("hide");
-                        initAccountVals.name = disp_name;
-                        initAccountVals.type = acc_type;
-                        initAccountVals.projchange = false;
-                        saveSettingEnabled = true;
-                        if (document.getElementById("teamSettingsPage")) {
-                            let isNewProjCreated = document.getElementById("teamSettingsPage").getAttribute("data-projectidnew") || "";
-                            if (isNewProjCreated != "") {
-                                document.getElementById("teamDetailsSection").classList.add("hide");
-                                document.getElementById("createNewTeam").classList.add("hide");
-                            }
-                        }
-                        if (editedProjVals != "none") {
-                            document.getElementById("modifyProjectMembers").classList.add("hide");
-                            editProjectMode = false;
-                            editProjectBtn.classList.remove("hide");
-                            if (editedProjVals.projName != "" || editedProjVals.logo != "") {
-                                setTimeout(function() {
-                                    localStorage.setItem("projectmodify", "yes");
-                                    location.reload();
-                                }, 1000);
-                            }
-                            if (editedProjVals.users.length > 0) {
-                                removeEditUserGroups()
-                            }
-                        }
-                        if (insertedOneVals != "none") {
-                            location.reload();
-                        }
-                        closesettingsBtn.click();
-                    }
-
-                } else if (setting.status && setting.msg) {
-                    showAlertBox(setting.msg, "OK", null, false);
-                    saveSettingEnabled = true;
-                    inProgressTextStatus(savesettingsBtn,"Save", false);
-                    closesettingsBtn.classList.remove("hide");
-
-                }
-
-            }).catch((s) => {
-                saveSettingEnabled = true;
-                inProgressTextStatus(savesettingsBtn,"Save", false);
-            });
+        inProgressTextStatus(savesettingsBtn, "Saving...", true);
+        saveSettings(accountObj);
     } else {
         closesettingsBtn.click();
     }
 });
+
+function saveSettings(accSettingObj) {
+    fetch("../settingsave/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ usersetting: btoa(JSON.stringify(accSettingObj)) })) })
+        .then(data => data.json())
+        .then((setting) => {
+            if (setting.status == "invalid") {
+                sessionStorage.clear();
+            }
+            if (setting.status == "invalidEmail") {
+                showAlertBox(`You have entered Invalid Email`, "OK", null, false);
+                saveSettingEnabled = true;
+                inProgressTextStatus(savesettingsBtn, "Save", false);
+                closesettingsBtn.classList.remove("hide");
+            }
+            if (setting.status == "saved") {
+                if (acc_type !== initAccountVals.type) {
+                    setTimeout(function() {
+                        localStorage.setItem("accountchange", acc_type);
+                        location.reload();
+                    }, 1000);
+                } else if (initAccountVals.projchange) {
+                    setTimeout(function() {
+                        localStorage.setItem("projectchange", "yes");
+                        location.reload();
+                    }, 1000);
+                } else {
+                    isProfilePicModified = false;
+                    isLogoModified = false;
+                    inProgressTextStatus(savesettingsBtn, "Save", false);
+                    closesettingsBtn.classList.remove("hide");
+                    initAccountVals.name = disp_name;
+                    initAccountVals.type = acc_type;
+                    initAccountVals.projchange = false;
+                    saveSettingEnabled = true;
+                    if (document.getElementById("teamSettingsPage")) {
+                        let isNewProjCreated = document.getElementById("teamSettingsPage").getAttribute("data-projectidnew") || "";
+                        if (isNewProjCreated != "") {
+                            document.getElementById("teamDetailsSection").classList.add("hide");
+                            document.getElementById("createNewTeam").classList.add("hide");
+                        }
+                    }
+                    if (editedProjVals != "none") {
+                        document.getElementById("modifyProjectMembers").classList.add("hide");
+                        editProjectMode = false;
+                        editProjectBtn.classList.remove("hide");
+                        if (editedProjVals.projName != "" || editedProjVals.logo != "") {
+                            setTimeout(function() {
+                                localStorage.setItem("projectmodify", "yes");
+                                location.reload();
+                            }, 1000);
+                        }
+                        if (editedProjVals.users.length > 0) {
+                            removeEditUserGroups()
+                        }
+                    }
+                    if (insertedOneVals != "none") {
+                        location.reload();
+                    }
+                    closesettingsBtn.click();
+                }
+
+            } else if (setting.status && setting.msg) {                
+                saveSettingEnabled = true;
+                showAlertBox(setting.msg, "OK", null, false);
+                inProgressTextStatus(savesettingsBtn, "Save", false);
+                closesettingsBtn.classList.remove("hide");
+            }
+
+        }).catch((s) => {
+            saveSettingEnabled = true;
+            inProgressTextStatus(savesettingsBtn, "Save", false);
+        });
+}
 
 function attachProfileImage(imgfile, logoprofile, logoholder) {
     if (imgfile.type.indexOf("image/") > -1) {
@@ -1152,8 +1149,8 @@ function getMembersList(_auto) {
     fetch("../getProjMembers/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: myProjectSelect.value })) })
         .then(data => data.json())
         .then(function(p) {
-            if (p.status == "done") {                
-                inProgressTextStatus(editProjectBtn,"Edit Project", false);
+            if (p.status == "done") {
+                inProgressTextStatus(editProjectBtn, "Edit Project", false);
                 editProjectBtn.classList.add("btn");
                 editProjectBtn.classList.add("btn-editproj");
                 editProjectBtn.classList.add("hide");
@@ -1229,7 +1226,7 @@ function getMembersList(_auto) {
 
 
             } else {
-                inProgressTextStatus(editProjectBtn,"Edit Project", false);
+                inProgressTextStatus(editProjectBtn, "Edit Project", false);
                 editProjectBtn.classList.add("btn");
                 editProjectBtn.classList.add("btn-editproj");
                 editProjectMode = false;
@@ -1344,7 +1341,7 @@ function loadAccountSettings() {
 function addMemberToProject(member, role, approver) {
     const resetMemberFields = {
         refresh: function(memberFieldReset) {
-            inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
+            inProgressTextStatus(addNewMemberProjBtn, "Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
             enableAddNewMember = true;
             if (memberFieldReset) {
@@ -1383,7 +1380,7 @@ function addMemberToProject(member, role, approver) {
 
         }).catch((s) => {
             enableAddNewMember = true;
-            inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
+            inProgressTextStatus(addNewMemberProjBtn, "Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
 
@@ -1396,7 +1393,7 @@ function createNewProject() {
         enableAddNewMember = true;
         return false;
     }
-    inProgressTextStatus(addNewMemberProjBtn,"Adding Project...", true);
+    inProgressTextStatus(addNewMemberProjBtn, "Adding Project...", true);
     addNewMemberProjBtn.classList.remove("btn");
     document.getElementById("displayteamname").classList.add("member-fields-disable");
     document.getElementById("displayteamname").setAttribute("readonly", true);
@@ -1425,7 +1422,7 @@ function createNewProjectName(projname) {
                 showAlertBox(`This Project Name is already taken. Please try a different Name`, "OK", null, false);
                 document.getElementById("displayteamname").classList.remove("member-fields-disable");
                 document.getElementById("displayteamname").removeAttribute("readonly");
-                inProgressTextStatus(addNewMemberProjBtn,"Add Project", false);
+                inProgressTextStatus(addNewMemberProjBtn, "Add Project", false);
                 addNewMemberProjBtn.classList.add("btn");
                 enableAddNewMember = true;
             }
@@ -1439,7 +1436,7 @@ function createNewProjectName(projname) {
                 document.getElementById("addUserPanel").appendChild(rolesPara);
                 newMemberInsertFields();
                 document.querySelector("#team_img_browse+label").remove();
-                inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
+                inProgressTextStatus(addNewMemberProjBtn, "Add Member to Project", false);
                 addNewMemberProjBtn.classList.add("btn");
                 enableAddNewMember = true;
                 localStorage.setItem("tempProjID", proj.projid);
@@ -1447,7 +1444,7 @@ function createNewProjectName(projname) {
 
         }).catch((s) => {
             enableAddNewMember = true;
-            inProgressTextStatus(addNewMemberProjBtn,"Add Member to Project", false);
+            inProgressTextStatus(addNewMemberProjBtn, "Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
             document.getElementById("displayteamname").classList.remove("member-fields-disable");
             document.getElementById("displayteamname").removeAttribute("readonly");
@@ -1572,7 +1569,6 @@ addNewMemberProjBtn.addEventListener("click", function() {
         return false;
     }
     enableAddNewMember = false;
-
     let newMemberPanel = document.querySelector("#newMemberPanelBody .newuserGroup") || null;
     if (!newMemberPanel && (teamAcRights == "all" || globalAdminRight)) {
         createNewProject();
@@ -1606,12 +1602,12 @@ addNewMemberProjBtn.addEventListener("click", function() {
 
         memb_roles.disabled = true;
         memb_email.setAttribute("readonly", true);
-        appr_email.setAttribute("readonly", true);        
+        appr_email.setAttribute("readonly", true);
         memb_email.classList.add("member-fields-disable");
         appr_email.classList.add("member-fields-disable");
-        memb_roles.classList.add("member-fields-disable");        
+        memb_roles.classList.add("member-fields-disable");
         addNewMemberProjBtn.classList.remove("btn");
-        inProgressTextStatus(addNewMemberProjBtn,"Adding...", true);
+        inProgressTextStatus(addNewMemberProjBtn, "Adding...", true);
         addMemberToProject(memb_email, memb_roles, appr_email);
     }
 
@@ -1624,11 +1620,11 @@ closesettingsBtn.addEventListener("click", function() {
     settingsBtn.classList.remove("nav-selected");
     if (remPreviousActiveTab == "bills") {
         billshomeBtn.classList.add("nav-selected");
-        document.querySelector("title").text = "Bill Vault";
+        document.querySelector("title").innerText = "Bill Vault";
     }
     if (remPreviousActiveTab == "charts") {
         chartsBtn.classList.add("nav-selected");
-        document.querySelector("title").text = "Chart | Bill Vault";
+        document.querySelector("title").innerText = "Chart | Bill Vault";
     }
     currentPage = remPreviousActiveTab;
 
@@ -1718,7 +1714,7 @@ chartsBtn.addEventListener("click", function() {
         preloader.classList.remove("hide");
         hideElements([settingsBlock, chartsBlock, billThumbNails, previewBillImage, billTable, imageUploader]);
         document.getElementById("mybillORall").style.display = "none";
-        document.querySelector("title").text = "Chart | Bill Vault";
+        document.querySelector("title").innerText = "Chart | Bill Vault";
         loadCharts();
     }
 });
@@ -1985,11 +1981,11 @@ themechooser.addEventListener("click", function() {
 
 function inProgressTextStatus(elm, text, inProgress) {
     elm.innerText = text;
-    if(inProgress){
+    if (inProgress) {
         elm.classList.add("processing-state");
-    }else{
+    } else {
         elm.classList.remove("processing-state");
-    }    
+    }
 }
 
 function themeUpdateTracker() {
