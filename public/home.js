@@ -629,7 +629,7 @@ function deleteBill() {
     const client = sessionStorage.getItem("ckey");
     const serv = sessionStorage.getItem("skey");
     const sessionemail = sessionStorage.getItem("em");
-    fetch("../deleteBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receiptid: selectedBillId })) })
+    fetch("../deleteBill/", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receiptid: selectedBillId })) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status == "invalid") {
@@ -908,19 +908,19 @@ savesettingsBtn.addEventListener("click", function() {
         return;
     }
 
-    let editedProjVals = getEditedProjectVals();
+    const editedProjVals = getEditedProjectVals();
     if (editedProjVals == "invalidProjName") {
         return;
     }
 
-    let insertedOneVals = checkEditInsertedOne();
+    const insertedOneVals = checkEditInsertedOne();
     if (insertedOneVals == "invalid") {
         return;
     }
 
-    let prof_img = document.getElementById("userprofilepic").getAttribute("src");
-    let disp_name = document.getElementById("displayname_field").value;
-    let acc_type = document.getElementById("user_account_field").value;
+    const prof_img = document.getElementById("userprofilepic").getAttribute("src");
+    const disp_name = document.getElementById("displayname_field").value;
+    const acc_type = document.getElementById("user_account_field").value;
 
     if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none" || insertedOneVals != "none") {
         saveSettingEnabled = false;        
@@ -959,9 +959,9 @@ function saveSettings(accSettingObj) {
                 closesettingsBtn.classList.remove("hide");
             }
             if (setting.status == "saved") {
-                if (acc_type !== initAccountVals.type) {
+                if (accSettingObj.account !== initAccountVals.type) {
                     setTimeout(function() {
-                        localStorage.setItem("accountchange", acc_type);
+                        localStorage.setItem("accountchange", accSettingObj.account);
                         location.reload();
                     }, 1000);
                 } else if (initAccountVals.projchange) {
@@ -974,8 +974,8 @@ function saveSettings(accSettingObj) {
                     isLogoModified = false;
                     inProgressTextStatus(savesettingsBtn, "Save", false);
                     closesettingsBtn.classList.remove("hide");
-                    initAccountVals.name = disp_name;
-                    initAccountVals.type = acc_type;
+                    initAccountVals.name = accSettingObj.displayname;
+                    initAccountVals.type = accSettingObj.account;
                     initAccountVals.projchange = false;
                     saveSettingEnabled = true;
                     if (document.getElementById("teamSettingsPage")) {
@@ -985,21 +985,21 @@ function saveSettings(accSettingObj) {
                             document.getElementById("createNewTeam").classList.add("hide");
                         }
                     }
-                    if (editedProjVals != "none") {
+                    if (accSettingObj.editedProjectVals != "none") {
                         document.getElementById("modifyProjectMembers").classList.add("hide");
                         editProjectMode = false;
                         editProjectBtn.classList.remove("hide");
-                        if (editedProjVals.projName != "" || editedProjVals.logo != "") {
+                        if (accSettingObj.editedProjectVals.projName != "" || accSettingObj.editedProjectVals.logo != "") {
                             setTimeout(function() {
                                 localStorage.setItem("projectmodify", "yes");
                                 location.reload();
                             }, 1000);
                         }
-                        if (editedProjVals.users.length > 0) {
+                        if (accSettingObj.editedProjectVals.users.length > 0) {
                             removeEditUserGroups()
                         }
                     }
-                    if (insertedOneVals != "none") {
+                    if (accSettingObj.insertedOneVals != "none") {
                         location.reload();
                     }
                     closesettingsBtn.click();
@@ -1116,7 +1116,7 @@ function removeProjMember(rem) {
         showAlertBox(`Deleting "${rem.member}" from Project...`, "", null, false);
     }, 1500);
 
-    fetch("../removeMember/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: myProjectSelect.value, member: rem.member })) })
+    fetch("../removeMember/", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: myProjectSelect.value, member: rem.member })) })
         .then(data => data.json())
         .then((p) => {
             if (p.status == "deleted-manager") {
@@ -1503,7 +1503,7 @@ function removeEditUserGroups() {
 }
 
 function removeTempProject(pID) {
-    fetch("../removeTempProj/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ proj: pID })) })
+    fetch("../removeTempProj/", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ proj: pID })) })
         .then(data => data.json())
         .then(function(s) {
             if (s.status == "removed") {

@@ -61,7 +61,6 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 
 }).catch((err) => {
     console.log("MongoDB error");
-    console.log(err)
 });
 
 
@@ -1065,7 +1064,6 @@ async function approveRejectUserBill(pskey, agent, email, bill_id, proj, user, m
     });
     let saveStatus = await team.save();
     let notification = await sendBillStatusNotification(email, user, mode, team.title, bill_amt, bill_name);
-    console.log(notification);
     return Promise.resolve({ status: mode });
 
 }
@@ -1167,18 +1165,19 @@ app.post("/processTextData", (req, res) => {
 
 });
 
-app.post("/emailreq", (req, res) => {
-    let email = getEmail(req.body.email);
-    let mode = req.body.mode;
-    if (isValidEmail(email)) {
-        emailDBcheck(email, mode).then(() => {
+app.post("/emailreq", async (req, res) => {
+    const email = getEmail(req.body.email);
+    const mode = req.body.mode;
+    if (isValidEmail(email)) {        
+        try {
+            const userEmailDB = await emailDBcheck(email,mode);
             if (mode == "register") {
                 genActivationCode(email, res);
             } else {
                 res.json({ status: "require_pswd", e_mail: email })
             }
-        }).catch((s) => {
-            if (s.error == "email") {
+        }catch (e){            
+           if (e.error == "email") {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
                 } else {
@@ -1186,9 +1185,8 @@ app.post("/emailreq", (req, res) => {
                 }
             } else {
                 res.json({ status: "busy" })
-            }
-        })
-
+            } 
+        }
     } else {
         res.json({ status: "invalid" })
     }
@@ -1287,7 +1285,7 @@ app.post("/saveBill", (req, res) => {
     })
 });
 
-app.post("/deleteBill", (req, res) => {
+app.delete("/deleteBill", (req, res) => {
     const { em, agent, key_serv, receiptid } = req.body;
     deleteUserBill(key_serv, agent, getEmail(em), receiptid).then(() => {
         res.json({ status: "deleted" });
@@ -1388,7 +1386,7 @@ app.post("/addNewProject", (req, res) => {
 
 });
 
-app.post("/removeMember", (req, res) => {
+app.delete("/removeMember", (req, res) => {
     const { em, agent, key_serv, project, member } = req.body;
     removeProjectMember(key_serv, agent, getEmail(em), project, member).then((delstatus) => {
         res.json({ status: delstatus })
@@ -1398,7 +1396,7 @@ app.post("/removeMember", (req, res) => {
 
 });
 
-app.post("/removeTempProj", (req, res) => {
+app.delete("/removeTempProj", (req, res) => {
     const { em, agent, key_serv, proj } = req.body;
     removeProject(key_serv, agent, getEmail(em), proj).then(() => {
         res.json({ status: "removed" })
@@ -1536,7 +1534,7 @@ function adminPrivilegeController(email, response) {
         to: email,
         subject: "You now have Administrator rights",
         html: `<h3>Full Admin Rights</h3>
-        <h4>Congrats! You now have Administrator rights to create multiple projects</h4>
+        <h4>You now have Administrator rights to create multiple projects</h4>
         <p>Login to BillVault, go to control Panel > Project Settings, and create your own projects.</p>
         <p>Upload your Project Logo, assign managers and members to your projects.</p>
 
