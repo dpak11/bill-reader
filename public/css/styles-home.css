@@ -21,6 +21,7 @@ header {
     background: #850689;
     border-bottom: solid 4px #adaceb;
     overflow: hidden;
+    transition: background .7s
 
 }
 
@@ -58,6 +59,10 @@ header img {
     color: #d5dde3;
     cursor: pointer;
     border-radius: 6px;
+}
+span.btn.deletemember {
+    background: red;
+    color: #e4c5c5;
 }
 
 .profile_info {
@@ -323,6 +328,13 @@ section.side-nav p {
     margin: 0;
     cursor: pointer;
     box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.3);
+}
+
+.skin9 section.side-nav p {
+    box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.66);
+}
+.skin9 section.side-nav {
+    background: #151414;
 }
 
 .nav-selected {
@@ -749,7 +761,7 @@ span.pick-amount {
 }
 
 .bill-status-approval.pending {
-    color: #533c3c;
+    color: #686872;
 }
 
 .bill-status-approval.rejected {
@@ -768,14 +780,29 @@ span.pick-amount {
 .bill-status-approval i {
     margin-left: 5px;
     display: inline-block;
-    background: url(../images/history.png);
+    /* background: url(../images/history.png);
+    background-repeat: no-repeat;
+    background-position: center; */
     width: 25px;
     height: auto;
-    padding: 2px 0;
-    background-repeat: no-repeat;
-    background-position: center;
+    padding: 2px 0 0 3px;    
     box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.7);
     border-radius: 5px;
+}
+.bill-status-approval svg g{
+    fill: #686872
+}
+
+.bill-status-approval.pending svg g{
+    fill: #686872
+}
+
+.bill-status-approval.rejected svg g{
+    fill: red
+}
+
+.bill-status-approval.approved svg g{
+    fill: green
 }
 
 #modifyProjectMembers {
@@ -998,7 +1025,8 @@ div#ui-datepicker-div {
     .skin6 .topfloater .nav-selected {
         background: #fff;
     }
-
+    
+    
     /* End top floater */
 
     #alertBoxWindow div,
@@ -1017,6 +1045,9 @@ div#ui-datepicker-div {
 
     .thumb-img img {
         width: 220px;
+    }
+    .skin9 section.side-nav {
+        background: #5f6364;
     }
 }
 
@@ -1053,6 +1084,7 @@ div#ui-datepicker-div {
     border-right-color: #ada6a6;
     animation: rotate 1s linear infinite;
 }
+
 
 @keyframes rotate {
     0% {
@@ -1100,7 +1132,7 @@ body.skin1,
 
 
 .skin1 .profile_info label {
-    color: #706767;
+    color: #445662;
 }
 
 .skin1 #profile_img_browse+label,
@@ -1150,6 +1182,10 @@ body.skin1,
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #c7adb9;
 }
+.skin1 .input-image:focus+label,
+.skin1 .input-image+label:hover {
+    background-color: #81597d;
+}
 
 .skin1 .thumbnail {
     border: 3px solid rgba(225, 232, 241, 0.61);
@@ -1171,7 +1207,7 @@ body.skin1,
 
 .skin1 #team_setting_link,
 .skin1 #user_setting_link {
-    color: #e2c1c6
+    color: #dddde6
 }
 
 .skin1 .table-head span {
@@ -1263,6 +1299,10 @@ body.skin2,
     color: #eae5ff;
     background-color: #5073f2;
     border-bottom: 1px solid #1d1d23;
+}
+.skin2 .input-image:focus+label,
+.skin2 .input-image+label:hover {
+    background-color: #616db0;
 }
 
 .skin2 .thumbnail {
@@ -1368,6 +1408,11 @@ body.skin3,
     color: #dedee7;
     background-color: #d86c65;
     border-bottom: 1px solid #1d1d23;
+}
+
+.skin3 .input-image:focus+label,
+.skin3 .input-image+label:hover {
+    background-color: #c25f50;
 }
 
 .skin3 .thumbnail {
@@ -1482,6 +1527,11 @@ body.skin4,
     background-color: #a6091d;
     border-bottom: 1px solid #2a0207;
     border-top: 1px solid #ef4355;
+}
+
+.skin4 .input-image:focus+label,
+.skin4 .input-image+label:hover {
+    background-color: #880818;
 }
 
 .skin4 .thumbnail {
@@ -1619,6 +1669,10 @@ body.skin5,
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #c7adb9;
 }
+.skin5 .input-image:focus+label,
+.skin5 .input-image+label:hover {
+    background-color: #896c6c;
+}
 
 .skin5 .thumbnail {
     border: 3px solid #b9d5c4;
@@ -1746,6 +1800,10 @@ body.skin6,
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #d1e2d5;
 }
+.skin6 .input-image:focus+label,
+.skin6 .input-image+label:hover {
+    background-color: #716d6b;
+}
 
 .skin6 .thumbnail {
     border: 3px solid #cde1d1;
@@ -1781,8 +1839,8 @@ body.skin6,
 /*------------------------------------------------------- */
 
 .skin7 header {
-    background: #4d2a2d;
-    border-bottom: solid 3px #d5a064;
+    background: #a26625;
+    border-bottom: solid 3px #d89041;
 }
 
 body.skin7,
@@ -1861,6 +1919,10 @@ body.skin7,
     background-color: #b55f02;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #debc97;
+}
+.skin7 .input-image:focus+label,
+.skin7 .input-image+label:hover {
+    background-color: #9c570c;
 }
 
 .skin7 .thumbnail {
@@ -1988,6 +2050,10 @@ body.skin8,
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #e0d0be;
 }
+.skin8 .input-image:focus+label,
+.skin8 .input-image+label:hover {
+    background-color: #6b4419;
+}
 
 .skin8 .thumbnail {
     border: 3px solid #e3ad89;
@@ -2023,6 +2089,10 @@ body.skin8,
 .skin9 header {
     background: #363232;
     border-bottom: solid 3px #1c1919;
+}
+.skin9 .btn {
+    background: #142da0;
+    color: #92aabb;
 }
 
 body.skin9,
@@ -2082,6 +2152,16 @@ body.skin9,
     box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.71);
 }
 
+.skin9 #exitbill.processing-state,
+.skin9 #savebill.processing-state,
+.skin9 #updatebill.processing-state,
+.skin9 #rejectbill.processing-state,
+.skin9 #approvebill.processing-state,
+.skin9 #deletebill.processing-state {
+    color: #5c5c63;
+    box-shadow: none;
+}
+
 
 .skin9 .profile_info input,
 .skin9 .profile_info select {
@@ -2105,14 +2185,6 @@ body.skin9,
 .skin9 .content-box,
 .skin9 section.main {
     background: rgb(34, 32, 32);
-}
-
-.skin9 section.side-nav {
-    background: #151414;
-}
-
-.skin9 section.side-nav p {
-    box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.66);
 }
 
 .skin9 section.side-nav span {
@@ -2152,6 +2224,10 @@ body.skin9,
     border-bottom: 1px solid #000000;
     border-top: 1px solid #857c7c;
 }
+.skin9 .input-image:focus+label,
+.skin9 .input-image+label:hover {
+    background-color: #383630;
+}
 
 .skin9 .thumbnail {
     border: 3px solid #595757;
@@ -2178,7 +2254,7 @@ body.skin9,
 
 
 .skin9 .member-fields-disable {
-    color: #181616 !important;
+    color: #000 !important;
     background: #3c3434 !important;
 }
 
@@ -2199,7 +2275,7 @@ body.skin9,
 }
 
 .skin9 #team_setting_link, #user_setting_link {
-    color:#846adc
+    color:rgb(93, 119, 162)
 }
 
 .skin9 .btn-editproj {    
@@ -2208,6 +2284,9 @@ body.skin9,
 }
 
 
+.skin9 .loader-circ-path {
+    color: rgba(81, 77, 77, 0.86)
+}
 
 
 .skin9 #billTable ::-webkit-input-placeholder {
