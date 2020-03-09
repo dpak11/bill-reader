@@ -8,7 +8,9 @@ body,
     min-height: 100vh;
     background: #CEDFE5;
 }
-body, .container {
+
+body,
+.container {
     background: #CEDFE5;
 }
 
@@ -19,12 +21,15 @@ header {
     background: #850689;
     border-bottom: solid 4px #adaceb;
     overflow: hidden;
+    transition: background .7s
 
 }
+
 header img {
     cursor: pointer
 }
-#themechooser{
+
+#themechooser {
     width: 12px;
     height: 6px;
     position: absolute;
@@ -55,6 +60,10 @@ header img {
     cursor: pointer;
     border-radius: 6px;
 }
+span.btn.deletemember {
+    background: red;
+    color: #e4c5c5;
+}
 
 .profile_info {
     padding: 20px;
@@ -74,7 +83,8 @@ header img {
     color: black;
 
 }
-#projectNameHead{
+
+#projectNameHead {
     position: absolute;
     top: 12px;
     right: 10px;
@@ -87,11 +97,12 @@ header img {
     max-width: 165px;
     display: none
 }
-#projectNameHead b{
-    color:#9f9bd7;
+
+#projectNameHead b {
+    color: #9f9bd7;
 }
 
-#addmemberEdit{
+#addmemberEdit {
     margin-top: 5px;
     display: inline-block;
     width: auto;
@@ -101,6 +112,7 @@ header img {
     color: #fff;
 
 }
+
 .team-sub-setting {
     /* border: 1px solid #697b9c; */
     padding: 20px;
@@ -119,7 +131,7 @@ header img {
     width: 95%
 }
 
-#editProjMembersPanel{
+#editProjMembersPanel {
     padding: 20px;
     display: flex;
     flex-wrap: wrap;
@@ -128,8 +140,7 @@ header img {
 
 
 .profile_info p:nth-child(3),
-.team-sub-setting:nth-child(1)>p:nth-child(1)
- {
+.team-sub-setting:nth-child(1)>p:nth-child(1) {
     margin-bottom: 50px;
     width: 270px;
     text-align: center;
@@ -137,9 +148,8 @@ header img {
 
 .team-sub-setting:nth-child(1)>p:nth-child(1),
 .team-sub-setting:nth-child(1)>p:nth-child(2),
-#modifyProjectMembers > p:nth-child(2),
-#modifyProjectMembers > p:nth-child(3)
- {
+#modifyProjectMembers>p:nth-child(2),
+#modifyProjectMembers>p:nth-child(3) {
     width: 100%;
     text-align: center
 }
@@ -148,7 +158,7 @@ header img {
     display: inline-block;
     width: 200px;
     padding-bottom: 5px;
-    color: #40484b;
+    color: #665f5f;
 }
 
 .profile_info input,
@@ -162,8 +172,7 @@ header img {
 
 #profile_img_browse+label,
 #team_img_browse+label,
-#team_imgEdit+label
- {
+#team_imgEdit+label {
     padding: 5px;
     font-size: 1em;
     background-color: #8792ba;
@@ -201,11 +210,13 @@ header img {
     padding: 15px 5px;
 }
 
-.newuserGroup span, .edituserGroup span {
+.newuserGroup span,
+.edituserGroup span {
     padding-bottom: 10px;
     display: inline-block;
 }
-.member-fields-disable{
+
+.member-fields-disable {
     color: #a78ca7 !important;
     background: #b0cfd8 !important;
 }
@@ -319,6 +330,13 @@ section.side-nav p {
     box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
+.skin9 section.side-nav p {
+    box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.66);
+}
+.skin9 section.side-nav {
+    background: #151414;
+}
+
 .nav-selected {
     background: #fff;
     color: #111212
@@ -348,7 +366,7 @@ section.main {
     padding: 20px
 }
 
-.topfloater section.side-nav #billshome img{
+.topfloater section.side-nav #billshome img {
     padding-top: 5px
 }
 
@@ -392,13 +410,13 @@ section.main {
     box-shadow: inset 2px 2px 6px #908a8a;
 }
 
-#billTable.teamTable{
+#billTable.teamTable {
     height: 410px;
 }
+
 #billTable.static-table input,
-#billTable.static-table select
-{
-    color:#b29898;
+#billTable.static-table select {
+    color: #b29898;
 
 }
 
@@ -417,7 +435,8 @@ p.tip-info {
     font-weight: bold;
 
 }
-.table-head span{
+
+.table-head span {
     font-weight: normal;
     color: #5e6756;
     font-size: small;
@@ -435,11 +454,12 @@ p.tip-info {
     box-shadow: inset 2px 2px 6px #908a8a;
     margin-bottom: 10px;
 }
-#projectsList{
+
+#projectsList {
     margin-top: 40px
 }
 
-#projectsList label{
+#projectsList label {
     display: inline-block;
     width: 200px;
     padding-bottom: 5px;
@@ -453,11 +473,14 @@ p.tip-info {
 #approvebill,
 #deletebill {
     display: inline-block;
-    border-bottom: 1px solid blue;
     padding: 5px;
-    color: blue;
     cursor: pointer;
     user-select: none;
+    color: #1b1b1c;
+    border-radius: 4px;
+    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.3);
+    /* border-bottom: 1px solid blue;    
+    color: blue; */
 }
 
 #savebill,
@@ -468,20 +491,22 @@ p.tip-info {
     margin-right: 15px
 }
 
-#addNewMemberProj.saving-state,
-#editProject.saving-state,
-#savebill.saving-state,
-#updatebill.saving-state,
-#savesettings.saving-state,
-#rejectbill.saving-state,
-#approvebill.saving-state,
-#deletebill.saving-state {
+#addNewMemberProj.processing-state,
+#editProject.processing-state,
+#savebill.processing-state,
+#updatebill.processing-state,
+#savesettings.processing-state,
+#rejectbill.processing-state,
+#approvebill.processing-state,
+#deletebill.processing-state {
     color: #716c6c;
     border-bottom: none;
     cursor: default;
     background: none;
+    box-shadow: none
 }
-#editProject.saving-state{
+
+#editProject.processing-state {
     font-size: .8em;
 }
 
@@ -515,7 +540,7 @@ p {
     font-size: 1.1em;
 }
 
-#infocontent{
+#infocontent {
     font-size: .9em;
     text-align: left;
     color: #2e2e3a;
@@ -534,11 +559,12 @@ p {
     box-shadow: 0px 1px 6px 2px rgba(0, 0, 0, 0.6);
 }
 
-#chooseAmount{
+#chooseAmount {
     display: flex;
     justify-content: space-evenly;
 }
-span.pick-amount{
+
+span.pick-amount {
     padding: 5px 8px;
     background: #283fa4;
     border-radius: 6px;
@@ -546,7 +572,9 @@ span.pick-amount{
     cursor: pointer;
 }
 
-#alertBoxWindow, #confirmAmountWindow, #infoTipBox{
+#alertBoxWindow,
+#confirmAmountWindow,
+#infoTipBox {
     display: flex;
     position: fixed;
     top: 0;
@@ -558,7 +586,9 @@ span.pick-amount{
     justify-content: center;
 }
 
-#alertBoxWindow div, #infoTipBox div, #confirmAmountWindow > div {
+#alertBoxWindow div,
+#infoTipBox div,
+#confirmAmountWindow>div {
     padding: 20px 40px;
     background: rgba(152, 148, 172, 0.9);
     text-align: center;
@@ -567,26 +597,29 @@ span.pick-amount{
     border-radius: 10px;
 }
 
-#alertBoxWindow h4, #confirmAmountWindow h4 {
+#alertBoxWindow h4,
+#confirmAmountWindow h4 {
     font-weight: normal;
 }
 
-#alertBoxWindow p, #infotipclose, #confirmAmountWindow p {
+#alertBoxWindow p,
+#infotipclose,
+#confirmAmountWindow p {
     font-size: .9em;
 }
 
-.settingMode #mybillORall{
+.settingMode #mybillORall {
     display: none !important
 }
 
-.editRoleLabel{
+.editRoleLabel {
     padding: 8px 10px;
     border: 1px solid rgba(0, 0, 0, 0.3);
     color: rgba(0, 0, 0, 0.5);
     text-transform: uppercase;
 }
 
-#mybillORall{
+#mybillORall {
     position: fixed;
     bottom: 3px;
     right: 5px;
@@ -600,7 +633,8 @@ span.pick-amount{
     border-bottom: 2px solid #79797d;
     display: none
 }
-#mybillORall p{
+
+#mybillORall p {
     font-size: .9em;
     padding: 0;
     color: #000;
@@ -672,6 +706,7 @@ span.pick-amount{
 .thumb-title-bill {
     padding: 10px 0;
 }
+
 .thumb-title-bill {
     max-width: 82%;
     text-align: center;
@@ -699,60 +734,83 @@ span.pick-amount{
     padding: 10px;
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
-.thumb-top-row{
-    display: flex;       
+
+.thumb-top-row {
+    display: flex;
     width: 90%;
     padding-bottom: 10px;
 }
-.thumb-top-row.centered{
-    justify-content: center; 
+
+.thumb-top-row.centered {
+    justify-content: center;
 }
-.thumb-top-row.spaced{
-    justify-content: space-between; 
+
+.thumb-top-row.spaced {
+    justify-content: space-between;
 }
-.bill-status img{
+
+.bill-status img {
     width: 30px;
     height: auto;
 }
 
-.bill-status-approval{
+.bill-status-approval {
     width: 70%;
     font-size: .9em;
     padding: 5px 0 20px 0;
 }
-.bill-status-approval.pending{
-    color:#533c3c;
+
+.bill-status-approval.pending {
+    color: #686872;
 }
-.bill-status-approval.rejected{
-    color:red;
+
+.bill-status-approval.rejected {
+    color: red;
 }
-.bill-status-approval.approved{
-    color:green;
+
+.bill-status-approval.approved {
+    color: green;
 }
-.bill-status-approval span{
+
+.bill-status-approval span {
     color: #4545f0;
     text-decoration: underline;
 }
 
-.bill-status-approval i{
+.bill-status-approval i {
     margin-left: 5px;
     display: inline-block;
-    background: url(../images/history.png);
+    /* background: url(../images/history.png);
+    background-repeat: no-repeat;
+    background-position: center; */
     width: 25px;
     height: auto;
-    padding: 2px 0;
-    background-repeat: no-repeat;
-    background-position: center;
+    padding: 2px 0 0 3px;    
     box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.7);
     border-radius: 5px;
 }
+.bill-status-approval svg g{
+    fill: #686872
+}
 
-#modifyProjectMembers{
+.bill-status-approval.pending svg g{
+    fill: #686872
+}
+
+.bill-status-approval.rejected svg g{
+    fill: red
+}
+
+.bill-status-approval.approved svg g{
+    fill: green
+}
+
+#modifyProjectMembers {
     margin-top: 20px;
     padding: 0;
 }
 
-#modifyProjectMembers h5{
+#modifyProjectMembers h5 {
     margin: 0;
     padding: 10px;
     background: rgba(0, 0, 0, 0.2);
@@ -772,19 +830,19 @@ div#ui-datepicker-div {
     display: none
 }
 
-.btn-editproj{
+.btn-editproj {
     padding: 4px 8px;
     font-size: .8em;
     color: rgb(255, 255, 255);
     background: rgba(44, 44, 47, 0.5);
 }
 
-.lastapproverlog{
+.lastapproverlog {
     font-size: .8em;
     color: rgba(0, 0, 0, 0.5);
 }
 
-#saveCloseSetting{
+#saveCloseSetting {
     margin-top: 60px;
     padding-top: 20px;
     border-top: 1px solid #4b70a9;
@@ -796,19 +854,32 @@ div#ui-datepicker-div {
     width: 200px;
 }
 
-.edituserGroup{
+.edituserGroup {
     width: 45%
 }
 
 
 
 @media (min-width: 1024px) {
-    section.side-nav p:hover {
+    section.side-nav p:not(.nav-selected):hover {
         background: rgba(224, 227, 235, 0.5);
         color: #0e0e0e;
     }
-    .skin1 section.side-nav p:hover {
+
+    .skin1 section.side-nav p:not(.nav-selected):hover {
         background: rgba(71, 82, 111, 0.5);
+    }
+
+    .skin6 section.side-nav p:not(.nav-selected):hover {
+        background: rgba(185, 189, 199, 0.5)
+    }
+
+    .skin7 section.side-nav p:not(.nav-selected):hover {
+        background: rgba(241, 239, 185, 0.77);
+    }
+
+    .skin9 section.side-nav p:not(.nav-selected):hover {
+        background: rgba(71, 82, 111, 0.2);
     }
 }
 
@@ -828,10 +899,11 @@ div#ui-datepicker-div {
     #billTable select {
         width: 95%;
     }
-     .edituserGroup{
+
+    .edituserGroup {
         width: 90%
     }
-    
+
     #editProjMembersPanel input,
     #editProjMembersPanel select {
         width: 98%;
@@ -840,7 +912,10 @@ div#ui-datepicker-div {
 }
 
 @media (max-width:768px) {
-    #alertBoxWindow div, #infoTipBox div, #confirmAmountWindow > div {
+
+    #alertBoxWindow div,
+    #infoTipBox div,
+    #confirmAmountWindow>div {
         width: 40%
     }
 
@@ -867,8 +942,8 @@ div#ui-datepicker-div {
         top: 30px;
     }
 
-    #projectNameHead{
-        top:-5px;
+    #projectNameHead {
+        top: -5px;
     }
 
     section.side-nav {
@@ -897,14 +972,14 @@ div#ui-datepicker-div {
 
 
     /* Top floater */
-    .topfloater header{
+    .topfloater header {
         border-bottom: none !important
     }
+
     .topfloater section.side-nav {
         display: flex;
         justify-content: space-between;
         width: 100%;
-        /* background: #e8bef6; */
 
     }
 
@@ -923,34 +998,40 @@ div#ui-datepicker-div {
         flex-direction: column
     }
 
-    .topfloater .thumb-img img{
-        width:290px
+    .topfloater .thumb-img img {
+        width: 290px
     }
 
-    .topfloater #settingsBlock{        
+    .topfloater #settingsBlock {
         top: 135px;
         box-shadow: 0px 0px 7px 1px rgba(0, 0, 0, 0.5);
         width: 94%;
     }
-    .topfloater section.side-nav img{
-        width:50%
+
+    .topfloater section.side-nav img {
+        width: 50%
     }
-    .topfloater #logout img{
-        width:35%
+
+    .topfloater #logout img {
+        width: 35%
     }
 
 
-    .topfloater .nav-selected{
+    .topfloater .nav-selected {
         background: rgba(246, 246, 246, 0.7);
         border-top: 2px solid #fff;
     }
-    .skin6 .topfloater .nav-selected{
+
+    .skin6 .topfloater .nav-selected {
         background: #fff;
     }
-
+    
+    
     /* End top floater */
 
-    #alertBoxWindow div, #infoTipBox div, #confirmAmountWindow > div {
+    #alertBoxWindow div,
+    #infoTipBox div,
+    #confirmAmountWindow>div {
         width: 50%
     }
 
@@ -965,21 +1046,28 @@ div#ui-datepicker-div {
     .thumb-img img {
         width: 220px;
     }
+    .skin9 section.side-nav {
+        background: #5f6364;
+    }
 }
 
 @media (max-width:375px) {
-    #editProject{
-        margin-left:0 !important;
+    #editProject {
+        margin-left: 0 !important;
     }
-    .profile_info #projectsList input, 
-    .profile_info #projectsList select{
+
+    .profile_info #projectsList input,
+    .profile_info #projectsList select {
         width: 175px;
     }
-    .profile_info .newuserGroup input, 
-    .profile_info .newuserGroup select{
+
+    .profile_info .newuserGroup input,
+    .profile_info .newuserGroup select {
         width: 155px;
     }
-    #alertBoxWindow h4, #confirmAmountWindow h4{
+
+    #alertBoxWindow h4,
+    #confirmAmountWindow h4 {
         font-size: .9em;
     }
 
@@ -997,6 +1085,7 @@ div#ui-datepicker-div {
     animation: rotate 1s linear infinite;
 }
 
+
 @keyframes rotate {
     0% {
         transform: rotate(0);
@@ -1011,16 +1100,18 @@ div#ui-datepicker-div {
 
 /* ----------------SKINS -------------------- */
 
-.skin1 header{
+.skin1 header {
     background: #533a48;
     border-bottom: solid 2px #816373
 }
-body.skin1, .skin1 .container {
+
+body.skin1,
+.skin1 .container {
     background: #7c5869;
 }
 
 .skin1 .profile_info h2 {
-    border-bottom: 2px solid rgba(92, 83, 92, 0.3);    
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
     color: #4f3951;
 }
 
@@ -1029,7 +1120,7 @@ body.skin1, .skin1 .container {
 }
 
 .skin1 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin1 .profile_info input,
@@ -1037,6 +1128,11 @@ body.skin1, .skin1 .container {
     background: #c8ebf8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #d7c0c0;
+}
+
+
+.skin1 .profile_info label {
+    color: #445662;
 }
 
 .skin1 #profile_img_browse+label,
@@ -1049,30 +1145,33 @@ body.skin1, .skin1 .container {
     background: #8099aa;
 }
 
-.skin1 .content-box, .skin1 section.main {
+.skin1 .content-box,
+.skin1 section.main {
     background: #7c5869;
 }
 
-.skin1 section.side-nav {    
+.skin1 section.side-nav {
     background: #9a7197;
 }
 
 .skin1 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin1 #billTable {
     background: #aca7c0;
 }
-.skin1 #billTable input, .skin1 #billtype  {
+
+.skin1 #billTable input,
+.skin1 #billtype {
     background: #aecdd9;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #d7c0c0;
 }
 
 .skin1 #billTable.static-table input,
-.skin1 #billTable.static-table select
-{
-    color:#9a8383;
+.skin1 #billTable.static-table select {
+    color: #9a8383;
 
 }
 
@@ -1082,6 +1181,10 @@ body.skin1, .skin1 .container {
     background-color: #9a7197;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #c7adb9;
+}
+.skin1 .input-image:focus+label,
+.skin1 .input-image+label:hover {
+    background-color: #81597d;
 }
 
 .skin1 .thumbnail {
@@ -1097,14 +1200,14 @@ body.skin1, .skin1 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin1 #saveCloseSetting{
+.skin1 #saveCloseSetting {
     border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
 
-.skin1 #team_setting_link, 
+.skin1 #team_setting_link,
 .skin1 #user_setting_link {
-    color: #e2c1c6
+    color: #dddde6
 }
 
 .skin1 .table-head span {
@@ -1118,11 +1221,13 @@ body.skin1, .skin1 .container {
 
 /*------------------------------------------------------- */
 
-.skin2 header{
+.skin2 header {
     background: #1c6e8c;
     border-bottom: solid 2px #3d5a58;
 }
-body.skin2, .skin2 .container {
+
+body.skin2,
+.skin2 .container {
     background: #d3d0cf;
 }
 
@@ -1136,7 +1241,7 @@ body.skin2, .skin2 .container {
 }
 
 .skin2 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin2 .profile_info input,
@@ -1157,7 +1262,8 @@ body.skin2, .skin2 .container {
     background: #d1e9f1;
 }
 
-.skin2 .content-box, .skin2 section.main {
+.skin2 .content-box,
+.skin2 section.main {
     background: #d3d0cf;
 }
 
@@ -1168,10 +1274,13 @@ body.skin2, .skin2 .container {
 .skin2 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin2 #billTable {
     background: #c1d7df;
 }
-.skin2 #billTable input, .skin2 #billtype {
+
+.skin2 #billTable input,
+.skin2 #billtype {
     background: #e5ede8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #ffffff;
@@ -1180,8 +1289,7 @@ body.skin2, .skin2 .container {
 
 
 .skin2 #billTable.static-table input,
-.skin2 #billTable.static-table select
-{
+.skin2 #billTable.static-table select {
     color: #b29898 !important;
     background: #dadecd !important;
 
@@ -1191,6 +1299,10 @@ body.skin2, .skin2 .container {
     color: #eae5ff;
     background-color: #5073f2;
     border-bottom: 1px solid #1d1d23;
+}
+.skin2 .input-image:focus+label,
+.skin2 .input-image+label:hover {
+    background-color: #616db0;
 }
 
 .skin2 .thumbnail {
@@ -1206,7 +1318,7 @@ body.skin2, .skin2 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin2 #saveCloseSetting{
+.skin2 #saveCloseSetting {
     border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
@@ -1219,12 +1331,13 @@ body.skin2, .skin2 .container {
 
 /*------------------------------------------------------- */
 
-.skin3 header{
+.skin3 header {
     background: #454955;
     border-bottom: solid 2px #e8f0e0;
 }
 
-body.skin3, .skin3 .container {
+body.skin3,
+.skin3 .container {
     background: #c7efcf;
 }
 
@@ -1238,7 +1351,7 @@ body.skin3, .skin3 .container {
 }
 
 .skin3 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin3 .profile_info input,
@@ -1259,7 +1372,8 @@ body.skin3, .skin3 .container {
     background: #e9eae5;
 }
 
-.skin3 .content-box, .skin3 section.main {
+.skin3 .content-box,
+.skin3 section.main {
     background: #c7efcf;
 }
 
@@ -1270,10 +1384,13 @@ body.skin3, .skin3 .container {
 .skin3 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin3 #billTable {
     background: #eef5db;
 }
-.skin3 #billTable input, .skin3 #billtype {
+
+.skin3 #billTable input,
+.skin3 #billtype {
     background: #e1f1b5;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #ffffff;
@@ -1281,8 +1398,7 @@ body.skin3, .skin3 .container {
 }
 
 .skin3 #billTable.static-table input,
-.skin3 #billTable.static-table select
-{
+.skin3 #billTable.static-table select {
     color: #b29898 !important;
     background: #dadecd !important;
 
@@ -1292,6 +1408,11 @@ body.skin3, .skin3 .container {
     color: #dedee7;
     background-color: #d86c65;
     border-bottom: 1px solid #1d1d23;
+}
+
+.skin3 .input-image:focus+label,
+.skin3 .input-image+label:hover {
+    background-color: #c25f50;
 }
 
 .skin3 .thumbnail {
@@ -1307,7 +1428,7 @@ body.skin3, .skin3 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin3 #saveCloseSetting{
+.skin3 #saveCloseSetting {
     border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
@@ -1327,12 +1448,13 @@ body.skin3, .skin3 .container {
 
 /*------------------------------------------------------- */
 
-.skin4 header{
+.skin4 header {
     background: #6a152a;
     border-bottom: solid 3px #b7414d;
 }
 
-body.skin4, .skin4 .container {
+body.skin4,
+.skin4 .container {
     background: #c52233;
 }
 
@@ -1347,7 +1469,7 @@ body.skin4, .skin4 .container {
 }
 
 .skin4 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin4 .profile_info input,
@@ -1368,7 +1490,8 @@ body.skin4, .skin4 .container {
     background: #fa6477;
 }
 
-.skin4 .content-box, .skin4 section.main {
+.skin4 .content-box,
+.skin4 section.main {
     background: #c52233;
 }
 
@@ -1379,10 +1502,13 @@ body.skin4, .skin4 .container {
 .skin4 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin4 #billTable {
     background: #f3848f;
 }
-.skin4 #billTable input, .skin4 #billtype {
+
+.skin4 #billTable input,
+.skin4 #billtype {
     background: #f2b9bf;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #eec69c;
@@ -1391,8 +1517,7 @@ body.skin4, .skin4 .container {
 
 
 .skin4 #billTable.static-table input,
-.skin4 #billTable.static-table select
-{
+.skin4 #billTable.static-table select {
     color: #d25c68 !important;
     background: #f3848f !important;
 }
@@ -1404,6 +1529,11 @@ body.skin4, .skin4 .container {
     border-top: 1px solid #ef4355;
 }
 
+.skin4 .input-image:focus+label,
+.skin4 .input-image+label:hover {
+    background-color: #880818;
+}
+
 .skin4 .thumbnail {
     border: 3px solid #bc0e20;
     background: #a20d1d;
@@ -1413,7 +1543,8 @@ body.skin4, .skin4 .container {
     color: #d15565;
 }
 
-.skin4 .thumb-title-bill, .skin4 .thumb-date-submit  {
+.skin4 .thumb-title-bill,
+.skin4 .thumb-date-submit {
     color: #f4394d;
 
 }
@@ -1424,7 +1555,7 @@ body.skin4, .skin4 .container {
     background: #f93449;
 }
 
-.skin4 #saveCloseSetting{
+.skin4 #saveCloseSetting {
     border-top: 2px solid rgba(174, 112, 70, 0.57);
 }
 
@@ -1434,10 +1565,11 @@ body.skin4, .skin4 .container {
     background: #6fce85 !important;
 }
 
-.skin4 p.tip-info{
+.skin4 p.tip-info {
     color: #753941
 }
-.skin4 #team_setting_link, 
+
+.skin4 #team_setting_link,
 .skin4 #user_setting_link {
     color: #81454f
 }
@@ -1458,12 +1590,13 @@ body.skin4, .skin4 .container {
 
 /*------------------------------------------------------- */
 
-.skin5 header{
+.skin5 header {
     background: #3f5c5b;
     border-bottom: solid 1px #2c403f;
 }
 
-body.skin5, .skin5 .container {
+body.skin5,
+.skin5 .container {
     background: #586b5f;
 }
 
@@ -1477,7 +1610,7 @@ body.skin5, .skin5 .container {
 }
 
 .skin5 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin5 .profile_info input,
@@ -1498,7 +1631,8 @@ body.skin5, .skin5 .container {
     background: #bad0c2;
 }
 
-.skin5 .content-box, .skin5 section.main {
+.skin5 .content-box,
+.skin5 section.main {
     background: #586b5f;
 }
 
@@ -1509,10 +1643,13 @@ body.skin5, .skin5 .container {
 .skin5 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin5 #billTable {
     background: #bad0c2;
 }
-.skin5 #billTable input, .skin5 #billtype {
+
+.skin5 #billTable input,
+.skin5 #billtype {
     background: #a4b9ac;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #eddcdc;
@@ -1520,8 +1657,7 @@ body.skin5, .skin5 .container {
 }
 
 .skin5 #billTable.static-table input,
-.skin5 #billTable.static-table select
-{
+.skin5 #billTable.static-table select {
     color: #b29898 !important;
     background: #dadecd !important;
 
@@ -1532,6 +1668,10 @@ body.skin5, .skin5 .container {
     background-color: #9a8282;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #c7adb9;
+}
+.skin5 .input-image:focus+label,
+.skin5 .input-image+label:hover {
+    background-color: #896c6c;
 }
 
 .skin5 .thumbnail {
@@ -1547,7 +1687,7 @@ body.skin5, .skin5 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin5 #saveCloseSetting{
+.skin5 #saveCloseSetting {
     border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
@@ -1569,18 +1709,19 @@ body.skin5, .skin5 .container {
 
 /*------------------------------------------------------- */
 
-.skin6 header{
+.skin6 header {
     background: #617867;
-    border-bottom: solid 3px #4f6655;
+    border-bottom: solid 3px #b8cbbd;
 }
 
 
-body.skin6, .skin6 .container {
+body.skin6,
+.skin6 .container {
     background: #a8c5af;
 }
 
 
-.skin6 #projectNameHead{
+.skin6 #projectNameHead {
     border: 1px solid #a9bbae;
     color: #e1e2ef
 }
@@ -1599,7 +1740,7 @@ body.skin6, .skin6 .container {
 }
 
 .skin6 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin6 .profile_info input,
@@ -1612,8 +1753,7 @@ body.skin6, .skin6 .container {
 
 .skin6 #profile_img_browse+label,
 .skin6 #team_img_browse+label,
-.skin6 #team_imgEdit+label
- {
+.skin6 #team_imgEdit+label {
     background-color: #4d6bd9;
 }
 
@@ -1621,7 +1761,8 @@ body.skin6, .skin6 .container {
     background: #b0d8ba;
 }
 
-.skin6 .content-box, .skin6 section.main {
+.skin6 .content-box,
+.skin6 section.main {
     background: #a8c5af;
 }
 
@@ -1632,10 +1773,13 @@ body.skin6, .skin6 .container {
 .skin6 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin6 #billTable {
     background: #b9d3bf;
 }
-.skin6 #billTable input, .skin6 #billtype {
+
+.skin6 #billTable input,
+.skin6 #billtype {
     background: #e5ede8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #e3e0e0;
@@ -1644,8 +1788,7 @@ body.skin6, .skin6 .container {
 
 
 .skin6 #billTable.static-table input,
-.skin6 #billTable.static-table select
-{
+.skin6 #billTable.static-table select {
     color: #b29898 !important;
     background: #dadecd !important;
 
@@ -1656,6 +1799,10 @@ body.skin6, .skin6 .container {
     background-color: #837f7d;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #d1e2d5;
+}
+.skin6 .input-image:focus+label,
+.skin6 .input-image+label:hover {
+    background-color: #716d6b;
 }
 
 .skin6 .thumbnail {
@@ -1671,7 +1818,7 @@ body.skin6, .skin6 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin6 #saveCloseSetting{
+.skin6 #saveCloseSetting {
     border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
@@ -1691,12 +1838,13 @@ body.skin6, .skin6 .container {
 
 /*------------------------------------------------------- */
 
-.skin7 header{
-    background: #4d2a2d;
-    border-bottom: solid 3px #311c05;
+.skin7 header {
+    background: #a26625;
+    border-bottom: solid 3px #d89041;
 }
 
-body.skin7, .skin7 .container {
+body.skin7,
+.skin7 .container {
     background: #d58936;
 }
 
@@ -1712,7 +1860,7 @@ body.skin7, .skin7 .container {
 }
 
 .skin7 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
 .skin7 .profile_info input,
@@ -1733,7 +1881,8 @@ body.skin7, .skin7 .container {
     background: #cd9773;
 }
 
-.skin7 .content-box, .skin7 section.main {
+.skin7 .content-box,
+.skin7 section.main {
     background: #d58936;
 }
 
@@ -1744,10 +1893,13 @@ body.skin7, .skin7 .container {
 .skin7 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin7 #billTable {
     background: #eba151;
 }
-.skin7 #billTable input, .skin7 #billtype {
+
+.skin7 #billTable input,
+.skin7 #billtype {
     background: #f4cca0;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #e3e0e0;
@@ -1756,8 +1908,7 @@ body.skin7, .skin7 .container {
 
 
 .skin7 #billTable.static-table input,
-.skin7 #billTable.static-table select
-{
+.skin7 #billTable.static-table select {
     color: #b29898 !important;
     background: #dadecd !important;
 
@@ -1768,6 +1919,10 @@ body.skin7, .skin7 .container {
     background-color: #b55f02;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #debc97;
+}
+.skin7 .input-image:focus+label,
+.skin7 .input-image+label:hover {
+    background-color: #9c570c;
 }
 
 .skin7 .thumbnail {
@@ -1783,7 +1938,7 @@ body.skin7, .skin7 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin7 #saveCloseSetting{
+.skin7 #saveCloseSetting {
     border-top: 2px solid rgba(174, 112, 70, 0.57);
 }
 
@@ -1792,14 +1947,16 @@ body.skin7, .skin7 .container {
     color: #81988a !important;
     background: #9fceaa !important;
 }
-.skin7 p.tip-info{
+
+.skin7 p.tip-info {
     color: #583f2f
 }
 
-.skin7 #team_setting_link, 
+.skin7 #team_setting_link,
 .skin7 #user_setting_link {
     color: #36345a
 }
+
 .skin7 .table-head span {
     background: #f0bd86
 }
@@ -1810,12 +1967,13 @@ body.skin7, .skin7 .container {
 
 /*------------------------------------------------------- */
 
-.skin8 header{
+.skin8 header {
     background: #ac0b18;
     border-bottom: solid 3px #623a0b;
 }
 
-body.skin8, .skin8 .container {
+body.skin8,
+.skin8 .container {
     background: #d89f62;
 }
 
@@ -1829,10 +1987,10 @@ body.skin8, .skin8 .container {
 }
 
 .skin8 #addUserPanel>p {
-    color: #484d66;x
+    color: #484d66;
 }
 
-.skin8 .table-head{
+.skin8 .table-head {
     color: #90591d
 }
 
@@ -1854,7 +2012,8 @@ body.skin8, .skin8 .container {
     background: #e7ae70;
 }
 
-.skin8 .content-box, .skin8 section.main {
+.skin8 .content-box,
+.skin8 section.main {
     background: #d89f62;
 }
 
@@ -1865,10 +2024,13 @@ body.skin8, .skin8 .container {
 .skin8 section.side-nav span {
     color: #2b2b39;
 }
+
 .skin8 #billTable {
     background: #e7ae70;
 }
-.skin8 #billTable input, .skin8 #billtype {
+
+.skin8 #billTable input,
+.skin8 #billtype {
     background: #ecc79e;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #eec69c;
@@ -1877,8 +2039,7 @@ body.skin8, .skin8 .container {
 
 
 .skin8 #billTable.static-table input,
-.skin8 #billTable.static-table select
-{
+.skin8 #billTable.static-table select {
     color: #a3713a !important;
     background: #dfa565 !important;
 }
@@ -1888,6 +2049,10 @@ body.skin8, .skin8 .container {
     background-color: #7f5425;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #e0d0be;
+}
+.skin8 .input-image:focus+label,
+.skin8 .input-image+label:hover {
+    background-color: #6b4419;
 }
 
 .skin8 .thumbnail {
@@ -1903,7 +2068,7 @@ body.skin8, .skin8 .container {
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin8 #saveCloseSetting{
+.skin8 #saveCloseSetting {
     border-top: 2px solid rgba(174, 112, 70, 0.57);
 }
 
@@ -1919,3 +2084,234 @@ body.skin8, .skin8 .container {
 
 
 
+/*------------------------------------------------------- */
+
+.skin9 header {
+    background: #363232;
+    border-bottom: solid 3px #1c1919;
+}
+.skin9 .btn {
+    background: #142da0;
+    color: #92aabb;
+}
+
+body.skin9,
+.skin9 .container {
+    background: #211f1f;
+}
+
+.skin9 .profile_info h2 {
+    border-bottom: 2px solid rgb(75, 63, 63);
+    color: #6c8572;
+}
+
+.skin9 .team-sub-setting {
+    background: #5a4343;
+}
+.skin9 #modifyProjectMembers h5 {   
+    background: rgba(165, 159, 159, 0.37);
+    color: rgba(0, 0, 0, 0.77);
+}
+
+.skin9 .profile_info label {
+    color: #706767;
+}
+.skin9 .profile_info #modifyProjectMembers label,
+.skin9 .profile_info #teamDetailsSection label{
+    color: #967f7f;
+}
+
+.skin9 .lastapproverlog {
+    color: rgba(0, 0, 0, 0.73);
+}
+
+.skin9 .editRoleLabel {
+    border: 1px solid rgba(0, 0, 0, 0.54);
+    color: rgba(0, 0, 0, 0.72);
+}
+
+.skin9 .team-sub-setting {
+    box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.66);
+}
+
+.skin9 #addUserPanel>p {
+    color: #1c1717;
+}
+
+.skin9 .table-head {
+    color: #7e7c7a
+}
+
+.skin9 #exitbill,
+.skin9 #savebill,
+.skin9 #updatebill,
+.skin9 #rejectbill,
+.skin9 #approvebill,
+.skin9 #deletebill {
+    color: #7575ad;
+    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.71);
+}
+
+.skin9 #exitbill.processing-state,
+.skin9 #savebill.processing-state,
+.skin9 #updatebill.processing-state,
+.skin9 #rejectbill.processing-state,
+.skin9 #approvebill.processing-state,
+.skin9 #deletebill.processing-state {
+    color: #5c5c63;
+    box-shadow: none;
+}
+
+
+.skin9 .profile_info input,
+.skin9 .profile_info select {
+    color: #9a8282;
+    background: #484040;
+    box-shadow: inset 2px 2px 6px #141313;
+    border: 2px solid rgba(0, 0, 0, 0.54);
+    border-bottom: 2px solid #534f4b;
+}
+
+.skin9 #profile_img_browse+label,
+.skin9 #team_img_browse+label,
+.skin9 #team_imgEdit+label {
+    background-color: #4c3b3b;
+}
+
+.skin9 #settingsBlock {
+    background: #2e2828;
+}
+
+.skin9 .content-box,
+.skin9 section.main {
+    background: rgb(34, 32, 32);
+}
+
+.skin9 section.side-nav span {
+    color: rgb(97, 91, 91);
+}
+
+.skin9 section .nav-selected {
+    background: #9b9494;
+}
+
+.skin9 #billTable {
+    background: #302d2d;
+    box-shadow: 1px 1px 8px 1px rgb(11, 10, 10);
+    border-color: #2a2727;
+}
+
+.skin9 #billTable input,
+.skin9 #billtype {
+    background: #6a5757;
+    box-shadow: inset 2px 2px 6px #060606;
+    border: 2px solid #322f2f;
+    border-bottom: 2px solid #4f4b47;
+    color: #000;
+}
+
+
+.skin9 #billTable.static-table input,
+.skin9 #billTable.static-table select {
+    color: #5c5151 !important;
+    background: #322f2f !important;
+    border-bottom: 2px solid #534c4c;
+}
+
+.skin9 .input-image+label {
+    color: #957070;
+    background-color: #484242;
+    border-bottom: 1px solid #000000;
+    border-top: 1px solid #857c7c;
+}
+.skin9 .input-image:focus+label,
+.skin9 .input-image+label:hover {
+    background-color: #383630;
+}
+
+.skin9 .thumbnail {
+    border: 3px solid #595757;
+    background: #4a4848;
+
+}
+
+.skin9 .thumb-date-bill {
+    color: #9d9090;
+}
+
+.skin9 .thumb-date-submit,
+.skin9 .thumb-title-bill {
+    color: #beb3b3;
+}
+
+.skin9 .amount-thumb {
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.9);
+    color: #46433e;
+    background: #b5afaf;
+}
+
+.skin9 #saveCloseSetting {border-top: 2px solid rgb(75, 63, 63);}
+
+
+.skin9 .member-fields-disable {
+    color: #000 !important;
+    background: #3c3434 !important;
+}
+
+.skin9 .table-head span {
+    background: #eac195
+}
+
+.skin9 .table-head span {
+    background: #494848;
+    color: #968484;
+    box-shadow: 2px 1px 3px 0px rgba(0, 0, 0, 0.68);
+}
+.skin9 #userSettingsPage .tip-info {
+    color: #6c6363;
+}
+.skin9 #projectsList label {    
+    color: #665f5f;
+}
+
+.skin9 #team_setting_link, #user_setting_link {
+    color:rgb(93, 119, 162)
+}
+
+.skin9 .btn-editproj {    
+    color: rgb(119, 150, 203);
+    background: rgba(25, 20, 20, 0.82);
+}
+
+
+.skin9 .loader-circ-path {
+    color: rgba(81, 77, 77, 0.86)
+}
+
+
+.skin9 #billTable ::-webkit-input-placeholder {
+    /* WebKit, Blink, Edge */
+    color: #383333;
+}
+
+.skin9 #billTable :-moz-placeholder {
+    /* Mozilla Firefox 4 to 18 */
+    color: #383333;
+    opacity: 1;
+}
+
+.skin9 #billTable ::-moz-placeholder {
+    /* Mozilla Firefox 19+ */
+    color: #383333;
+    opacity: 1;
+}
+
+.skin9 #billTable ::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: #383333;
+}
+
+.skin9 #billTable ::placeholder {
+    /* Most modern browsers support this now. */
+    color: #383333;
+}
