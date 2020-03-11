@@ -114,9 +114,9 @@
                 As soon as you take a snap of your Bill receipt using your mobile camera, or upload a Bill receipt from your laptop, the receipt image(JPG or PNG file), will be immediately converted to a very large chunk of alphanumeric string(technically called a <a href="https://en.wikipedia.org/wiki/Base64" target="_blank">"base64"</a> string) approximately 50,000 to 80,000 characters in length depending on the size, resolution quality of your receipt bill.
             </p>
             <p>
-                Now when you save your Bill, the base64 string is scrambled using the unreadable half of your password already stored on your device. The scrambled string is sent to server for storage. Next time, you want to view your saved Bill, the scrambled string is fetched from server and unscrambled using the password on your device.<br><br>
+                Now when you try to save your Bill, the base64 string is scrambled using the unreadable half of your password that is stored on your device cache. This scrambled string is sent to server for storage. Next time, you want to view your saved Bill, the scrambled string is loaded from server and unscrambled using the password on your device cache.<br><br>
                 Scrambling the base64 string basically involves 3 steps:<br><br>
-                1. Breaking it to "N" number of blocks. If value of N is 5, then 50,000 characters is broken into 5 equal blocks each approx 10,000 characters long. The value of "N" is derived from the unreadable password stored on your device (algorithm on how its derived from password is beyond the scope of this section)<br><br>
+                1. Breaking the base64 characters to "N" number of blocks. If value of N is 5, then 50,000 characters is broken into 5 equal blocks each approx 10,000 characters long. The value of "N" is derived from the unreadable password stored on your device cache. (algorithm on how its derived from password is beyond the scope of this section)<br><br>
                 2. From each of the 5 blocks, X number of characters are extracted from Y position (X and Y are also derived from the unreadable password)<br><br>
                 3. Gather all the extracted characters and insert it to the end of the modified base64 string.
             </p>
