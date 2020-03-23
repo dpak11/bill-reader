@@ -1025,6 +1025,10 @@ div#ui-datepicker-div {
     .skin6 .topfloater .nav-selected {
         background: #fff;
     }
+
+    .skin9 .topfloater .nav-selected {
+        border-top: 2px solid rgba(255, 255, 255, 0.4);
+    }
     
     
     /* End top floater */
@@ -2254,8 +2258,9 @@ body.skin9,
 
 
 .skin9 .member-fields-disable {
-    color: #000 !important;
-    background: #3c3434 !important;
+    color: #584e4e !important;
+    background: #2e2828 !important;
+    border-bottom: 2px solid #45413e !important;
 }
 
 .skin9 .table-head span {
