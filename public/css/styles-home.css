@@ -1565,7 +1565,7 @@ body.skin4,
 
 
 .skin4 .member-fields-disable {
-    color: #2ca95d !important;
+    color: #309758 !important;
     background: #6fce85 !important;
 }
 
@@ -1620,7 +1620,7 @@ body.skin5,
 .skin5 .profile_info input,
 .skin5 .profile_info select {
     color: #3f3a3a;
-    background: #a4b9ac;
+    background: #e4eee8;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #fffbfb;
 }
@@ -1697,7 +1697,7 @@ body.skin5,
 
 
 .skin5 .member-fields-disable {
-    color: #92a69a !important;
+    color: #7f9286 !important;
     background: #b9d0c2 !important;
 }
 
@@ -2223,7 +2223,7 @@ body.skin9,
 }
 
 .skin9 .input-image+label {
-    color: #957070;
+    color: #b28888;
     background-color: #484242;
     border-bottom: 1px solid #000000;
     border-top: 1px solid #857c7c;
