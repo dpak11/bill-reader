@@ -476,9 +476,11 @@ p.tip-info {
     padding: 5px;
     cursor: pointer;
     user-select: none;
-    color: #1b1b1c;
+    color: #3b3b46;
     border-radius: 4px;
-    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.3);
+    font-size: .9em;
+    background: rgba(216, 223, 236, 0.4);
+    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.22);
     /* border-bottom: 1px solid blue;    
     color: blue; */
 }
@@ -1446,6 +1448,15 @@ body.skin3,
     background: #e3eec7
 }
 
+.skin3 #exitbill, 
+.skin3 #savebill, 
+.skin3 #updatebill, 
+.skin3 #rejectbill, 
+.skin3 #approvebill, 
+.skin3 #deletebill {
+    background: #fff;
+}
+
 
 
 
@@ -1522,7 +1533,7 @@ body.skin4,
 
 .skin4 #billTable.static-table input,
 .skin4 #billTable.static-table select {
-    color: #d25c68 !important;
+    color: #9e4b53 !important;
     background: #f3848f !important;
 }
 
@@ -1852,6 +1863,15 @@ body.skin7,
     background: #d58936;
 }
 
+.skin7 #projectNameHead {
+    color: #e2eaf2;
+    border-color: #e3ae6b;
+}
+
+
+.skin7 #projectNameHead b {
+   color: #edb87e;
+}
 
 
 .skin7 .profile_info h2 {
@@ -1973,7 +1993,7 @@ body.skin7,
 
 .skin8 header {
     background: #ac0b18;
-    border-bottom: solid 3px #623a0b;
+    border-bottom: solid 3px #908d48;
 }
 
 body.skin8,
@@ -2044,7 +2064,7 @@ body.skin8,
 
 .skin8 #billTable.static-table input,
 .skin8 #billTable.static-table select {
-    color: #a3713a !important;
+    color: #875d2d !important;
     background: #dfa565 !important;
 }
 
@@ -2091,8 +2111,8 @@ body.skin8,
 /*------------------------------------------------------- */
 
 .skin9 header {
-    background: #363232;
-    border-bottom: solid 3px #1c1919;
+    background: #413c3c;
+    border-bottom: solid 3px #4a4343;
 }
 .skin9 .btn {
     background: #142da0;
@@ -2152,7 +2172,8 @@ body.skin9,
 .skin9 #rejectbill,
 .skin9 #approvebill,
 .skin9 #deletebill {
-    color: #7575ad;
+    color: #9595ad;
+    background: rgba(101, 100, 93, 0.4);
     box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.71);
 }
 
@@ -2195,8 +2216,13 @@ body.skin9,
     color: rgb(97, 91, 91);
 }
 
+
 .skin9 section .nav-selected {
     background: #9b9494;
+}
+
+.skin9 section .nav-selected span {
+    color: #000;
 }
 
 .skin9 #billTable {
@@ -2217,7 +2243,7 @@ body.skin9,
 
 .skin9 #billTable.static-table input,
 .skin9 #billTable.static-table select {
-    color: #5c5151 !important;
+    color: #776666 !important;
     background: #322f2f !important;
     border-bottom: 2px solid #534c4c;
 }
