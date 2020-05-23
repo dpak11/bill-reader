@@ -14,7 +14,7 @@ const KEYS_DATA = require("./keys");
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 mongoose.Promise = global.Promise;
 const mongoURL = KEYS_DATA.mongodb;
@@ -152,7 +152,7 @@ function generateEmailConstantKey(email) {
 }
 
 function processBillText(datarray) {
-    let receiptTitle = sanitiser(datarray[0], false) + " " + sanitiser(datarray[1], false);
+    let receiptTitle = sanitiser({str:datarray[0], isNumber:false}) + " " + sanitiser({str:datarray[1], isNumber:false});
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
     let totalsList = arr.filter((txt) => (/(total|amt|amnt|rate|amount|payable)/).test(txt));
@@ -160,7 +160,7 @@ function processBillText(datarray) {
     let get_total = null;
     if (totalsList.length > 0) {
         let totals = extractTotalVal(totalsList, arr);
-        get_total = (totals.found == "string") ? sanitiser(totals.value, true) : totals.value;
+        get_total = (totals.found == "string") ? sanitiser({str:totals.value, isNumber:true}) : totals.value;
     }
     return { title: receiptTitle, total: get_total, date: dateStr };
 
@@ -253,7 +253,7 @@ function extractTotalVal(totals, alltexts) {
         totalValue = totalValue.split(",").join("");
     }
 
-    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitiser(totalValue, true))) {
+    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitiser({str:totalValue, isNumber:true}))) {
         let newlist = null;
         if (totalValue.indexOf(":") >= 0) {
             totalValue = totalValue.split(":")[1].trim();
@@ -262,7 +262,7 @@ function extractTotalVal(totals, alltexts) {
             }
             if (!isNaN(totalValue) && totalValue != "") {
                 return { found: "string", value: totalValue };
-            } else if (isNaN(sanitiser(totalValue, true))) {
+            } else if (isNaN(sanitiser({str:totalValue, isNumber:true}))) {
                 if (subs.trim() != "") {
                     return { found: "string", value: subs };
                 } else {
@@ -285,7 +285,7 @@ function extractTotalVal(totals, alltexts) {
 }
 
 
-function sanitiser(str, isNumber) {
+function sanitiser({str, isNumber}) {
     let chars = isNumber ? "0123456789." : "0123456789qwertyuioplkjhgfdsazxcvbnm &QWERTYUIOPLKJHGFDSAZXCVBNM-";
     let newchar = "";
     for (let i = 0; i < str.length; i++) {
