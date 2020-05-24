@@ -152,23 +152,24 @@ function generateEmailConstantKey(email) {
 }
 
 function processBillText(datarray) {
-    let receiptTitle = sanitiser({str:datarray[0], isNumber:false}) + " " + sanitiser({str:datarray[1], isNumber:false});
+    let receiptTitle = sanitiser({ str: datarray[0], isNumber: false }) + " " + sanitiser({ str: datarray[1], isNumber: false });
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = dateSearch(arr);
     let totalsList = arr.filter((txt) => (/(total|amt|amnt|rate|amount|payable)/).test(txt));
 
-    let get_total = null;
+    let totals;
     if (totalsList.length > 0) {
-        let totals = extractTotalVal(totalsList, arr);
-        get_total = (totals.found == "string") ? sanitiser({str:totals.value, isNumber:true}) : totals.value;
+        totals = extractTotalVal(totalsList, arr);
+    } else {
+        totals = amountNumSorter(arr)
     }
+    let get_total = (totals.found == "string") ? sanitiser({ str: totals.value, isNumber: true }) : totals.value;
     return { title: receiptTitle, total: get_total, date: dateStr };
-
 
 }
 
-function dateSearch(lines) { 
-    let dateFormatter = {
+function dateSearch(lines) {
+    const dateFormatter = {
         getDate: function(v) {
             if (v[2].length == 2 || v[2].length == 4) {
                 if (Number(v[1]) > 12) {
@@ -182,7 +183,7 @@ function dateSearch(lines) {
             return (["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(m) + 1);
         }
     };
-    
+
     let dates = [];
     lines.forEach((line) => {
         let l1 = line.match(/\d{1,2}\/\d{1,2}\/(199\d{1}|20\d{2}|0\d{1}|1\d{1}|2\d{1})\b/);
@@ -216,7 +217,7 @@ function dateSearch(lines) {
             let dt = `${dt2[0]},${dateFormatter.monthNumeric(dt2[1])},${dt1[1].trim()}`;
             let m5 = dateFormatter.getDate(dt.split(","));
             if (m5) { dates.push(m5) }
-        }// jun 12, 2010
+        } // jun 12, 2010
         if (l6 != null && l6.length > 1) {
             let dt1 = l6[0].split(","); //[Jun 12, 2010]
             let dt2 = dt1[0].split(" "); //[Jun,12]
@@ -249,12 +250,15 @@ function extractTotalVal(totals, alltexts) {
 
     });
 
+    if (subs.indexOf(",") > 0) {
+        subs = subs.split(",").join("");
+    }
+
     if (totalValue.indexOf(",") > 0) {
         totalValue = totalValue.split(",").join("");
     }
 
-    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitiser({str:totalValue, isNumber:true}))) {
-        let newlist = null;
+    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitiser({ str: totalValue, isNumber: true }))) {
         if (totalValue.indexOf(":") >= 0) {
             totalValue = totalValue.split(":")[1].trim();
             if (totalValue.indexOf(" ") > 0) {
@@ -262,30 +266,44 @@ function extractTotalVal(totals, alltexts) {
             }
             if (!isNaN(totalValue) && totalValue != "") {
                 return { found: "string", value: totalValue };
-            } else if (isNaN(sanitiser({str:totalValue, isNumber:true}))) {
+            } else if (isNaN(sanitiser({ str: totalValue, isNumber: true }))) {
                 if (subs.trim() != "") {
                     return { found: "string", value: subs };
-                } else {
-                    newlist = alltexts.filter(txt => !isNaN(txt.trim()));
-                    newlist.sort((a, b) => { return b - a });
-                    return { found: "list", value: newlist }
                 }
+                return amountNumSorter(alltexts)
 
             }
         }
-        newlist = alltexts.filter(txt => !isNaN(txt.trim()));
-        newlist.sort((a, b) => { return b - a });
-        return { found: "list", value: newlist }
-
+        return amountNumSorter(alltexts)
     }
+
     if (totalValue == "" && subs != "") {
         return { found: "string", value: subs };
     }
     return { found: "string", value: totalValue };
 }
 
+function amountNumSorter(alltexts) {
 
-function sanitiser({str, isNumber}) {
+    let newlist = alltexts.map(txt => {
+        let _txt = txt.trim();
+        _txt = _txt.split(",").join("");
+        if (!isNaN(_txt)) { _txt = Math.round(Number(_txt)) }
+        if (!isNaN(_txt)) {
+            if (_txt < 999999) { return _txt }
+            return null;
+        }
+        return null;
+    }).filter(numval => (numval != null && numval !== 0));
+
+    /*console.log("-----");
+    console.log(newlist);*/
+    newlist.sort((a, b) => { return b - a });
+    return { found: "list", value: newlist }
+}
+
+
+function sanitiser({ str, isNumber }) {
     let chars = isNumber ? "0123456789." : "0123456789qwertyuioplkjhgfdsazxcvbnm &QWERTYUIOPLKJHGFDSAZXCVBNM-";
     let newchar = "";
     for (let i = 0; i < str.length; i++) {
@@ -1168,16 +1186,16 @@ app.post("/processTextData", (req, res) => {
 app.post("/emailreq", async (req, res) => {
     const email = getEmail(req.body.email);
     const mode = req.body.mode;
-    if (isValidEmail(email)) {        
+    if (isValidEmail(email)) {
         try {
-            const userEmailDB = await emailDBcheck(email,mode);
+            const userEmailDB = await emailDBcheck(email, mode);
             if (mode == "register") {
                 genActivationCode(email, res);
             } else {
                 res.json({ status: "require_pswd", e_mail: email })
             }
-        }catch (e){            
-           if (e.error == "email") {
+        } catch (e) {
+            if (e.error == "email") {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
                 } else {
@@ -1185,7 +1203,7 @@ app.post("/emailreq", async (req, res) => {
                 }
             } else {
                 res.json({ status: "busy" })
-            } 
+            }
         }
     } else {
         res.json({ status: "invalid" })
@@ -1467,4 +1485,3 @@ http.listen(port, () => {
     console.log(`Server running at port ` + port);
 
 });
-
