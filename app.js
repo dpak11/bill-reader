@@ -151,10 +151,10 @@ function generateEmailConstantKey(email) {
     return Buffer.from(str).toString('base64')
 }
 
-function processBillText(datarray) {
-    let receiptTitle = sanitiser({ str: datarray[0], isNumber: false }) + " " + sanitiser({ str: datarray[1], isNumber: false });
+function processBillText(datarray) {    
+    let receiptTitle = getReceiptTitle(datarray.slice(0,6));
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
-    let dateStr = dateSearch(arr);
+    let dateStr = extractBillDate(arr);
     let totalsList = arr.filter((txt) => (/(total|amt|amnt|rate|amount|payable)/).test(txt));
 
     let totals;
@@ -168,7 +168,40 @@ function processBillText(datarray) {
 
 }
 
-function dateSearch(lines) {
+function getReceiptTitle(titles){
+    const topBrands = ["super market","supermarket","super mart","supermart","hotel","restaurant","pvt. ltd","pvt.ltd","pvt ltd","redbus","red bus","walmart","family mart","peter england","arrow","mochi","vip","hidesign","regal","modern bazaar","heritage foods","max hypermart","max","pacific mall","vr mall","24x7 store","margin free","nilgiri","ags rathna","Louis Phillipe","metro inc","van heusen","hamleys","spencer's","spencers","spencer plaza","food world","reliance fresh","more","star bazaar","big bazaar","dmart","d mart","reliance smart","hyper city","spar","shoppers stop","forum fiza","forum vijaya","future retail","lifestyle","woodlands","marks & spencer","marks spencer","sathosh super","saravana stores","toyota","mercedes","bmw"];     
+    
+    let brands = topBrands.map((brand) => {
+        if(titles[0].toLowerCase().indexOf(brand)>=0){
+            return titles[0].trim()
+        }       
+        if(titles[1].toLowerCase().indexOf(brand)>=0){
+            return titles[1].trim()
+        }
+        if(titles[2].toLowerCase().indexOf(brand)>=0){
+            return titles[2].trim()
+        }
+        if(titles[3].toLowerCase().indexOf(brand)>=0){
+            return titles[3].trim()
+        }
+        if(titles[4].toLowerCase().indexOf(brand)>=0){
+            return titles[4].trim()
+        }
+        if(titles[5].toLowerCase().indexOf(brand)>=0){
+            return titles[5].trim()
+        }
+        return false;
+    }).filter(brnd => brnd !== false);
+
+
+    if(brands.length && brands[0]){
+        return sanitiser({ str: brands[0], isNumber: false })
+    }
+    
+    return sanitiser({ str: titles[0], isNumber: false }) + " " + sanitiser({ str: titles[1], isNumber: false });
+}
+
+function extractBillDate(lines) {
     const dateFormatter = {
         getDate: function(v) {
             if (v[2].length == 2 || v[2].length == 4) {
@@ -258,7 +291,8 @@ function extractTotalVal(totals, alltexts) {
         totalValue = totalValue.split(",").join("");
     }
 
-    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitiser({ str: totalValue, isNumber: true }))) {
+    const sanitisedNum = sanitiser({ str: totalValue, isNumber: true });
+    if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitisedNum) || sanitisedNum == "") {
         if (totalValue.indexOf(":") >= 0) {
             totalValue = totalValue.split(":")[1].trim();
             if (totalValue.indexOf(" ") > 0) {
@@ -284,10 +318,14 @@ function extractTotalVal(totals, alltexts) {
 }
 
 function amountNumSorter(alltexts) {
-
+    console.log("amount sorter");
     let newlist = alltexts.map(txt => {
         let _txt = txt.trim();
         _txt = _txt.split(",").join("");
+        if(_txt.indexOf("rs.") == 0){
+           _txt = _txt.split("rs.")[1].trim(); 
+        }
+        
         if (!isNaN(_txt)) { _txt = Math.round(Number(_txt)) }
         if (!isNaN(_txt)) {
             if (_txt < 999999) { return _txt }
@@ -304,7 +342,7 @@ function amountNumSorter(alltexts) {
 
 
 function sanitiser({ str, isNumber }) {
-    let chars = isNumber ? "0123456789." : "0123456789qwertyuioplkjhgfdsazxcvbnm &QWERTYUIOPLKJHGFDSAZXCVBNM-";
+    let chars = isNumber ? "0123456789." : "0123456789qwertyuioplkjhgfdsazxcvbnm. &QWERTYUIOPLKJHGFDSAZXCVBNM-";
     let newchar = "";
     for (let i = 0; i < str.length; i++) {
         let txt = str.substr(i, 1);
