@@ -290,7 +290,7 @@ function extractTotalVal(totals, alltexts) {
     if (totalValue.indexOf(",") > 0) {
         totalValue = totalValue.split(",").join("");
     }
-
+    
     const sanitisedNum = sanitiser({ str: totalValue, isNumber: true });
     if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitisedNum) || sanitisedNum == "") {
         if (totalValue.indexOf(":") >= 0) {
@@ -311,14 +311,13 @@ function extractTotalVal(totals, alltexts) {
         return amountNumSorter(alltexts)
     }
 
-    if (totalValue == "" && subs != "") {
+    if ((totalValue == "" || isNaN(totalValue)) && subs != "") {
         return { found: "string", value: subs };
     }
     return { found: "string", value: totalValue };
 }
 
 function amountNumSorter(alltexts) {
-    console.log("amount sorter");
     let newlist = alltexts.map(txt => {
         let _txt = txt.trim();
         _txt = _txt.split(",").join("");
@@ -334,7 +333,7 @@ function amountNumSorter(alltexts) {
         return null;
     }).filter(numval => (numval != null && numval !== 0));
 
-    /*console.log("-----");
+    /*console.log("-----AMT Sorter");
     console.log(newlist);*/
     newlist.sort((a, b) => { return b - a });
     return { found: "list", value: newlist }

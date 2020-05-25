@@ -11,6 +11,7 @@ let remPreviousActiveTab = "";
 let selectedProjectID = "";
 let projectMemberRole = "";
 let selectedProjectName = "";
+let uncategorisedBillItems = [];
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
@@ -44,15 +45,16 @@ const fileImg = document.getElementById('fileImg');
 const imageUploader = document.getElementById("imageuploader");
 
 
+
 billshomeBtn.addEventListener("click", function() {
     if (currentPage !== "bills") {
         currentPage = "bills";
         activeNavTab(billshomeBtn);
         hideElements([chartsBlock, settingsBlock]);
         mainContainer.classList.remove("settingMode");
-        preloader.classList.remove("hide");        
+        preloader.classList.remove("hide");
         document.querySelector("title").innerText = "Bill Vault";
-        document.getElementById("mybillORall").style.display = "none";        
+        document.getElementById("mybillORall").style.display = "none";
         fetchBills();
     }
 
@@ -95,7 +97,7 @@ captureImg.addEventListener('change', () => {
     } else if (currentUploadStatus == "unsaved") {
         showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
-        imageProcess(captureImg.files[0]);
+        imageProcess(captureImg.files[0], null);
     }
 
 
@@ -105,15 +107,102 @@ fileImg.addEventListener('change', () => {
     if (currentUploadStatus == "progress") {
         showAlertBox("Please wait for your previous Bill receipt to get processed.", "OK", null, false)
     } else if (currentUploadStatus == "unsaved") {
-
         showAlertBox("You have not saved the current Bill Receipt", "OK", null, false)
     } else {
-        imageProcess(fileImg.files[0]);
+        if (fileImg.files.length == 1) {
+            imageProcess(fileImg.files[0], null);
+
+        }
+        if (fileImg.files.length > 1) {
+            for (let i = 0; i < fileImg.files.length; i++) {
+                uncategorisedBillItems.push(fileImg.files[i]);
+            }
+            processUncategorisedBillItems();
+
+        }
+
     }
 
 });
 
-function imageProcess(imgfile) {
+function uncategorisedID() {
+    var chars = "qwertyuioplkjhgfdsazxcvbnm";
+    var newID = "";
+    for (var i = 0; i < 10; i++) {
+        var rnd = Math.floor(Math.random() * chars.length)
+        newID = `${newID}${chars.substr(rnd,1)}`
+    }
+    return "UN-CTG-" + newID;
+}
+
+function processUncategorisedBillItems() {
+    if (uncategorisedBillItems.length > 0) {
+        const uncategorisedRoot = document.getElementById("uncategorised-bills");
+        const divElt = document.createElement("div");
+        const itemID = uncategorisedID();
+        divElt.className = "uncategorised-item";
+        divElt.setAttribute("id", itemID);
+        const innerPreviewContent = `<p><span class="UN-CTG-remove">Remove</span><span class="UN-CTG-view">View</span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTC-amount">Loading...</span></p><p><img src="" alt="" /></p>`;
+        divElt.innerHTML = innerPreviewContent;
+        uncategorisedRoot.appendChild(divElt);
+        const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
+        const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
+        viewElt.addEventListener("click", function(evt){
+            const parentElt = evt.currentTarget.parentNode;
+            const date = parentElt.parentNode.getAttribute("data-date");            
+            const descr = parentElt.parentNode.getAttribute("data-descr");
+            const title = parentElt.parentNode.getAttribute("data-title");
+            const total = parentElt.parentNode.getAttribute("data-amount");
+            if(total.indexOf(",") > 0){
+                total = total.split(",");
+            }            
+            const type =  ""; 
+            imageProcessDone({date, total, descr, title, type})
+
+        });
+        removeElt.addEventListener("click", function(evt){
+            const p1 = evt.currentTarget.parentNode;
+            p1.parentNode.remove();
+        });
+        imageProcess(uncategorisedBillItems[0], `#${itemID} img`);
+        uncategorisedBillItems.splice(0, 1);
+    }
+}
+
+function insertDataIntoUncategorisedItems(resultData, itemElt){
+    const title = document.querySelector(`${itemElt} .UN-CTG-title`);
+    const amount = document.querySelector(`${itemElt} .UN-CTG-amount`);
+    const date = document.querySelector(`${itemElt} .UN-CTG-date`);
+    const item_Elem = document.querySelector(itemElt);
+    item_Elem.setAttribute("data-date",resultData.date || "");
+    item_Elem.setAttribute("data-title",resultData.title || "");
+    item_Elem.setAttribute("data-descr",resultData.descr || "");
+
+    let totalamount = resultData.total || "";
+    if (typeof totalamount != "string" && typeof totalamount != "number") {
+        let amtvals = [];
+        totalamount.forEach(amt => {
+            let rounded = Math.round(amt);
+            if (amtvals.indexOf(rounded) == -1) {
+                amtvals.push(rounded);
+            }
+        });
+        if (amtvals.length == 1) {
+            amount.textContent = "Rs " + amtvals[0];
+            item_Elem.setAttribute("data-amount",amtvals[0]);
+        } else {
+            item_Elem.setAttribute("data-amount",`${amtvals[0]},${amtvals[1]}`);
+        }
+
+    } else {
+        amount.textContent = "Rs " + totalamount;
+        item_Elem.setAttribute("data-amount", totalamount);
+    }
+
+}
+
+function imageProcess(imgfile, queueProcessMode) {
+    let previewImgStr = queueProcessMode == null ? '.previewimg img' : queueProcessMode;
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 4) {
@@ -126,14 +215,14 @@ function imageProcess(imgfile) {
         let fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent) {
             let srcData = fileLoadedEvent.target.result; // <--- data: base64          
-            document.querySelector('.previewimg img').src = srcData;
+            document.querySelector(previewImgStr).src = srcData;
             getOrientation(imgfile, function(orient) {
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
                 if (byteSize < 3 && orient <= 1) {
-                    BillImgProcessing(srcData);
+                    BillImgProcessing(srcData, previewImgStr);
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
-                        BillImgProcessing(newImgData);
+                        BillImgProcessing(newImgData, previewImgStr);
 
                     });
                 }
@@ -143,15 +232,18 @@ function imageProcess(imgfile) {
 
         fileReader.readAsDataURL(imgfile);
 
-    } else if (imgfile.type.indexOf("audio/") > -1) {
-        alert("Expecting an Image file");
-    } else if (imgfile.type.indexOf("video/") > -1) {
-        alert("Expecting an Image file")
+    } else if (imgfile.type.indexOf("application/pdf") > -1) {
+        const pdf_file = imgfile;
+        currentUploadStatus = "progress";
+        preloader.classList.remove("hide");
+        PDF_IMG_converter.sendFile(pdf_file, previewImgStr);
+    } else {
+        alert("This File is not supported")
     }
 
 }
 
-function BillImgProcessing(imgdata) {
+function BillImgProcessing(imgdata, previewImgStr) {
     let GCVRequest = {
         requests: [{
             image: {
@@ -168,19 +260,66 @@ function BillImgProcessing(imgdata) {
             fetch("../processTextData/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imgtext: imgTxtdata, em: atob(sessionStorage.getItem("em")) }) })
                 .then(dat => dat.json())
                 .then(txtjson => {
-                    document.querySelector('.previewimg img').src = imgdata;
-                    imageProcessDone(txtjson.status);
+                    document.querySelector(previewImgStr).src = imgdata;
+                    if (previewImgStr.indexOf("#UN-CTG-") == 0) {
+                        insertDataIntoUncategorisedItems(txtjson.status, previewImgStr.split(" ")[0]);
+                        processUncategorisedBillItems();
+                    } else {
+                        imageProcessDone(txtjson.status);
+                    }
+
                 }).catch(function(s) {
-                    document.querySelector('.previewimg img').src = imgdata;
-                    imageProcessDone({});
+                    document.querySelector(previewImgStr).src = imgdata;
+                    if (previewImgStr.indexOf("#UN-CTG-") == 0) {
+                        insertDataIntoUncategorisedItems({}, previewImgStr.split(" ")[0]);
+                        processUncategorisedBillItems();
+                    } else {
+                        imageProcessDone({});
+                    }
                 });
         }).catch(function(err) {
-            document.querySelector('.previewimg img').src = imgdata;
-            imageProcessDone({});
-            showAlertBox("Server Busy at the moment", "OK", null, false);
+            document.querySelector(previewImgStr).src = imgdata;
+            if (previewImgStr.indexOf("#UN-CTG-") == 0) {
+                insertDataIntoUncategorisedItems({}, previewImgStr.split(" ")[0]);
+                processUncategorisedBillItems();
+            } else {
+                imageProcessDone({});
+                showAlertBox("Server Busy at the moment", "OK", null, false);
+            }
+
         })
 
 }
+
+const PDF_IMG_converter = {
+    sendFile: function(pdf, previewImgStr) {
+        const pdf_url = URL.createObjectURL(pdf);
+        const thecanvas = document.getElementById("pdf-canvas");
+        let canvas_CTX = thecanvas.getContext('2d');
+        PDFJS.getDocument({ url: pdf_url }).then(function(pdf_doc) {
+            pdf_doc.getPage(1).then(function(page) {
+                // As the canvas is of a fixed width we need to set the scale of the viewport accordingly
+                var scale_required = thecanvas.width / page.getViewport(1).width;
+                var viewport = page.getViewport(scale_required);
+                thecanvas.height = viewport.height;
+
+                const renderContext = {
+                    canvasContext: canvas_CTX,
+                    viewport: viewport
+                };
+
+                // Render the page contents in the canvas
+                page.render(renderContext).then(function() {
+                    let canvasData = thecanvas.toDataURL("image/jpeg", 0.8);
+                    BillImgProcessing(canvasData, previewImgStr);
+                });
+            });
+        }).catch(function(error) {
+            alert("Oops, Unable to process your PDF file");
+            console.log(error.message)
+        });
+    }
+};
 
 
 function getOrientation(file, callback) {
@@ -926,7 +1065,7 @@ savesettingsBtn.addEventListener("click", function() {
     const acc_type = document.getElementById("user_account_field").value;
 
     if (disp_name !== initAccountVals.name || acc_type !== initAccountVals.type || isProfilePicModified || initAccountVals.projchange || editedProjVals != "none" || insertedOneVals != "none") {
-        saveSettingEnabled = false;        
+        saveSettingEnabled = false;
         closesettingsBtn.classList.add("hide");
 
         let accountObj = {
@@ -1008,7 +1147,7 @@ function saveSettings(accSettingObj) {
                     closesettingsBtn.click();
                 }
 
-            } else if (setting.status && setting.msg) {                
+            } else if (setting.status && setting.msg) {
                 saveSettingEnabled = true;
                 showAlertBox(setting.msg, "OK", null, false);
                 inProgressTextStatus(savesettingsBtn, "Save", false);
