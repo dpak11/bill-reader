@@ -265,16 +265,39 @@ span.btn.deletemember {
     box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.6);
 }
 
-#uncategorised-bills{
-    z-index: 8;
+#uncategorised-bills {
+    border: 8px solid #61a2fc;
+    width: 65%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: normal;
+    justify-content: flex-start;
+    font-family: 'Montserrat', sans-serif;
+    position: absolute;
+    top: 15%;
+    left: 20%;
+    background: #cedfe5;
+    box-shadow: 1px 2px 8px 3px rgba(0, 0, 0, 0.52);
+    padding: 15px;
+    z-index:8;
+    transition: transform .8s ease, opacity .8s
+}
+
+#uncategorised-bills.shrinkPreview{
+    transform: scale(.2) translate(-2400px,-900px);   
+    opacity: .4;
+    z-index: 1;
 }
 
 .uncategorised-item {
-    width: 35%;
+    width: 15%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    background: orange;
+    background: rgba(114, 148, 195, 0.4);
+    margin-right: 10px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    justify-content: space-between;
 }
 
 .uncategorised-item > p {
@@ -282,9 +305,37 @@ span.btn.deletemember {
     display: flex;
     justify-content: space-between;
 }
+.uncategorised-item > p:nth-child(2) {
+    flex-direction: column;
+    text-align: left;
+    color: #473737;
+    overflow: hidden;
+    font-size: .9em;
+}
+
+.uncategorised-item > p:nth-child(2) span {
+    padding-bottom: 15px;
+}
 .uncategorised-item img {
     width: 100%;
     height: auto;
+}
+
+span.UN-CTG-remove {
+    background: red;
+    padding: 8px 11px;
+    border-radius: 50%;
+    font-size: .8em;
+    font-family: courier;
+    cursor: pointer;
+}
+span.UN-CTG-view {
+    background: #6767e5;
+    padding: 8px 11px;
+    border-radius: 8px;
+    font-size: .8em;
+    /* font-family: courier; */
+    cursor: pointer;
 }
 
 
@@ -334,10 +385,12 @@ header img {
 .content-box {
     display: flex;
     font-size: 1em;
-    font-family: arial;
+    /* font-family: arial; */
+    font-family: 'Montserrat', sans-serif;
     min-height: 86vh;
     background: #CEDFE5;
 }
+
 
 section.side-nav {
     width: 15%;
@@ -370,6 +423,8 @@ section.side-nav p {
 section.side-nav span {
     display: inline-block;
     color: #3a3975;
+    font-size: .85em;
+    font-weight: bold;
 }
 
 section.side-nav img {
@@ -756,6 +811,7 @@ span.pick-amount {
     background: #edeef3;
     border-radius: 50%;
     padding: 10px;
+    font-family: arial;
     box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
 

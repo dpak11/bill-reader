@@ -142,30 +142,39 @@ function processUncategorisedBillItems() {
         const itemID = uncategorisedID();
         divElt.className = "uncategorised-item";
         divElt.setAttribute("id", itemID);
-        const innerPreviewContent = `<p><span class="UN-CTG-remove">Remove</span><span class="UN-CTG-view">View</span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTC-amount">Loading...</span></p><p><img src="" alt="" /></p>`;
+        const innerPreviewContent = `<p><span class="UN-CTG-view">View</span><span class="UN-CTG-remove">X</span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTG-amount">Loading...</span></p><p><img src="" alt="" /></p>`;
         divElt.innerHTML = innerPreviewContent;
         uncategorisedRoot.appendChild(divElt);
+        uncategorisedRoot.classList.remove("hide");
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
+
         viewElt.addEventListener("click", function(evt){
             const parentElt = evt.currentTarget.parentNode;
             const date = parentElt.parentNode.getAttribute("data-date");            
             const descr = parentElt.parentNode.getAttribute("data-descr");
             const title = parentElt.parentNode.getAttribute("data-title");
-            const total = parentElt.parentNode.getAttribute("data-amount");
+            let total = parentElt.parentNode.getAttribute("data-amount");
             if(total.indexOf(",") > 0){
                 total = total.split(",");
             }            
-            const type =  ""; 
-            imageProcessDone({date, total, descr, title, type})
+            const type =  "";
+            document.querySelector('.previewimg img').src = parentElt.parentNode.querySelector(`img`).src; 
+            imageProcessDone({date, total, descr, title, type});
+            uncategorisedRoot.classList.add("shrinkPreview");
+            uncategorisedRoot.setAttribute("data-mode","active");
 
         });
+        
         removeElt.addEventListener("click", function(evt){
             const p1 = evt.currentTarget.parentNode;
             p1.parentNode.remove();
         });
         imageProcess(uncategorisedBillItems[0], `#${itemID} img`);
+        console.log(uncategorisedBillItems);
         uncategorisedBillItems.splice(0, 1);
+    }else{
+        preloader.classList.remove("hide");
     }
 }
 
@@ -177,6 +186,8 @@ function insertDataIntoUncategorisedItems(resultData, itemElt){
     item_Elem.setAttribute("data-date",resultData.date || "");
     item_Elem.setAttribute("data-title",resultData.title || "");
     item_Elem.setAttribute("data-descr",resultData.descr || "");
+    title.textContent = resultData.title || "??";
+    date.textContent = resultData.date || "??";
 
     let totalamount = resultData.total || "";
     if (typeof totalamount != "string" && typeof totalamount != "number") {
@@ -191,6 +202,7 @@ function insertDataIntoUncategorisedItems(resultData, itemElt){
             amount.textContent = "Rs " + amtvals[0];
             item_Elem.setAttribute("data-amount",amtvals[0]);
         } else {
+            amount.textContent = "Rs ??";
             item_Elem.setAttribute("data-amount",`${amtvals[0]},${amtvals[1]}`);
         }
 
@@ -922,15 +934,20 @@ exitBillBtn.addEventListener("click", function() {
     document.querySelector('.previewimg img').setAttribute("src", "");
     hideElements([preloader, previewBillImage, billTable])
     resetTableFields("");
-
     currentUploadStatus = "";
+
     if (billMode == "update") {
         let type = sessionStorage.getItem("is_private_team") || "private";
         if (type == "private") {
             document.getElementById("imageuploader").classList.remove("hide");
         }
-        document.getElementById("billThumbnails").classList.remove("hide");
+        
         billMode = "save";
+    }
+    document.getElementById("billThumbnails").classList.remove("hide");
+    const uncategorised = document.getElementById("uncategorised-bills");
+    if(uncategorised.getAttribute("data-mode") == "active"){
+        uncategorised.classList.remove("shrinkPreview")
     }
 
 });

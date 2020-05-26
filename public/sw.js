@@ -34,6 +34,10 @@ const assets = [
   '/images/history.png'
 ];
 
+/*'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css',
+  'https://fonts.googleapis.com/css2?family=Montserrat&display=swap',
+  'https://fonts.gstatic.com/s/montserrat/v14/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2'*/
+
 // install event
 self.addEventListener('install', evt => {
   //console.log('service worker installed');
