@@ -265,28 +265,56 @@ span.btn.deletemember {
     box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.6);
 }
 
+
 #uncategorised-bills {
     border: 8px solid #61a2fc;
-    width: 65%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: normal;
-    justify-content: flex-start;
+    width: 65%;    
     font-family: 'Montserrat', sans-serif;
     position: absolute;
-    top: 15%;
-    left: 20%;
+    top: 16%;
+    left: 25%;
     background: #cedfe5;
     box-shadow: 1px 2px 8px 3px rgba(0, 0, 0, 0.52);
-    padding: 15px;
+    height: 400px;    
     z-index:8;
+    overflow-y: scroll;
     transition: transform .8s ease, opacity .8s
 }
 
 #uncategorised-bills.shrinkPreview{
-    transform: scale(.2) translate(-2400px,-900px);   
+    /* transform: scale(.2) translate(-2400px,-900px);  */
+    transform: scale(.2) translateX(1300px);  
     opacity: .4;
     z-index: 1;
+}
+
+
+
+#uncategorised-bills section{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: normal;
+    justify-content: center;
+    padding: 15px;
+}
+
+#uncategorised-bills > div{
+    display: flex;
+    background: #cedfe5;
+    top: 0;
+    position: sticky;
+
+}
+
+#uncategorised-bills > div span {
+    width: 50%;
+    padding: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#uncategorised-bills > div img{
+    width: 18px
 }
 
 .uncategorised-item {
@@ -295,8 +323,10 @@ span.btn.deletemember {
     flex-direction: column;
     background: rgba(114, 148, 195, 0.4);
     margin-right: 10px;
+    margin-bottom: 10px;
     padding: 5px 12px;
     border-radius: 8px;
+    min-width: 180px;
     justify-content: space-between;
 }
 
@@ -321,12 +351,7 @@ span.btn.deletemember {
     height: auto;
 }
 
-span.UN-CTG-remove {
-    background: red;
-    padding: 8px 11px;
-    border-radius: 50%;
-    font-size: .8em;
-    font-family: courier;
+span.UN-CTG-remove {    
     cursor: pointer;
 }
 span.UN-CTG-view {
@@ -906,6 +931,7 @@ div#ui-datepicker-div {
 .settingMode #billTable,
 .settingMode #billThumbnails,
 .settingMode #chartsBlock,
+.settingMode #uncategorised-bills,
 .settingMode .prev-block {
     display: none
 }
@@ -1016,6 +1042,8 @@ div#ui-datepicker-div {
         width: 120px
     }
 
+
+
     #themechooser {
         width: 8px;
         height: 5px;
@@ -1048,6 +1076,19 @@ div#ui-datepicker-div {
         width: 90%;
         padding-left: 12px;
         padding-right: 12px;
+    }
+
+    #uncategorised-bills{
+        width: 76%;
+        left: 16%;
+        top: 15%
+    }
+    .uncategorised-item{
+        min-width: 90%
+    }
+
+    #uncategorised-bills.shrinkPreview {
+        transform: scale(.2) translateX(500px);
     }
 
 
@@ -1102,6 +1143,15 @@ div#ui-datepicker-div {
         border-top: 2px solid #fff;
     }
 
+    .topfloater #uncategorised-bills{
+        width: 88%;
+        left: 4%;
+        top: 20%
+    }
+    .topfloater .uncategorised-item{
+        min-width: 90%
+    }
+
     .skin6 .topfloater .nav-selected {
         background: #fff;
     }
@@ -1149,6 +1199,14 @@ div#ui-datepicker-div {
     .profile_info .newuserGroup select {
         width: 155px;
     }
+
+    
+    #uncategorised-bills {
+        width: 74%;
+        left: 18%;
+        box-shadow: 0px 1px 3px 2px rgba(0, 0, 0, 0.52);
+    }
+
 
     #alertBoxWindow h4,
     #confirmAmountWindow h4 {

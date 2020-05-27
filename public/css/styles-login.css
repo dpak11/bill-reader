@@ -48,7 +48,7 @@ input {
     box-shadow: inset 1px 2px 4px 1px #404143;
     border: none;
     width: 85%;
-    background: #98bdf1;
+    background: #b7ceef;
 }
 
 .hidden {
@@ -181,7 +181,9 @@ input {
 
 @media (max-width:450px) {    
      header img{
-        margin: 6px 0 0 5px;
+       /*  margin: 6px 0 0 5px; */
+       margin: 15px 0 0 9px;
+       width: 120px;
     }
     .loginbox{
         width: 50%

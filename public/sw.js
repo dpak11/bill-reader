@@ -1,5 +1,5 @@
-const staticCacheName = 'static-version2_4';
-const dynamicCacheName = 'dynamic-version2_4';
+const staticCacheName = 'static-version2_4_1';
+const dynamicCacheName = 'dynamic-version2_4_1';
 const assets = [ 
   '/',
   '/home', 
@@ -31,7 +31,9 @@ const assets = [
   '/images/rejected.png',
   '/images/approved.png',
   '/images/themeicon.png',
-  '/images/history.png'
+  '/images/history.png',
+  '/images/close.png',
+  '/images/trashcan.png'
 ];
 
 /*'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css',

@@ -169,7 +169,7 @@ function processBillText(datarray) {
 }
 
 function getReceiptTitle(titles){
-    const topBrands = ["super market","supermarket","super mart","supermart","hotel","restaurant","pvt. ltd","pvt.ltd","pvt ltd","redbus","red bus","walmart","family mart","peter england","arrow","mochi","vip","hidesign","regal","modern bazaar","heritage foods","max hypermart","max","pacific mall","vr mall","24x7 store","margin free","nilgiri","ags rathna","Louis Phillipe","metro inc","van heusen","hamleys","spencer's","spencers","spencer plaza","food world","reliance fresh","more","star bazaar","big bazaar","dmart","d mart","reliance smart","hyper city","spar","shoppers stop","forum fiza","forum vijaya","future retail","lifestyle","woodlands","marks & spencer","marks spencer","sathosh super","saravana stores","toyota","mercedes","bmw"];     
+    const topBrands = ["super market","supermarket","super mart","supermart","superstore","super store","hotel","restaurant","pvt. ltd","pvt.ltd","pvt ltd","redbus","red bus","walmart","family mart","peter england","arrow","mochi","vip","hidesign","regal","modern bazaar","heritage foods","hypermart","max","pacific mall","vr mall","24x7 store","margin free","nilgiri","ags rathna","Louis Phillipe","metro inc","van heusen","hamleys","spencer's","spencers","spencer plaza","food world","reliance fresh","more","star bazaar","big bazaar","dmart","d mart","reliance smart","hyper city","spar","shoppers stop","forum fiza","forum vijaya","future retail","lifestyle","woodlands","marks & spencer","marks spencer","sathosh super","saravana stores","toyota","mercedes","bmw"];     
     
     let brands = topBrands.map((brand) => {
         if(titles[0].toLowerCase().indexOf(brand)>=0){

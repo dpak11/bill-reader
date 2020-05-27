@@ -43,6 +43,7 @@ const billStatusBlock = document.querySelector(".bill-status-approval");
 const captureImg = document.getElementById('captureImg');
 const fileImg = document.getElementById('fileImg');
 const imageUploader = document.getElementById("imageuploader");
+const exitUncategorisedBills = document.querySelector("#uncategorised-bills > div img");
 
 
 
@@ -125,10 +126,14 @@ fileImg.addEventListener('change', () => {
 
 });
 
+exitUncategorisedBills.addEventListener("click", function(){
+    document.getElementById("uncategorised-bills").classList.add("hide");
+});
+
 function uncategorisedID() {
     var chars = "qwertyuioplkjhgfdsazxcvbnm";
     var newID = "";
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 15; i++) {
         var rnd = Math.floor(Math.random() * chars.length)
         newID = `${newID}${chars.substr(rnd,1)}`
     }
@@ -137,55 +142,60 @@ function uncategorisedID() {
 
 function processUncategorisedBillItems() {
     if (uncategorisedBillItems.length > 0) {
-        const uncategorisedRoot = document.getElementById("uncategorised-bills");
+        const uncategorisedMain = document.getElementById("uncategorised-bills");
+        const uncategorisedSection = document.querySelector("#uncategorised-bills section");
         const divElt = document.createElement("div");
         const itemID = uncategorisedID();
         divElt.className = "uncategorised-item";
-        divElt.setAttribute("id", itemID);
-        const innerPreviewContent = `<p><span class="UN-CTG-view">View</span><span class="UN-CTG-remove">X</span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTG-amount">Loading...</span></p><p><img src="" alt="" /></p>`;
+        divElt.setAttribute("id", itemID);        
+
+        const innerPreviewContent = `<p><span class="UN-CTG-view">View</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTG-amount">Loading...</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = innerPreviewContent;
-        uncategorisedRoot.appendChild(divElt);
-        uncategorisedRoot.classList.remove("hide");
+        uncategorisedSection.appendChild(divElt);
+        uncategorisedMain.classList.remove("hide");
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
 
-        viewElt.addEventListener("click", function(evt){
+        viewElt.addEventListener("click", function(evt) {
             const parentElt = evt.currentTarget.parentNode;
-            const date = parentElt.parentNode.getAttribute("data-date");            
+            const date = parentElt.parentNode.getAttribute("data-date");
             const descr = parentElt.parentNode.getAttribute("data-descr");
             const title = parentElt.parentNode.getAttribute("data-title");
             let total = parentElt.parentNode.getAttribute("data-amount");
-            if(total.indexOf(",") > 0){
+            if (total.indexOf(",") > 0) {
                 total = total.split(",");
-            }            
-            const type =  "";
-            document.querySelector('.previewimg img').src = parentElt.parentNode.querySelector(`img`).src; 
-            imageProcessDone({date, total, descr, title, type});
-            uncategorisedRoot.classList.add("shrinkPreview");
-            uncategorisedRoot.setAttribute("data-mode","active");
+            }
+            const type = "";
+            document.querySelector('.previewimg img').src = parentElt.parentNode.querySelector(`img.billsnapshot`).src;
+            imageProcessDone({ date, total, descr, title, type });
+            uncategorisedMain.classList.add("shrinkPreview");
+            uncategorisedMain.setAttribute("data-mode", "active");
 
         });
-        
-        removeElt.addEventListener("click", function(evt){
+
+        removeElt.addEventListener("click", function(evt) {
             const p1 = evt.currentTarget.parentNode;
             p1.parentNode.remove();
+            const childNodes = document.querySelector("#uncategorised-bills section").children.length;
+            if(childNodes == 0){
+                document.getElementById("uncategorised-bills").classList.add("hide");
+            }
         });
-        imageProcess(uncategorisedBillItems[0], `#${itemID} img`);
-        console.log(uncategorisedBillItems);
+        imageProcess(uncategorisedBillItems[0], `#${itemID} img.billsnapshot`);
         uncategorisedBillItems.splice(0, 1);
-    }else{
+    } else {
         preloader.classList.remove("hide");
     }
 }
 
-function insertDataIntoUncategorisedItems(resultData, itemElt){
+function insertDataIntoUncategorisedItems(resultData, itemElt) {
     const title = document.querySelector(`${itemElt} .UN-CTG-title`);
     const amount = document.querySelector(`${itemElt} .UN-CTG-amount`);
     const date = document.querySelector(`${itemElt} .UN-CTG-date`);
     const item_Elem = document.querySelector(itemElt);
-    item_Elem.setAttribute("data-date",resultData.date || "");
-    item_Elem.setAttribute("data-title",resultData.title || "");
-    item_Elem.setAttribute("data-descr",resultData.descr || "");
+    item_Elem.setAttribute("data-date", resultData.date || "");
+    item_Elem.setAttribute("data-title", resultData.title || "");
+    item_Elem.setAttribute("data-descr", resultData.descr || "");
     title.textContent = resultData.title || "??";
     date.textContent = resultData.date || "??";
 
@@ -200,10 +210,10 @@ function insertDataIntoUncategorisedItems(resultData, itemElt){
         });
         if (amtvals.length == 1) {
             amount.textContent = "Rs " + amtvals[0];
-            item_Elem.setAttribute("data-amount",amtvals[0]);
+            item_Elem.setAttribute("data-amount", amtvals[0]);
         } else {
             amount.textContent = "Rs ??";
-            item_Elem.setAttribute("data-amount",`${amtvals[0]},${amtvals[1]}`);
+            item_Elem.setAttribute("data-amount", `${amtvals[0]},${amtvals[1]}`);
         }
 
     } else {
@@ -941,12 +951,12 @@ exitBillBtn.addEventListener("click", function() {
         if (type == "private") {
             document.getElementById("imageuploader").classList.remove("hide");
         }
-        
+
         billMode = "save";
     }
     document.getElementById("billThumbnails").classList.remove("hide");
     const uncategorised = document.getElementById("uncategorised-bills");
-    if(uncategorised.getAttribute("data-mode") == "active"){
+    if (uncategorised.getAttribute("data-mode") == "active") {
         uncategorised.classList.remove("shrinkPreview")
     }
 
