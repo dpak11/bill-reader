@@ -43,7 +43,9 @@ const billStatusBlock = document.querySelector(".bill-status-approval");
 const captureImg = document.getElementById('captureImg');
 const fileImg = document.getElementById('fileImg');
 const imageUploader = document.getElementById("imageuploader");
+const uncategorisedMainPanel = document.getElementById("uncategorised-bills");
 const exitUncategorisedBills = document.querySelector("#uncategorised-bills > div img");
+const uncategorisedBtn = document.getElementById("link-uncateg");
 
 
 
@@ -127,7 +129,13 @@ fileImg.addEventListener('change', () => {
 });
 
 exitUncategorisedBills.addEventListener("click", function(){
-    document.getElementById("uncategorised-bills").classList.add("hide");
+    uncategorisedMainPanel.classList.add("hide");
+    uncategorisedBtn.classList.remove("hide");
+});
+
+uncategorisedBtn.addEventListener("click", function(){
+    uncategorisedMainPanel.classList.remove("hide");
+    uncategorisedBtn.classList.add("hide");
 });
 
 function uncategorisedID() {
@@ -140,9 +148,9 @@ function uncategorisedID() {
     return "UN-CTG-" + newID;
 }
 
+
 function processUncategorisedBillItems() {
-    if (uncategorisedBillItems.length > 0) {
-        const uncategorisedMain = document.getElementById("uncategorised-bills");
+    if (uncategorisedBillItems.length > 0) {  
         const uncategorisedSection = document.querySelector("#uncategorised-bills section");
         const divElt = document.createElement("div");
         const itemID = uncategorisedID();
@@ -152,7 +160,7 @@ function processUncategorisedBillItems() {
         const innerPreviewContent = `<p><span class="UN-CTG-view">View</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTG-amount">Loading...</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = innerPreviewContent;
         uncategorisedSection.appendChild(divElt);
-        uncategorisedMain.classList.remove("hide");
+        uncategorisedMainPanel.classList.remove("hide");
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
 
@@ -168,24 +176,22 @@ function processUncategorisedBillItems() {
             const type = "";
             document.querySelector('.previewimg img').src = parentElt.parentNode.querySelector(`img.billsnapshot`).src;
             imageProcessDone({ date, total, descr, title, type });
-            uncategorisedMain.classList.add("shrinkPreview");
-            uncategorisedMain.setAttribute("data-mode", "active");
+            uncategorisedMainPanel.classList.add("shrinkPreview");
+            uncategorisedMainPanel.setAttribute("data-mode", "active");
+            uncategorisedBtn.classList.add("hide");
 
         });
 
         removeElt.addEventListener("click", function(evt) {
             const p1 = evt.currentTarget.parentNode;
             p1.parentNode.remove();
-            const childNodes = document.querySelector("#uncategorised-bills section").children.length;
-            if(childNodes == 0){
-                document.getElementById("uncategorised-bills").classList.add("hide");
+            if(document.querySelectorAll(".uncategorised-item").length == 0){
+                uncategorisedMainPanel.classList.add("hide");
             }
         });
         imageProcess(uncategorisedBillItems[0], `#${itemID} img.billsnapshot`);
         uncategorisedBillItems.splice(0, 1);
-    } else {
-        preloader.classList.remove("hide");
-    }
+    } 
 }
 
 function insertDataIntoUncategorisedItems(resultData, itemElt) {
@@ -212,12 +218,12 @@ function insertDataIntoUncategorisedItems(resultData, itemElt) {
             amount.textContent = "Rs " + amtvals[0];
             item_Elem.setAttribute("data-amount", amtvals[0]);
         } else {
-            amount.textContent = "Rs ??";
+            amount.textContent = "Amount: [Unconfirmed]";
             item_Elem.setAttribute("data-amount", `${amtvals[0]},${amtvals[1]}`);
         }
 
     } else {
-        amount.textContent = "Rs " + totalamount;
+        amount.textContent = "Amount: Rs " + totalamount;
         item_Elem.setAttribute("data-amount", totalamount);
     }
 
@@ -653,7 +659,7 @@ function displayBillThumbnails() {
 
 }
 
-function thumbNailClicked(thumbnail) {
+function thumbNailClicked(thumbnail) {    
     let values = thumbnail.getAttribute("data-billvals");
     selectedBillId = thumbnail.getAttribute("id").split("mb_")[1];
     hideElements([rejectBillBtn, approveBillBtn, saveBillBtn, billThumbNails, imageUploader]);
@@ -709,6 +715,12 @@ function thumbNailClicked(thumbnail) {
         billStatusBlock.classList.remove("hide");
         billStatusBlock.innerHTML = `This Bill${_status}<span>${_approver}</span><i>${historyIconSVG}</i>`;
         document.getElementById("infoTipBox").setAttribute("data-history", thumbnail.getAttribute("data-history"));
+        uncategorisedMainPanel.setAttribute("data-mode","");
+        uncategorisedMainPanel.classList.add("hide");
+        if(document.querySelectorAll(".uncategorised-item").length > 0){
+            uncategorisedBtn.classList.remove("hide");
+        }
+
     }
 }
 
@@ -955,9 +967,8 @@ exitBillBtn.addEventListener("click", function() {
         billMode = "save";
     }
     document.getElementById("billThumbnails").classList.remove("hide");
-    const uncategorised = document.getElementById("uncategorised-bills");
-    if (uncategorised.getAttribute("data-mode") == "active") {
-        uncategorised.classList.remove("shrinkPreview")
+    if (uncategorisedMainPanel.getAttribute("data-mode") == "active") {
+        uncategorisedMainPanel.classList.remove("shrinkPreview")
     }
 
 });
@@ -1880,7 +1891,7 @@ chartsBtn.addEventListener("click", function() {
         mainContainer.classList.remove("settingMode");
         activeNavTab(chartsBtn);
         preloader.classList.remove("hide");
-        hideElements([settingsBlock, chartsBlock, billThumbNails, previewBillImage, billTable, imageUploader]);
+        hideElements([settingsBlock, chartsBlock, billThumbNails, previewBillImage, billTable, imageUploader, uncategorisedBtn, uncategorisedMainPanel]);
         document.getElementById("mybillORall").style.display = "none";
         document.querySelector("title").innerText = "Chart | Bill Vault";
         loadCharts();
