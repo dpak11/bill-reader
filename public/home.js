@@ -44,7 +44,7 @@ const captureImg = document.getElementById('captureImg');
 const fileImg = document.getElementById('fileImg');
 const imageUploader = document.getElementById("imageuploader");
 const uncategorisedMainPanel = document.getElementById("uncategorised-bills");
-const exitUncategorisedBills = document.querySelector("#uncategorised-bills > div img");
+const exitUncategorisedBills = document.querySelector("#uncategorised-bills > div svg");
 const uncategorisedBtn = document.getElementById("link-uncateg");
 
 
@@ -157,7 +157,9 @@ function processUncategorisedBillItems() {
         divElt.className = "uncategorised-item";
         divElt.setAttribute("id", itemID);        
 
-        const innerPreviewContent = `<p><span class="UN-CTG-view">View</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">Title</span><span class="UN-CTG-date">Date</span><span class="UN-CTG-amount">Loading...</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
+        const svgPreloader = `<svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg>`;
+        
+        const innerPreviewContent = `<p><span class="UN-CTG-view CTGloading">${svgPreloader}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title"></span><span class="UN-CTG-date"></span><span class="UN-CTG-amount"></span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = innerPreviewContent;
         uncategorisedSection.appendChild(divElt);
         uncategorisedMainPanel.classList.remove("hide");
@@ -198,6 +200,10 @@ function insertDataIntoUncategorisedItems(resultData, itemElt) {
     const title = document.querySelector(`${itemElt} .UN-CTG-title`);
     const amount = document.querySelector(`${itemElt} .UN-CTG-amount`);
     const date = document.querySelector(`${itemElt} .UN-CTG-date`);
+    const viewBtn = document.querySelector(`${itemElt} .UN-CTG-view`);
+    viewBtn.innerHTML = "View";
+    viewBtn.classList.remove("CTGloading");
+
     const item_Elem = document.querySelector(itemElt);
     item_Elem.setAttribute("data-date", resultData.date || "");
     item_Elem.setAttribute("data-title", resultData.title || "");
@@ -2349,6 +2355,10 @@ logOutBtn.addEventListener("click", function() {
     sessionStorage.clear();
     location.replace("/")
 });
+
+if(location.href.includes("experimental")){
+    document.getElementById("fileImg").setAttribute("multiple","multiple")
+}
 
 window.addEventListener("resize", function() {
     document.querySelector(".content-box").style.minheight = (window.innerHeight - document.querySelector("header").offsetHeight) + "px"

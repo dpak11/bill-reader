@@ -91,7 +91,7 @@
                 <section id="settingsBlock" class="hide">
                     <div id="userSettingsPage" class="profile_info">
                         <p id="team_setting_link">Go to Project Settings</p>
-                        <h2>User Settings <span class="settingloadstatus">(Loading...)</span></h2>
+                        <h2>User Settings <span class="settingloadstatus"><svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg></span></h2>
                         <p><img id="userprofilepic" src="images/user.png"><br>
                             <input class="input-image" type="file" id="profile_img_browse" accept="image/*" />
                             <label for="profile_img_browse">Upload Your Photo</label>
@@ -207,12 +207,19 @@
         </div>
         <div id="uncategorised-bills" class="hide">
             <div>
-                <span style="color: #1053ae">Uncategorised Reports</span>
-                <span style="text-align: right"><img src="images/close.png" alt=""></span>
+                <span>Uncategorised Bills</span>
+                <span style="text-align: right">
+                    <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g><circle cx="10.5" cy="10.5" r="10" stroke="black"/>
+                        <line x1="6.64645" y1="14.6464" x2="15.6464" y2="5.64645" stroke="black"/>
+                        <line y1="-0.5" x2="12.7279" y2="-0.5" transform="matrix(-0.707107 -0.707107 -0.707107 0.707107 15 15)" stroke="black"/></g>
+
+                    </svg>
+                </span>
             </div>
             <section></section>
         </div>
-        <p id="link-uncateg" class="hide">Uncategorised Reports</p>
+        <p id="link-uncateg" class="hide">Show Uncategorised</p>
     </div>
     <canvas id="pdf-canvas" width="400"></canvas>
     

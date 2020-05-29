@@ -49,6 +49,11 @@ input {
     border: none;
     width: 85%;
     background: #b7ceef;
+    outline: none;
+}
+
+input:focus{
+    outline: none;
 }
 
 .hidden {
