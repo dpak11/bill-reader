@@ -1,5 +1,5 @@
-const staticCacheName = 'static-version2_4';
-const dynamicCacheName = 'dynamic-version2_4';
+const staticCacheName = 'static-version2_4_1';
+const dynamicCacheName = 'dynamic-version2_4_1';
 const assets = [ 
   '/',
   '/home', 
@@ -31,8 +31,16 @@ const assets = [
   '/images/rejected.png',
   '/images/approved.png',
   '/images/themeicon.png',
-  '/images/history.png'
+  '/images/history.png',
+  '/images/close.png',
+  '/images/trashcan.png',
+  'https://fonts.googleapis.com/css2?family=Montserrat&display=swap',
+  'https://fonts.gstatic.com/s/montserrat/v14/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2'
 ];
+
+/*'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css',
+  'https://fonts.googleapis.com/css2?family=Montserrat&display=swap',
+  'https://fonts.gstatic.com/s/montserrat/v14/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2'*/
 
 // install event
 self.addEventListener('install', evt => {

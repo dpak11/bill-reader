@@ -169,7 +169,7 @@ function processBillText(datarray) {
 }
 
 function getReceiptTitle(titles){
-    const topBrands = ["super market","supermarket","super mart","supermart","hotel","restaurant","pvt. ltd","pvt.ltd","pvt ltd","redbus","red bus","walmart","family mart","peter england","arrow","mochi","vip","hidesign","regal","modern bazaar","heritage foods","max hypermart","max","pacific mall","vr mall","24x7 store","margin free","nilgiri","ags rathna","Louis Phillipe","metro inc","van heusen","hamleys","spencer's","spencers","spencer plaza","food world","reliance fresh","more","star bazaar","big bazaar","dmart","d mart","reliance smart","hyper city","spar","shoppers stop","forum fiza","forum vijaya","future retail","lifestyle","woodlands","marks & spencer","marks spencer","sathosh super","saravana stores","toyota","mercedes","bmw"];     
+    const topBrands = ["super market","supermarket","super mart","supermart","superstore","super store","hotel","restaurant","pvt. ltd","pvt.ltd","pvt ltd","redbus","red bus","walmart","family mart","peter england","arrow","mochi","vip","hidesign","regal","modern bazaar","heritage foods","hypermart","max","pacific mall","vr mall","24x7 store","margin free","nilgiri","ags rathna","Louis Phillipe","metro inc","van heusen","hamleys","spencer's","spencers","spencer plaza","food world","reliance fresh","more","star bazaar","big bazaar","dmart","d mart","reliance smart","hyper city","spar","shoppers stop","forum fiza","forum vijaya","future retail","lifestyle","woodlands","marks & spencer","marks spencer","sathosh super","saravana stores","toyota","mercedes","bmw"];     
     
     let brands = topBrands.map((brand) => {
         if(titles[0].toLowerCase().indexOf(brand)>=0){
@@ -290,7 +290,7 @@ function extractTotalVal(totals, alltexts) {
     if (totalValue.indexOf(",") > 0) {
         totalValue = totalValue.split(",").join("");
     }
-
+    
     const sanitisedNum = sanitiser({ str: totalValue, isNumber: true });
     if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitisedNum) || sanitisedNum == "") {
         if (totalValue.indexOf(":") >= 0) {
@@ -311,14 +311,13 @@ function extractTotalVal(totals, alltexts) {
         return amountNumSorter(alltexts)
     }
 
-    if (totalValue == "" && subs != "") {
+    if ((totalValue == "" || isNaN(totalValue)) && subs != "") {
         return { found: "string", value: subs };
     }
     return { found: "string", value: totalValue };
 }
 
 function amountNumSorter(alltexts) {
-    console.log("amount sorter");
     let newlist = alltexts.map(txt => {
         let _txt = txt.trim();
         _txt = _txt.split(",").join("");
@@ -334,7 +333,7 @@ function amountNumSorter(alltexts) {
         return null;
     }).filter(numval => (numval != null && numval !== 0));
 
-    /*console.log("-----");
+    /*console.log("-----AMT Sorter");
     console.log(newlist);*/
     newlist.sort((a, b) => { return b - a });
     return { found: "list", value: newlist }
