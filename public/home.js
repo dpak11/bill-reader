@@ -1844,11 +1844,11 @@ let barchartdata = [
 
 const chartsBlock = document.getElementById("chartsBlock");
 const chartsBtn = document.getElementById("charts");
-let chartsFilterSelect = document.getElementById("chartdaysFilter");
+const chartsFilterSelect = document.getElementById("chartdaysFilter");
 let all_chart_data = [];
 
 function drawBillsChart(chartElem, chartdata, title, stacked) {
-    let charts = {
+    const charts = {
         drawChart: function() {
             let options = {};
             let elem = document.getElementById(chartElem);

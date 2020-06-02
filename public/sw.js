@@ -33,7 +33,9 @@ const assets = [
   '/images/themeicon.png',
   '/images/history.png',
   '/images/close.png',
-  '/images/trashcan.png'
+  '/images/trashcan.png',
+  'https://fonts.googleapis.com/css2?family=Montserrat&display=swap',
+  'https://fonts.gstatic.com/s/montserrat/v14/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2'
 ];
 
 /*'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css',
