@@ -1,3 +1,9 @@
+
+//-------------------------------------------------------------------------
+//              HOME PAGE
+//-------------------------------------------------------------------------
+
+
 let allBillsData = null;
 let billsObjRef = {};
 let selectedBillId = "";
@@ -12,19 +18,6 @@ let selectedProjectID = "";
 let projectMemberRole = "";
 let selectedProjectName = "";
 let uncategorisedBillItems = [];
-
-const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
-const bodyParams = (params) => {
-    let paramObj = { ...authVars, ...params };
-    return paramObj;
-}
-
-
-
-//-------------------------------------------------------------------------
-//              HOME PAGE
-//-------------------------------------------------------------------------
-
 
 const billshomeBtn = document.getElementById("billshome");
 const saveBillBtn = document.getElementById("savebill");
@@ -46,6 +39,12 @@ const imageUploader = document.getElementById("imageuploader");
 const uncategorisedMainPanel = document.getElementById("uncategorised-bills");
 const exitUncategorisedBills = document.querySelector("#uncategorised-bills > div svg");
 const uncategorisedBtn = document.getElementById("link-uncateg");
+
+const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
+const bodyParams = (params) => {
+    let paramObj = { ...authVars, ...params };
+    return paramObj;
+}
 
 
 
@@ -236,7 +235,7 @@ function insertDataIntoUncategorisedItems(resultData, itemElt) {
             amount.textContent = "Rs " + amtvals[0];
             item_Elem.setAttribute("data-amount", amtvals[0]);
         } else {
-            amount.textContent = "Amount: [Unconfirmed]";
+            amount.textContent = "Amount: ??";
             item_Elem.setAttribute("data-amount", `${amtvals[0]},${amtvals[1]}`);
         }
 
@@ -605,6 +604,7 @@ function displayBillingTable(data) {
     document.getElementById("descr_field").value = data.descr || "";
     document.getElementById("billtype").value = data.type || "";
     document.querySelector(".previewimg").style.height = "auto";
+    $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
     setTimeout(function() {
         let previewimgHeight = document.querySelector(".previewimg img").height;
         if (document.querySelector(".previewimg").offsetHeight > previewimgHeight) {
@@ -695,6 +695,7 @@ function thumbNailClicked(thumbnail) {
         if (_status == "approved" || (projectMemberRole != "member" && privateTeam == "team")) {
             hideElements([updateBillBtn, deleteBillBtn]);
             resetTableFields("disable");
+            $("#date_field").datepicker("destroy");
         }
         if (_status == "approved") {
             document.querySelector("#billTable .table-head").innerHTML = "Bill Details";
@@ -745,7 +746,7 @@ function thumbNailClicked(thumbnail) {
 
 function tidyAmount(amt) {
     let amount = amt.trim();
-    // example: This RegExp matches 'Rs.230' or 'Rs230' or '230 Rs' or '230Rs'
+    // example: This RegExp matches patterns like 'Rs.230' or 'Rs230' or '230 Rs' or '230Rs'
     let total = (amount).match(/^((Rs(\.)?\s?)?(\d+\.?\d*)|(\d+\.?\d*)\s?(Rs)?)$/i);
     let rupees = total !== null ? total.filter(rs => !isNaN(rs))[0] : total;
     if (rupees == null || rupees > 999999) { return 0; }
@@ -768,7 +769,7 @@ function resetTableFields(state) {
 
     } else {
         document.getElementById("billTable").classList.remove("static-table");
-        document.getElementById("billtype").disabled = false;
+        document.getElementById("billtype").disabled = false;        
     }
 
 }
@@ -844,7 +845,7 @@ function deleteBill() {
 
 
 
-function saveBill(bill, email, serv) {
+function saveBill(bill) {
     let type = sessionStorage.getItem("is_private_team") || "private";
     fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receipt: bill })) })
         .then(data => data.json())
@@ -1470,6 +1471,7 @@ function loadAccountSettings() {
     document.getElementById("user_account_field").disabled = true;
     document.getElementById("displayname_field").value = "";
     document.getElementById("myemail_field").value = "";
+
     fetch("../settingsload/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams()) })
         .then(data => data.json())
         .then((setting) => {
@@ -1539,7 +1541,7 @@ function loadAccountSettings() {
 }
 
 function addMemberToProject(member, role, approver) {
-    const resetMemberFields = {
+    const MemberFields = {
         refresh: function(memberFieldReset) {
             inProgressTextStatus(addNewMemberProjBtn, "Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
@@ -1568,13 +1570,13 @@ function addMemberToProject(member, role, approver) {
                 sessionStorage.clear();
             } else if (projmem.status == "invalidEmail") {
                 showAlertBox(`You have entered Invalid Email`, "OK", null, false);
-                resetMemberFields.refresh(true);
+                MemberFields.refresh(true);
             } else if (projmem.status == "added") {
                 newMemberInsertFields();
-                resetMemberFields.refresh(false);
+                MemberFields.refresh(false);
                 localStorage.removeItem("tempProjID");
             } else if (projmem.status && projmem.msg) {
-                resetMemberFields.refresh(true);
+                MemberFields.refresh(true);
                 showAlertBox(projmem.msg, "OK", null, false);
             }
 
@@ -2327,8 +2329,7 @@ function activeNavTab(elm) {
 
 
 function initLoad() {
-    billshomeBtn.click();
-    $("#date_field").datepicker({ dateFormat: "dd/mm/yy" });
+    billshomeBtn.click();    
     let temp_projid = localStorage.getItem("tempProjID") || "";
     if (temp_projid !== "") { removeTempProject(temp_projid) }
     let accountchangeUser = localStorage.getItem("accountchange") || "";
