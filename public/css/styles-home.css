@@ -286,13 +286,6 @@ span.btn.deletemember {
     transition: transform .8s ease, opacity .8s
 }
 
-#uncategorised-bills.shrinkPreview{
-    /* transform: scale(.2) translate(-2400px,-900px);  */
-    transform: scale(.2) translateX(1300px);  
-    opacity: .4;
-    z-index: 1;
-}
-
 
 
 #uncategorised-bills section{
@@ -372,7 +365,6 @@ span.UN-CTG-view {
 span.UN-CTG-view.CTGloading{
     background: transparent;
 }
-
 
 .prev-block,
 #imageuploader,
@@ -1127,9 +1119,7 @@ div#ui-datepicker-div {
         min-width: 90%
     }
 
-    #uncategorised-bills.shrinkPreview {
-        transform: scale(.2) translateX(500px);
-    }
+   
 
 
     /* Top floater */
@@ -1393,6 +1383,11 @@ body.skin1,
     color: #dddde6
 }
 
+
+.skin1 .profile_info label {
+    color: #313739;
+}
+
 .skin1 .table-head span {
     background: #bbb5d3
 }
@@ -1541,11 +1536,11 @@ body.skin2,
     background: #d3d0cf;
 }
 .skin2 #uncategorised-bills > div span {
-    color: #fff !important
+    color: #6b4848 !important
 }
 
 .skin2 #uncategorised-bills > div {
-    background: #c9c6c5;
+    background: #c1bdbb;
 }
 
 .skin2 .uncategorised-item {
@@ -1558,7 +1553,7 @@ body.skin2,
 
 .skin2 #uncategorised-bills > div svg circle,
 .skin2 #uncategorised-bills > div svg line{
-    stroke: #fff;
+    stroke: #6b4848;
 }
 
 
@@ -1842,6 +1837,11 @@ body.skin4,
 .skin4 #team_setting_link,
 .skin4 #user_setting_link {
     color: #81454f
+}
+
+
+.skin4 .profile_info label {
+    color: #40484b;
 }
 
 .skin4 .table-head span {
@@ -2303,6 +2303,10 @@ body.skin7,
 .skin7 #team_setting_link,
 .skin7 #user_setting_link {
     color: #36345a
+}
+
+.skin7 .profile_info label {
+    color: #4b4141;
 }
 
 .skin7 .table-head span {
