@@ -1,4 +1,3 @@
-
 //-------------------------------------------------------------------------
 //              HOME PAGE
 //-------------------------------------------------------------------------
@@ -105,7 +104,7 @@ captureImg.addEventListener('change', () => {
         readAttachedBill(captureImg.files[0], null);
     } else {
         uncategorisedBillItems.push(captureImg.files[0]);
-        processUncategorisedBillItems();
+        createUncategorisedBillItems();
     }
 
 
@@ -125,7 +124,7 @@ billImageFile.addEventListener('change', () => {
         for (let i = 0; i < billImageFile.files.length; i++) {
             uncategorisedBillItems.push(billImageFile.files[i]);
         }
-        processUncategorisedBillItems();
+        createUncategorisedBillItems();
 
     } else if (billImageFile.files.length == 1) {
         readAttachedBill(billImageFile.files[0], null);
@@ -156,7 +155,7 @@ function uncategorisedID() {
 }
 
 
-function processUncategorisedBillItems() {
+function createUncategorisedBillItems() {
     if (uncategorisedBillItems.length > 0) {
         const uncategorisedSection = document.querySelector("#uncategorised-bills section");
         const divElt = document.createElement("div");
@@ -166,45 +165,56 @@ function processUncategorisedBillItems() {
 
         const svgPreloader = `<svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg>`;
 
-        const innerContent = `<p><span class="UN-CTG-view CTGloading">${svgPreloader}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title"></span><span class="UN-CTG-date"></span><span class="UN-CTG-amount"></span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
-        divElt.innerHTML = innerContent;
+        const htmlContent = `<p><span class="UN-CTG-view CTGloading">${svgPreloader}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title"></span><span class="UN-CTG-date"></span><span class="UN-CTG-amount"></span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
+        divElt.innerHTML = htmlContent;
         uncategorisedSection.appendChild(divElt);
         uncategorisedMainPanel.classList.remove("hide");
+
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
-
-        viewElt.addEventListener("click", function(evt) {
-            const parentElt = evt.currentTarget.parentNode;
-            const date = parentElt.parentNode.getAttribute("data-date");
-            const descr = parentElt.parentNode.getAttribute("data-descr");
-            const title = parentElt.parentNode.getAttribute("data-title");
-            let total = parentElt.parentNode.getAttribute("data-amount");
-            if (total.indexOf(",") > 0) {
-                total = total.split(",");
-            }
-            const type = "";
-            document.querySelector('.previewimg img').src = parentElt.parentNode.querySelector(`img.billsnapshot`).src;
-            imageProcessDone({ date, total, descr, title, type });
-            uncategorisedMainPanel.classList.add("hide");
-            uncategorisedMainPanel.setAttribute("data-mode", "active");
-            uncategorisedBtn.classList.add("hide");
-
-        });
-
-        removeElt.addEventListener("click", function(evt) {
-            const p1 = evt.currentTarget.parentNode;
-            p1.parentNode.remove();
-            if (document.querySelectorAll(".uncategorised-item").length == 0) {
-                uncategorisedMainPanel.classList.add("hide");
-                uncategorisedBtn.classList.add("hide");
-            }
-        });
+        clickToViewUncategorisedItem(viewElt);
+        removeUncategorisedItem(removeElt);
         readAttachedBill(uncategorisedBillItems[0], `#${itemID} img.billsnapshot`);
         uncategorisedBillItems.splice(0, 1);
     } else {
         preloader.classList.add("hide");
         currentUploadStatus = "";
     }
+}
+
+
+function clickToViewUncategorisedItem(viewElt) {
+    viewElt.addEventListener("click", function(evt) {
+        const parentElt = evt.currentTarget.parentNode;
+        const date = parentElt.parentNode.getAttribute("data-date");
+        const descr = parentElt.parentNode.getAttribute("data-descr");
+        const title = parentElt.parentNode.getAttribute("data-title");
+        let total = parentElt.parentNode.getAttribute("data-amount");
+        if (total.indexOf(",") > 0) {
+            total = total.split(",");
+        }
+        const type = "";
+        const item_id = parentElt.parentNode.getAttribute("id");
+        document.querySelector('.previewimg img').src = parentElt.parentNode.querySelector(`img.billsnapshot`).src;
+        imageProcessDone({ date, total, descr, title, type });
+        uncategorisedMainPanel.classList.add("hide");
+        uncategorisedMainPanel.setAttribute("data-mode", "active");
+        uncategorisedMainPanel.setAttribute("data-selecteditem", item_id);
+        uncategorisedBtn.classList.add("hide");
+
+    });
+
+}
+
+function removeUncategorisedItem(removeElt) {
+    removeElt.addEventListener("click", function(evt) {
+        const p1 = evt.currentTarget.parentNode;
+        p1.parentNode.remove();
+        if (document.querySelectorAll(".uncategorised-item").length == 0) {
+            uncategorisedMainPanel.classList.add("hide");
+            uncategorisedBtn.classList.add("hide");
+        }
+    });
 }
 
 function insertDataIntoUncategorisedItems(resultData, itemElt) {
@@ -264,10 +274,10 @@ function readAttachedBill(imgfile, queueProcessMode) {
             getOrientation(imgfile, function(orient) {
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
                 if (byteSize < 3 && orient <= 1) {
-                    BillImgProcessing(srcData, previewImgStr);
+                    BillDataExtraction(srcData, previewImgStr);
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
-                        BillImgProcessing(newImgData, previewImgStr);
+                        BillDataExtraction(newImgData, previewImgStr);
 
                     });
                 }
@@ -288,7 +298,7 @@ function readAttachedBill(imgfile, queueProcessMode) {
 
 }
 
-function BillImgProcessing(imgdata, previewImgStr) {
+function BillDataExtraction(imgdata, previewImgStr) {
     let GCVRequest = {
         requests: [{
             image: {
@@ -308,7 +318,7 @@ function BillImgProcessing(imgdata, previewImgStr) {
                     document.querySelector(previewImgStr).src = imgdata;
                     if (previewImgStr.indexOf("#UN-CTG-") == 0) {
                         insertDataIntoUncategorisedItems(txtjson.status, previewImgStr.split(" ")[0]);
-                        processUncategorisedBillItems();
+                        createUncategorisedBillItems();
                     } else {
                         imageProcessDone(txtjson.status);
                     }
@@ -317,7 +327,7 @@ function BillImgProcessing(imgdata, previewImgStr) {
                     document.querySelector(previewImgStr).src = imgdata;
                     if (previewImgStr.indexOf("#UN-CTG-") == 0) {
                         insertDataIntoUncategorisedItems({}, previewImgStr.split(" ")[0]);
-                        processUncategorisedBillItems();
+                        createUncategorisedBillItems();
                     } else {
                         imageProcessDone({});
                     }
@@ -326,7 +336,7 @@ function BillImgProcessing(imgdata, previewImgStr) {
             document.querySelector(previewImgStr).src = imgdata;
             if (previewImgStr.indexOf("#UN-CTG-") == 0) {
                 insertDataIntoUncategorisedItems({}, previewImgStr.split(" ")[0]);
-                processUncategorisedBillItems();
+                createUncategorisedBillItems();
             } else {
                 imageProcessDone({});
                 showAlertBox("Server Busy at the moment", "OK", null, false);
@@ -356,7 +366,7 @@ const PDF_IMG_converter = {
                 // Render the page contents in the canvas
                 page.render(renderContext).then(function() {
                     let canvasData = thecanvas.toDataURL("image/jpeg", 0.8);
-                    BillImgProcessing(canvasData, previewImgStr);
+                    BillDataExtraction(canvasData, previewImgStr);
                 });
             });
         }).catch(function(error) {
@@ -769,7 +779,7 @@ function resetTableFields(state) {
 
     } else {
         document.getElementById("billTable").classList.remove("static-table");
-        document.getElementById("billtype").disabled = false;        
+        document.getElementById("billtype").disabled = false;
     }
 
 }
@@ -846,7 +856,7 @@ function deleteBill() {
 
 
 function saveBill(bill) {
-    let type = sessionStorage.getItem("is_private_team") || "private";
+    const isUncategorised = (uncategorisedMainPanel.getAttribute("data-mode") == "active") ? true : false;
     fetch("../saveBill/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ receipt: bill })) })
         .then(data => data.json())
         .then(function(res) {
@@ -859,17 +869,62 @@ function saveBill(bill) {
                 showAlertBox("Sorry, can not Save.\nThis Bill already exists", "OK", null, false);
             }
             if (res.status == "saved") {
-                exitBillBtn.click();
-                inProgressTextStatus(saveBillBtn, "Save", false);
-                exitBillBtn.classList.remove("hide");
-                currentUploadStatus = "";
-                location.reload();
+                if (isUncategorised) {
+                    /*const unctg_itemID = uncategorisedMainPanel.getAttribute("data-selecteditem");
+                    const removeElt = document.querySelector(`#${unctg_itemID} .UN-CTG-remove`);
+                    removeElt.click();  */
+                    inProgressTextStatus(saveBillBtn, "Saving Uncategorised...", false);
+                    saveUncategorisedBills();
+                } else {
+                    location.reload();
+                }
+
             }
         }).catch(function() {
             inProgressTextStatus(saveBillBtn, "Save", false);
             preloader.classList.add("hide");
             exitBillBtn.classList.remove("hide");
             showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+        });
+}
+
+function saveUncategorisedBills() {
+    let UNCTG_bills = [];
+    const client = sessionStorage.getItem("ckey") || "";
+    const serv = sessionStorage.getItem("skey") || "";
+    const unCTG = document.querySelectorAll("#uncategorised-bills .uncategorised-item");
+    unCTG.forEach((item) => {
+        const billdata = {
+            date: item.getAttribute("data-date"),
+            title: item.getAttribute("data-title"),
+            total: item.getAttribute("data-amount"),
+            descr: item.getAttribute("data-descr")
+        };
+
+        const imgSrc = item.querySelector("img.billsnapshot").getAttribute("src");
+        let billObj = {};
+        if (userAcType == "personal") {
+            billObj.bill = encryptImg(imgSrc, { serv: serv, cli: client });
+            billObj.billData = encryptData(billdata, { serv: serv, cli: client });
+        } else {
+            billObj.bill = btoa(imgSrc);
+            billObj.billData = btoa(JSON.stringify(billdata));
+        }
+        UNCTG_bills.push(billObj)
+
+    });
+
+    let UNCTG = {};
+    UNCTG.accountType = userAcType;
+    UNCTG.projectID = selectedProjectID;
+    UNCTG.bills = UNCTG_bills;
+
+    fetch("../saveUncategorised/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ uncategorised: UNCTG })) })
+        .then(data => data.json())
+        .then(function(res) {
+            if (res.status = "done") {
+                location.reload();
+            }
         });
 }
 
@@ -936,7 +991,7 @@ saveBillBtn.addEventListener("click", function() {
     }
     inProgressTextStatus(saveBillBtn, "Saving, please wait...", true);
     hideElements([exitBillBtn, deleteBillBtn]);
-    saveBill(billObj, sessEmail, serv);
+    saveBill(billObj);
 });
 
 
@@ -987,7 +1042,8 @@ exitBillBtn.addEventListener("click", function() {
     }
     document.getElementById("billThumbnails").classList.remove("hide");
     if (uncategorisedMainPanel.getAttribute("data-mode") == "active") {
-        uncategorisedMainPanel.classList.remove("hide")
+        uncategorisedMainPanel.classList.remove("hide");
+        uncategorisedMainPanel.setAttribute("data-mode", "");
     }
 
 });
@@ -2329,7 +2385,7 @@ function activeNavTab(elm) {
 
 
 function initLoad() {
-    billshomeBtn.click();    
+    billshomeBtn.click();
     let temp_projid = localStorage.getItem("tempProjID") || "";
     if (temp_projid !== "") { removeTempProject(temp_projid) }
     let accountchangeUser = localStorage.getItem("accountchange") || "";

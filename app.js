@@ -21,6 +21,8 @@ const mongoURL = KEYS_DATA.mongodb;
 
 let Users = null;
 let Teams = null;
+let Categorisedbills = null;
+let Uncategorisedbills = null;
 let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
     date: String
 }));
@@ -57,6 +59,20 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
         logs: [],
         bills: [{ billid: String, imgsrc: String, data: String, submitdate: String, status: String, logs: [] }]
 
+    }));
+
+     Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
+        email: String,
+        account: String,
+        billid: String,
+        billimg:Sring
+    }));
+
+    Uncategorisedbills = mongoose.model("Uncategorisedbills", new mongoose.Schema({
+        email: String,
+        account: String,
+        billimg: String,
+        billdata: String
     }));
 
 }).catch((err) => {
