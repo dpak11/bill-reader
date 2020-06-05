@@ -21,7 +21,7 @@ const mongoURL = KEYS_DATA.mongodb;
 
 let Users = null;
 let Teams = null;
-let Categorisedbills = null;
+// let Categorisedbills = null;
 let Uncategorisedbills = null;
 let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
     date: String
@@ -61,16 +61,18 @@ mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, 
 
     }));
 
-     Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
+    /* Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
         email: String,
         account: String,
         billid: String,
         billimg:Sring
-    }));
+    }));*/
 
     Uncategorisedbills = mongoose.model("Uncategorisedbills", new mongoose.Schema({
         email: String,
         account: String,
+        project: String,
+        billid: String,
         billimg: String,
         billdata: String
     }));
@@ -167,8 +169,8 @@ function generateEmailConstantKey(email) {
     return Buffer.from(str).toString('base64')
 }
 
-function processBillText(datarray) {    
-    let receiptTitle = getReceiptTitle(datarray.slice(0,6));
+function processBillText(datarray) {
+    let receiptTitle = getReceiptTitle(datarray.slice(0, 6));
     let arr = datarray.join("-|||-").toLowerCase().split("-|||-");
     let dateStr = extractBillDate(arr);
     let totalsList = arr.filter((txt) => (/(total|amt|amnt|rate|amount|payable)/).test(txt));
@@ -184,36 +186,36 @@ function processBillText(datarray) {
 
 }
 
-function getReceiptTitle(titles){
-    const topBrands = ["super market","supermarket","super mart","supermart","superstore","super store","hotel","restaurant","pvt. ltd","pvt.ltd","pvt ltd","redbus","red bus","walmart","family mart","peter england","arrow","mochi","vip","hidesign","regal","modern bazaar","heritage foods","hypermart","max","pacific mall","vr mall","24x7 store","margin free","nilgiri","ags rathna","Louis Phillipe","metro inc","van heusen","hamleys","spencer's","spencers","spencer plaza","food world","reliance fresh","more","star bazaar","big bazaar","dmart","d mart","reliance smart","hyper city","spar","shoppers stop","forum fiza","forum vijaya","future retail","lifestyle","woodlands","marks & spencer","marks spencer","sathosh super","saravana stores","toyota","mercedes","bmw"];     
-    
+function getReceiptTitle(titles) {
+    const topBrands = ["super market", "supermarket", "super mart", "supermart", "superstore", "super store", "hotel", "restaurant", "pvt. ltd", "pvt.ltd", "pvt ltd", "redbus", "red bus", "walmart", "family mart", "peter england", "arrow", "mochi", "vip", "hidesign", "regal", "modern bazaar", "heritage foods", "hypermart", "max", "pacific mall", "vr mall", "24x7 store", "margin free", "nilgiri", "ags rathna", "Louis Phillipe", "metro inc", "van heusen", "hamleys", "spencer's", "spencers", "spencer plaza", "food world", "reliance fresh", "more", "star bazaar", "big bazaar", "dmart", "d mart", "reliance smart", "hyper city", "spar", "shoppers stop", "forum fiza", "forum vijaya", "future retail", "lifestyle", "woodlands", "marks & spencer", "marks spencer", "sathosh super", "saravana stores", "toyota", "mercedes", "bmw"];
+
     let brands = topBrands.map((brand) => {
-        if(titles[0].toLowerCase().indexOf(brand)>=0){
+        if (titles[0].toLowerCase().indexOf(brand) >= 0) {
             return titles[0].trim()
-        }       
-        if(titles[1].toLowerCase().indexOf(brand)>=0){
+        }
+        if (titles[1].toLowerCase().indexOf(brand) >= 0) {
             return titles[1].trim()
         }
-        if(titles[2].toLowerCase().indexOf(brand)>=0){
+        if (titles[2].toLowerCase().indexOf(brand) >= 0) {
             return titles[2].trim()
         }
-        if(titles[3].toLowerCase().indexOf(brand)>=0){
+        if (titles[3].toLowerCase().indexOf(brand) >= 0) {
             return titles[3].trim()
         }
-        if(titles[4].toLowerCase().indexOf(brand)>=0){
+        if (titles[4].toLowerCase().indexOf(brand) >= 0) {
             return titles[4].trim()
         }
-        if(titles[5].toLowerCase().indexOf(brand)>=0){
+        if (titles[5].toLowerCase().indexOf(brand) >= 0) {
             return titles[5].trim()
         }
         return false;
     }).filter(brnd => brnd !== false);
 
 
-    if(brands.length && brands[0]){
+    if (brands.length && brands[0]) {
         return sanitiser({ str: brands[0], isNumber: false })
     }
-    
+
     return sanitiser({ str: titles[0], isNumber: false }) + " " + sanitiser({ str: titles[1], isNumber: false });
 }
 
@@ -306,7 +308,7 @@ function extractTotalVal(totals, alltexts) {
     if (totalValue.indexOf(",") > 0) {
         totalValue = totalValue.split(",").join("");
     }
-    
+
     const sanitisedNum = sanitiser({ str: totalValue, isNumber: true });
     if (totalValue == "" || totalValue.indexOf(":") >= 0 || isNaN(sanitisedNum) || sanitisedNum == "") {
         if (totalValue.indexOf(":") >= 0) {
@@ -337,10 +339,10 @@ function amountNumSorter(alltexts) {
     let newlist = alltexts.map(txt => {
         let _txt = txt.trim();
         _txt = _txt.split(",").join("");
-        if(_txt.indexOf("rs.") == 0){
-           _txt = _txt.split("rs.")[1].trim(); 
+        if (_txt.indexOf("rs.") == 0) {
+            _txt = _txt.split("rs.")[1].trim();
         }
-        
+
         if (!isNaN(_txt)) { _txt = Math.round(Number(_txt)) }
         if (!isNaN(_txt)) {
             if (_txt < 999999) { return _txt }
@@ -876,6 +878,28 @@ function removeProject(pwdkey, useragent, email, project) {
 
 }
 
+async function loadUncategorisedBills(pskey, agent, email, project, account){
+    console.log("loading uncategorised...");
+    const findParams = {email: email, account: account}
+    if(account == "team"){
+        findParams.project = project;
+    }
+    let uncategorisedDocs = await Uncategorisedbills.find(findParams)
+    if(uncategorisedDocs.length == 0){
+        return Promise.resolve([])
+    }
+    const UNCTG_bills = [];
+    uncategorisedDocs.forEach((billdoc) => {
+        UNCTG_bills.push({
+            bill_id: billdoc.billid,
+            billimg: billdoc.billimg,
+            billdata: billdoc.billdata
+        })
+    });
+    return Promise.resolve(UNCTG_bills);
+
+}
+
 async function loadUserBills(pskey, agent, email, mode) {
     let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
     if (!userDoc) { return new Promise((resolve, rej) => rej()) }
@@ -1061,6 +1085,59 @@ async function saveUserBill(pskey, agent, email, receipt) {
         });
 
     }
+
+}
+
+
+async function saveUncategorisedBills(pskey, agent, email, uncategorised) {
+    console.log("saving uncategorised...");
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
+        return new Promise((resolve, rej) => rej());
+    }
+    const { accountType, projectID, bills } = uncategorised;
+    const findParams = { email: email };
+    if (accountType == "team" && projectID != "") {
+        findParams.project = projectID;
+    } else {
+        findParams.account = "personal";
+    }
+    let promises1 = [];
+    bills.forEach((unc_bill, i) => {
+        const { bill_id, billData, bill } = unc_bill;
+        findParams.billid = bill_id;
+        promises1[i] = Uncategorisedbills.findOne(findParams).exec().then((doc) => {
+            if (doc == null) { 
+                console.log("Saving: "+bill_id);
+                return Promise.resolve(bill_id) 
+            }
+            return Promise.resolve(false)
+        });
+
+    });
+
+    let ids = await Promise.all(promises1);
+    let newIDs = ids.filter(id => id !== false);
+    if(newIDs.length == 0){
+        return Promise.resolve();
+    }
+    let promises2 = [];
+    bills.forEach((b, i) => {
+        if (newIDs.indexOf(b.bill_id) > -1) {
+            const newbill = new Uncategorisedbills({
+                email: email,
+                account: accountType,
+                project: projectID,
+                billid: b.bill_id,
+                billimg: b.bill,
+                billdata: b.billData
+            });
+            promises2[i] = newbill.save().then(() => {
+                return Promise.resolve();
+            });
+        }
+    });
+    return Promise.all(promises2).then(() => Promise.resolve())    
 
 }
 
@@ -1342,6 +1419,19 @@ app.post("/loadBills", (req, res) => {
 
 });
 
+
+app.post("/loadUncategorised", (req, res) => {
+    const { em, agent, key_serv, project, account } = req.body;
+    loadUncategorisedBills(key_serv, agent, getEmail(em), project, account).then(uBills => {
+        console.log("loaded");
+        res.json({ status: "done", bills: uBills });
+    }).catch((s) => {        
+        res.json({ status: "invalid" });        
+
+    })
+
+});
+
 app.post("/saveBill", (req, res) => {
     const { em, agent, key_serv, receipt } = req.body;
     saveUserBill(key_serv, agent, getEmail(em), receipt).then(() => {
@@ -1353,6 +1443,19 @@ app.post("/saveBill", (req, res) => {
             res.json({ status: "invalid" })
         }
 
+    })
+});
+
+
+app.post("/saveUncategorised", (req, res) => {
+    const { em, agent, key_serv, uncategorised } = req.body;
+    saveUncategorisedBills(key_serv, agent, getEmail(em), uncategorised).then(() => {
+        console.log("saved uncategorised");
+        res.json({ status: "saved" });
+    }).catch((s) => {
+        console.log("save failed");
+        console.log(s);
+        res.json({ status: "invalid" })
     })
 });
 

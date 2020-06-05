@@ -155,17 +155,24 @@ function uncategorisedID() {
 }
 
 
-function createUncategorisedBillItems() {
-    if (uncategorisedBillItems.length > 0) {
+function createUncategorisedBillItems(databaseItems = []) {
+    console.log(databaseItems.length);
+
+    if (uncategorisedBillItems.length > 0 || databaseItems.length > 0) {
+        const databaseBills = [...databaseItems];
         const uncategorisedSection = document.querySelector("#uncategorised-bills section");
         const divElt = document.createElement("div");
-        const itemID = uncategorisedID();
+        const itemID = (databaseBills.length > 0) ? databaseBills[0].billID : uncategorisedID();
         divElt.className = "uncategorised-item";
         divElt.setAttribute("id", itemID);
 
-        const svgPreloader = `<svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg>`;
-
-        const htmlContent = `<p><span class="UN-CTG-view CTGloading">${svgPreloader}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title"></span><span class="UN-CTG-date"></span><span class="UN-CTG-amount"></span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
+        const svgPreloader = (databaseBills.length == 0) ? `<svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg>` : "View";
+        const preLoadClass = (databaseBills.length == 0) ? "CTGloading" : "";
+        const billTitle = (databaseBills.length == 0) ? "" : databaseBills[0].billData.title;        
+        const billDate = (databaseBills.length == 0) ? "" : databaseBills[0].billData.date;
+        let billAmount = (databaseBills.length == 0) ? "" : databaseBills[0].billData.total;
+        billAmount = (billAmount.indexOf(",") == -1) ? billAmount : "??";
+        const htmlContent = `<p><span class="UN-CTG-view ${preLoadClass}">${svgPreloader}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">${billTitle}</span><span class="UN-CTG-date">${billDate}</span><span class="UN-CTG-amount">${billAmount}</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = htmlContent;
         uncategorisedSection.appendChild(divElt);
         uncategorisedMainPanel.classList.remove("hide");
@@ -174,8 +181,21 @@ function createUncategorisedBillItems() {
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
         clickToViewUncategorisedItem(viewElt);
         removeUncategorisedItem(removeElt);
-        readAttachedBill(uncategorisedBillItems[0], `#${itemID} img.billsnapshot`);
-        uncategorisedBillItems.splice(0, 1);
+        if(databaseBills.length > 0){
+            console.log("Inserting database values...");
+            const {date, title, total, descr} = databaseBills[0].billData;
+            divElt.setAttribute("data-date",date);
+            divElt.setAttribute("data-title",title);
+            divElt.setAttribute("data-amount",total);
+            divElt.setAttribute("data-descr",descr);
+            document.querySelector(`#${itemID} img.billsnapshot`).src = databaseBills[0].billImg;
+            databaseBills.splice(0,1);
+            createUncategorisedBillItems(databaseBills);
+        }else{
+          readAttachedBill(uncategorisedBillItems[0], `#${itemID} img.billsnapshot`);
+          uncategorisedBillItems.splice(0, 1);  
+        }
+        
     } else {
         preloader.classList.add("hide");
         currentUploadStatus = "";
@@ -217,7 +237,28 @@ function removeUncategorisedItem(removeElt) {
     });
 }
 
+function isUncategorisedDuplicate(){   
+   const items =  document.querySelectorAll(".uncategorised-item img.billsnapshot");
+   const lastItem = items[items.length-1];
+   const imgChars = lastItem.src.substr(0,2000);
+   const len = items.length-1;
+   let duplicate = false;
+   items.forEach((item,i) => {
+    if(i<len){
+        if(item.src.substr(0,2000) == imgChars){
+            duplicate = true;
+        } 
+    }
+   });
+   return duplicate;
+}
+
 function insertDataIntoUncategorisedItems(resultData, itemElt) {
+    if(isUncategorisedDuplicate()){
+        const removeElt = document.querySelector(`${itemElt} .UN-CTG-remove`);
+        removeElt.click();
+        return;
+    }
     const title = document.querySelector(`${itemElt} .UN-CTG-title`);
     const amount = document.querySelector(`${itemElt} .UN-CTG-amount`);
     const date = document.querySelector(`${itemElt} .UN-CTG-date`);
@@ -550,6 +591,7 @@ function fetchBills() {
                     detectDeviceCam(function(hascam) {
                         if (hascam) { document.getElementById("cameraDevice").classList.remove("hide") }
                     });
+
                     initData(res);
                     if (userAcType == "team") {
                         selectedProjectID = res.user_data.activeProjectID || "";
@@ -579,13 +621,44 @@ function fetchBills() {
 
                     addCategorySelectOptions();
                     displayBillThumbnails();
-
+                    if (userAcType == "personal" || (userAcType == "team" && type == "private")) {
+                        loadUncategorisedBills();
+                    }
                 }
             }).catch(function(e) {
                 showAlertBox("Server Busy!", "OK", null, false);
                 preloader.classList.add("hide");
             });
+
+
     }
+}
+
+
+
+function loadUncategorisedBills() {
+    console.log("loading uncategorised...");
+    fetch("../loadUncategorised/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ project: selectedProjectID, account: userAcType })) })
+        .then(data => data.json())
+        .then(function(res) {
+            if (res.status == "done") {
+                console.log("loaded uncategorised");
+                let unctgBills = res.bills.map((bill) => {
+                    let billImg;
+                    let billData;
+                    if (userAcType == "personal") {
+                        const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
+                        billImg = decryptImg(bill.billimg, key);
+                        billData = decryptData(bill.billdata, key);
+                    } else {
+                        billImg = atob(bill.billimg);
+                        billData = JSON.parse(atob(bill.billdata));
+                    }
+                    return { billID:bill.bill_id,billImg,billData }
+                });
+                createUncategorisedBillItems(unctgBills);
+            }
+        });
 }
 
 function displayBillingTable(data) {
@@ -822,7 +895,7 @@ function updateBill() {
         }).catch(function() {
             inProgressTextStatus(updateBillBtn, "Update", false);
             showElements([deleteBillBtn, exitBillBtn]);
-            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+            showAlertBox("Oops! Server is Busy at the moment.", "OK", null, false);
 
         });
 
@@ -848,7 +921,7 @@ function deleteBill() {
         }).catch(function() {
             inProgressTextStatus(deleteBillBtn, "Delete", false);
             showElements([exitBillBtn, updateBillBtn]);
-            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+            showAlertBox("Oops! Server is Busy at the moment.", "OK", null, false);
         });
 
 }
@@ -870,10 +943,10 @@ function saveBill(bill) {
             }
             if (res.status == "saved") {
                 if (isUncategorised) {
-                    /*const unctg_itemID = uncategorisedMainPanel.getAttribute("data-selecteditem");
+                    const unctg_itemID = uncategorisedMainPanel.getAttribute("data-selecteditem");
                     const removeElt = document.querySelector(`#${unctg_itemID} .UN-CTG-remove`);
-                    removeElt.click();  */
-                    inProgressTextStatus(saveBillBtn, "Saving Uncategorised...", false);
+                    removeElt.click();
+                    inProgressTextStatus(saveBillBtn, "Saving Uncategorised...", true);
                     saveUncategorisedBills();
                 } else {
                     location.reload();
@@ -884,12 +957,13 @@ function saveBill(bill) {
             inProgressTextStatus(saveBillBtn, "Save", false);
             preloader.classList.add("hide");
             exitBillBtn.classList.remove("hide");
-            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+            showAlertBox("Oops! Server is Busy at the moment.", "OK", null, false);
         });
 }
 
 function saveUncategorisedBills() {
-    let UNCTG_bills = [];
+    console.log("saving uncategorised...");
+    const UNCTG_bills = [];
     const client = sessionStorage.getItem("ckey") || "";
     const serv = sessionStorage.getItem("skey") || "";
     const unCTG = document.querySelectorAll("#uncategorised-bills .uncategorised-item");
@@ -902,7 +976,7 @@ function saveUncategorisedBills() {
         };
 
         const imgSrc = item.querySelector("img.billsnapshot").getAttribute("src");
-        let billObj = {};
+        let billObj = { bill_id: item.getAttribute("id") };
         if (userAcType == "personal") {
             billObj.bill = encryptImg(imgSrc, { serv: serv, cli: client });
             billObj.billData = encryptData(billdata, { serv: serv, cli: client });
@@ -914,7 +988,7 @@ function saveUncategorisedBills() {
 
     });
 
-    let UNCTG = {};
+    const UNCTG = {};
     UNCTG.accountType = userAcType;
     UNCTG.projectID = selectedProjectID;
     UNCTG.bills = UNCTG_bills;
@@ -922,10 +996,17 @@ function saveUncategorisedBills() {
     fetch("../saveUncategorised/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ uncategorised: UNCTG })) })
         .then(data => data.json())
         .then(function(res) {
-            if (res.status = "done") {
+            if (res.status = "saved") {
                 location.reload();
+            } else {
+                showAlertBox("Sorry! Unable to save Uncategorised Bills", "OK", null, false);
+                setTimeout(function() {
+                    location.reload();
+                }, 4000)
             }
-        });
+        }).catch(function() {
+            location.reload();
+        })
 }
 
 
@@ -1590,7 +1671,7 @@ function loadAccountSettings() {
 
         }).catch((s) => {
             document.querySelector('.settingloadstatus').classList.add("hide");
-            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+            showAlertBox("Oops! Server is Busy at the moment.", "OK", null, false);
 
         });
 
@@ -1640,7 +1721,7 @@ function addMemberToProject(member, role, approver) {
             enableAddNewMember = true;
             inProgressTextStatus(addNewMemberProjBtn, "Add Member to Project", false);
             addNewMemberProjBtn.classList.add("btn");
-            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+            showAlertBox("Oops! Server is Busy at the moment.", "OK", null, false);
 
         });
 }
@@ -1706,7 +1787,7 @@ function createNewProjectName(projname) {
             addNewMemberProjBtn.classList.add("btn");
             document.getElementById("displayteamname").classList.remove("member-fields-disable");
             document.getElementById("displayteamname").removeAttribute("readonly");
-            showAlertBox("Opps! Server is Busy at the moment.", "OK", null, false);
+            showAlertBox("Oops! Server is Busy at the moment.", "OK", null, false);
 
         });
 }
