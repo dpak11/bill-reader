@@ -1096,52 +1096,46 @@ async function saveUncategorisedBills(pskey, agent, email, uncategorised) {
         return new Promise((resolve, rej) => rej());
     }
     const { accountType, projectID, bills } = uncategorised;
-    const findParams = { email: email };
+    /*const findParams = { email: email };
     if (accountType == "team" && projectID != "") {
         findParams.project = projectID;
     } else {
         findParams.account = "personal";
-    }
-    let promises1 = [];
+    }*/
+    let promises = [];
     bills.forEach((unc_bill, i) => {
         const { bill_id, billData, bill } = unc_bill;
-        findParams.billid = bill_id;
-        promises1[i] = Uncategorisedbills.findOne(findParams).exec().then((doc) => {
-            if (doc == null) { 
-                console.log("Saving: "+bill_id);
-                return Promise.resolve(bill_id) 
-            }
-            return Promise.resolve(false)
+        const newbill = new Uncategorisedbills({
+            email: email,
+            account: accountType,
+            project: projectID,
+            billid: bill_id,
+            billimg: bill,
+            billdata: billData
+        });
+        promises[i] = newbill.save().then(() => {
+            return Promise.resolve();
         });
 
     });
-
-    let ids = await Promise.all(promises1);
-    let newIDs = ids.filter(id => id !== false);
-    if(newIDs.length == 0){
-        return Promise.resolve();
-    }
-    let promises2 = [];
-    bills.forEach((b, i) => {
-        if (newIDs.indexOf(b.bill_id) > -1) {
-            const newbill = new Uncategorisedbills({
-                email: email,
-                account: accountType,
-                project: projectID,
-                billid: b.bill_id,
-                billimg: b.bill,
-                billdata: b.billData
-            });
-            promises2[i] = newbill.save().then(() => {
-                return Promise.resolve();
-            });
-        }
-    });
-    return Promise.all(promises2).then(() => Promise.resolve())    
+    return Promise.all(promises).then(() => Promise.resolve())   
 
 }
 
 
+async function deleteUncategorisedBill(pskey, agent, email, uncategorised) {
+    console.log("Deleting uncategorised...");
+    let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
+    if (!userDoc) {
+        return new Promise((resolve, rej) => rej());
+    }
+    const { accountType, projectID, id } = uncategorised;
+
+    return Uncategorisedbills.deleteOne({ email: email, account: accountType, project:projectID, billid:id }).exec().then((del) => {
+        return new Promise((resolve, rej) => resolve());
+    });
+
+}
 
 async function deleteUserBill(pskey, agent, email, bill_id) {
     let userDoc = await Users.findOne({ email: email, key: pskey, browser: agent });
@@ -1454,6 +1448,19 @@ app.post("/saveUncategorised", (req, res) => {
         res.json({ status: "saved" });
     }).catch((s) => {
         console.log("save failed");
+        console.log(s);
+        res.json({ status: "invalid" })
+    })
+});
+
+
+app.post("/deleteUncategorised", (req, res) => {
+    const { em, agent, key_serv, uncategorised } = req.body;
+    deleteUncategorisedBill(key_serv, agent, getEmail(em), uncategorised).then(() => {
+        console.log("Deleted uncategorised");
+        res.json({ status: "deleted" });
+    }).catch((s) => {
+        console.log("Deletion failed");
         console.log(s);
         res.json({ status: "invalid" })
     })

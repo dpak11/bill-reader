@@ -364,6 +364,7 @@ span.UN-CTG-view {
 
 span.UN-CTG-view.CTGloading{
     background: transparent;
+    cursor: default
 }
 
 .prev-block,

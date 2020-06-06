@@ -17,6 +17,7 @@ let selectedProjectID = "";
 let projectMemberRole = "";
 let selectedProjectName = "";
 let uncategorisedBillItems = [];
+let database_uncategorisedBillIDs = [];
 
 const billshomeBtn = document.getElementById("billshome");
 const saveBillBtn = document.getElementById("savebill");
@@ -38,6 +39,7 @@ const imageUploader = document.getElementById("imageuploader");
 const uncategorisedMainPanel = document.getElementById("uncategorised-bills");
 const exitUncategorisedBills = document.querySelector("#uncategorised-bills > div svg");
 const uncategorisedBtn = document.getElementById("link-uncateg");
+const svgPreloader = `<svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg>`;
 
 const authVars = { em: sessionStorage.getItem("em"), agent: btoa(navigator.userAgent), key_serv: sessionStorage.getItem("skey") };
 const bodyParams = (params) => {
@@ -156,9 +158,10 @@ function uncategorisedID() {
 
 
 function createUncategorisedBillItems(databaseItems = []) {
-    console.log(databaseItems.length);
+    console.log(uncategorisedBillItems.length);
 
     if (uncategorisedBillItems.length > 0 || databaseItems.length > 0) {
+        console.log("...........")
         const databaseBills = [...databaseItems];
         const uncategorisedSection = document.querySelector("#uncategorised-bills section");
         const divElt = document.createElement("div");
@@ -166,36 +169,41 @@ function createUncategorisedBillItems(databaseItems = []) {
         divElt.className = "uncategorised-item";
         divElt.setAttribute("id", itemID);
 
-        const svgPreloader = (databaseBills.length == 0) ? `<svg width="20px" height="20px" viewBox="0 0 128 128" xml:space="preserve"><g><circle cx="16" cy="64" r="16" fill="#000000" fill-opacity="1"/><circle cx="16" cy="64" r="16" fill="#555555" fill-opacity="0.67" transform="rotate(45,64,64)"/><circle cx="16" cy="64" r="16" fill="#949494" fill-opacity="0.42" transform="rotate(90,64,64)"/><circle cx="16" cy="64" r="16" fill="#cccccc" fill-opacity="0.2" transform="rotate(135,64,64)"/><animateTransform attributeName="transform" type="rotate" values="0 64 64;315 64 64;270 64 64;225 64 64;180 64 64;135 64 64;90 64 64;45 64 64" calcMode="discrete" dur="1040ms" repeatCount="indefinite"></animateTransform></g></svg>` : "View";
+        const isViewPreload = (databaseBills.length == 0) ? svgPreloader : "View";
         const preLoadClass = (databaseBills.length == 0) ? "CTGloading" : "";
-        const billTitle = (databaseBills.length == 0) ? "" : databaseBills[0].billData.title;        
+        const billTitle = (databaseBills.length == 0) ? "" : databaseBills[0].billData.title;
         const billDate = (databaseBills.length == 0) ? "" : databaseBills[0].billData.date;
         let billAmount = (databaseBills.length == 0) ? "" : databaseBills[0].billData.total;
         billAmount = (billAmount.indexOf(",") == -1) ? billAmount : "??";
-        const htmlContent = `<p><span class="UN-CTG-view ${preLoadClass}">${svgPreloader}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">${billTitle}</span><span class="UN-CTG-date">${billDate}</span><span class="UN-CTG-amount">${billAmount}</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
+        const htmlContent = `<p><span class="UN-CTG-view ${preLoadClass}">${isViewPreload}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">${billTitle}</span><span class="UN-CTG-date">${billDate}</span><span class="UN-CTG-amount">${billAmount}</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = htmlContent;
         uncategorisedSection.appendChild(divElt);
-        uncategorisedMainPanel.classList.remove("hide");
+        if (uncategorisedBillItems.length > 0) {
+            uncategorisedMainPanel.classList.remove("hide");
+        }
+
 
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
         clickToViewUncategorisedItem(viewElt);
-        removeUncategorisedItem(removeElt);
-        if(databaseBills.length > 0){
+        confirmUncategorisedDeletion(removeElt);
+        if (databaseBills.length > 0) {
+            uncategorisedBtn.classList.remove("hide");
             console.log("Inserting database values...");
-            const {date, title, total, descr} = databaseBills[0].billData;
-            divElt.setAttribute("data-date",date);
-            divElt.setAttribute("data-title",title);
-            divElt.setAttribute("data-amount",total);
-            divElt.setAttribute("data-descr",descr);
+            const { date, title, total, descr } = databaseBills[0].billData;
+            divElt.setAttribute("data-date", date);
+            divElt.setAttribute("data-title", title);
+            divElt.setAttribute("data-amount", total);
+            divElt.setAttribute("data-descr", descr);
             document.querySelector(`#${itemID} img.billsnapshot`).src = databaseBills[0].billImg;
-            databaseBills.splice(0,1);
+            databaseBills.splice(0, 1);
             createUncategorisedBillItems(databaseBills);
-        }else{
-          readAttachedBill(uncategorisedBillItems[0], `#${itemID} img.billsnapshot`);
-          uncategorisedBillItems.splice(0, 1);  
+        } else if (uncategorisedBillItems.length > 0) {
+            uncategorisedMainPanel.classList.remove("hide");
+            readAttachedBill(uncategorisedBillItems[0], `#${itemID}`);
+            uncategorisedBillItems.splice(0, 1);
         }
-        
+
     } else {
         preloader.classList.add("hide");
         currentUploadStatus = "";
@@ -226,37 +234,61 @@ function clickToViewUncategorisedItem(viewElt) {
 
 }
 
-function removeUncategorisedItem(removeElt) {
+function confirmUncategorisedDeletion(removeElt) {
     removeElt.addEventListener("click", function(evt) {
         const p1 = evt.currentTarget.parentNode;
-        p1.parentNode.remove();
-        if (document.querySelectorAll(".uncategorised-item").length == 0) {
-            uncategorisedMainPanel.classList.add("hide");
-            uncategorisedBtn.classList.add("hide");
-        }
+        showAlertBox("Are you sure you want to Delete this?", "Yes", "No", true, removeUncategorisedItem, p1.parentNode, null, null);
+
     });
 }
 
-function isUncategorisedDuplicate(){   
-   const items =  document.querySelectorAll(".uncategorised-item img.billsnapshot");
-   const lastItem = items[items.length-1];
-   const imgChars = lastItem.src.substr(0,2000);
-   const len = items.length-1;
-   let duplicate = false;
-   items.forEach((item,i) => {
-    if(i<len){
-        if(item.src.substr(0,2000) == imgChars){
-            duplicate = true;
-        } 
+function removeUncategorisedItem(item) {
+    console.log("deleting...");
+    item.querySelector(".UN-CTG-remove").innerHTML = svgPreloader;
+    item.querySelector(".UN-CTG-remove").classList.add("CTGloading");
+    const deletionID = item.getAttribute("id");
+    const dbIndex = database_uncategorisedBillIDs.indexOf(deletionID);
+    if (dbIndex == -1) {
+        console.log("Not in database")
+        item.remove();
+        uncategorisedAutoClose();
+        return;
     }
-   });
-   return duplicate;
+    console.log("deleting in database...");
+    const UNCTG = { accountType: userAcType, projectID: selectedProjectID, id: deletionID };
+    fetch("../deleteUncategorised/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ uncategorised: UNCTG })) })
+        .then(data => data.json())
+        .then(function(res) {
+            if (res.status == "deleted") {
+                console.log("Deleted from database")
+                item.remove();
+                database_uncategorisedBillIDs.splice(dbIndex, 1);
+                uncategorisedAutoClose();
+            }
+
+        });
+
+}
+
+function hasUncategorisedDuplicate() {
+    const items = document.querySelectorAll(".uncategorised-item img.billsnapshot");
+    const lastItem = items[items.length - 1];
+    const imgChars = lastItem.src.substr(0, 2000);
+    const len = items.length - 1;
+    let duplicate = false;
+    items.forEach((item, i) => {
+        if (i < len) {
+            if (item.src.substr(0, 2000) == imgChars) {
+                duplicate = true;
+            }
+        }
+    });
+    return duplicate;
 }
 
 function insertDataIntoUncategorisedItems(resultData, itemElt) {
-    if(isUncategorisedDuplicate()){
-        const removeElt = document.querySelector(`${itemElt} .UN-CTG-remove`);
-        removeElt.click();
+    if (hasUncategorisedDuplicate()) {
+        document.querySelector(`${itemElt}`).remove();
         return;
     }
     const title = document.querySelector(`${itemElt} .UN-CTG-title`);
@@ -297,8 +329,24 @@ function insertDataIntoUncategorisedItems(resultData, itemElt) {
 
 }
 
-function readAttachedBill(imgfile, queueProcessMode) {
-    let previewImgStr = queueProcessMode == null ? '.previewimg img' : queueProcessMode;
+function uncategorisedAutoClose() {
+    if (document.querySelectorAll(".uncategorised-item").length == 0) {
+        uncategorisedMainPanel.classList.add("hide");
+        uncategorisedBtn.classList.add("hide");
+    }
+}
+
+function findUNCTGDuplicates(itemElt) {
+    if (hasUncategorisedDuplicate()) {
+        console.log("removed duplicate");
+        document.querySelector(`${itemElt}`).remove();
+        return {deleted: true}
+    }
+    return { deleted: false}
+}
+
+function readAttachedBill(imgfile, queueItem) {
+    let previewImgStr = queueItem == null ? '.previewimg img' : `${queueItem} img.billsnapshot`;
     if (imgfile.type.indexOf("image/") > -1) {
         let imgsize = imgfile.size / 1024 / 1024;
         if (imgsize > 4) {
@@ -315,10 +363,26 @@ function readAttachedBill(imgfile, queueProcessMode) {
             getOrientation(imgfile, function(orient) {
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
                 if (byteSize < 3 && orient <= 1) {
-                    BillDataExtraction(srcData, previewImgStr);
+                    if (queueItem !== null) {
+                        if (findUNCTGDuplicates(queueItem).deleted) { 
+                        	createUncategorisedBillItems() 
+                        } else { 
+                        	BillDataExtraction(srcData, previewImgStr)
+                    	}
+                    } else {
+                        BillDataExtraction(srcData, previewImgStr);
+                    }
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
-                        BillDataExtraction(newImgData, previewImgStr);
+                        if (queueItem !== null) {
+                            if (findUNCTGDuplicates(queueItem).deleted) { 
+                            	createUncategorisedBillItems() 
+                            } else { 
+                            	BillDataExtraction(newImgData, previewImgStr) 
+                            }
+                        } else {
+                            BillDataExtraction(newImgData, previewImgStr);
+                        }
 
                     });
                 }
@@ -646,6 +710,7 @@ function loadUncategorisedBills() {
                 let unctgBills = res.bills.map((bill) => {
                     let billImg;
                     let billData;
+                    database_uncategorisedBillIDs.push(bill.bill_id);
                     if (userAcType == "personal") {
                         const key = { cli: sessionStorage.getItem("ckey"), serv: sessionStorage.getItem("skey") };
                         billImg = decryptImg(bill.billimg, key);
@@ -654,7 +719,7 @@ function loadUncategorisedBills() {
                         billImg = atob(bill.billimg);
                         billData = JSON.parse(atob(bill.billdata));
                     }
-                    return { billID:bill.bill_id,billImg,billData }
+                    return { billID: bill.bill_id, billImg, billData }
                 });
                 createUncategorisedBillItems(unctgBills);
             }
@@ -944,9 +1009,8 @@ function saveBill(bill) {
             if (res.status == "saved") {
                 if (isUncategorised) {
                     const unctg_itemID = uncategorisedMainPanel.getAttribute("data-selecteditem");
-                    const removeElt = document.querySelector(`#${unctg_itemID} .UN-CTG-remove`);
-                    removeElt.click();
-                    inProgressTextStatus(saveBillBtn, "Saving Uncategorised...", true);
+                    const removeElt = document.querySelector(`#${unctg_itemID}`);
+                    removeUncategorisedItem(removeElt);
                     saveUncategorisedBills();
                 } else {
                     location.reload();
@@ -963,31 +1027,43 @@ function saveBill(bill) {
 
 function saveUncategorisedBills() {
     console.log("saving uncategorised...");
+    inProgressTextStatus(saveBillBtn, "Saving Uncategorised...", true);
     const UNCTG_bills = [];
     const client = sessionStorage.getItem("ckey") || "";
     const serv = sessionStorage.getItem("skey") || "";
     const unCTG = document.querySelectorAll("#uncategorised-bills .uncategorised-item");
     unCTG.forEach((item) => {
-        const billdata = {
-            date: item.getAttribute("data-date"),
-            title: item.getAttribute("data-title"),
-            total: item.getAttribute("data-amount"),
-            descr: item.getAttribute("data-descr")
-        };
+        const billID = item.getAttribute("id");
+        if (database_uncategorisedBillIDs.indexOf(billID) == -1) {
+            const billdata = {
+                date: item.getAttribute("data-date"),
+                title: item.getAttribute("data-title"),
+                total: item.getAttribute("data-amount"),
+                descr: item.getAttribute("data-descr")
+            };
 
-        const imgSrc = item.querySelector("img.billsnapshot").getAttribute("src");
-        let billObj = { bill_id: item.getAttribute("id") };
-        if (userAcType == "personal") {
-            billObj.bill = encryptImg(imgSrc, { serv: serv, cli: client });
-            billObj.billData = encryptData(billdata, { serv: serv, cli: client });
-        } else {
-            billObj.bill = btoa(imgSrc);
-            billObj.billData = btoa(JSON.stringify(billdata));
+            const imgSrc = item.querySelector("img.billsnapshot").getAttribute("src");
+            let billObj = { bill_id: billID };
+            if (userAcType == "personal") {
+                billObj.bill = encryptImg(imgSrc, { serv: serv, cli: client });
+                billObj.billData = encryptData(billdata, { serv: serv, cli: client });
+            } else {
+                billObj.bill = btoa(imgSrc);
+                billObj.billData = btoa(JSON.stringify(billdata));
+            }
+            UNCTG_bills.push(billObj)
         }
-        UNCTG_bills.push(billObj)
 
     });
 
+
+    if (UNCTG_bills.length == 0) {
+        console.log("No uncategorised items to save")
+        setTimeout(function() {
+            location.reload();
+        }, 4000)
+        return;
+    }
     const UNCTG = {};
     UNCTG.accountType = userAcType;
     UNCTG.projectID = selectedProjectID;
@@ -1007,6 +1083,7 @@ function saveUncategorisedBills() {
         }).catch(function() {
             location.reload();
         })
+
 }
 
 
