@@ -16,8 +16,8 @@ let remPreviousActiveTab = "";
 let selectedProjectID = "";
 let projectMemberRole = "";
 let selectedProjectName = "";
-let uncategorisedBillItems = [];
-let database_uncategorisedBillIDs = [];
+const uncategorisedBillItems = [];
+const database_uncategorisedBillIDs = [];
 
 const billshomeBtn = document.getElementById("billshome");
 const saveBillBtn = document.getElementById("savebill");
@@ -158,10 +158,8 @@ function uncategorisedID() {
 
 
 function createUncategorisedBillItems(databaseItems = []) {
-    console.log(uncategorisedBillItems.length);
-
+   
     if (uncategorisedBillItems.length > 0 || databaseItems.length > 0) {
-        console.log("...........")
         const databaseBills = [...databaseItems];
         const uncategorisedSection = document.querySelector("#uncategorised-bills section");
         const divElt = document.createElement("div");
@@ -178,11 +176,7 @@ function createUncategorisedBillItems(databaseItems = []) {
         const htmlContent = `<p><span class="UN-CTG-view ${preLoadClass}">${isViewPreload}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">${billTitle}</span><span class="UN-CTG-date">${billDate}</span><span class="UN-CTG-amount">${billAmount}</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = htmlContent;
         uncategorisedSection.appendChild(divElt);
-        if (uncategorisedBillItems.length > 0) {
-            uncategorisedMainPanel.classList.remove("hide");
-        }
-
-
+        
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
         clickToViewUncategorisedItem(viewElt);
@@ -249,7 +243,6 @@ function removeUncategorisedItem(item) {
     const deletionID = item.getAttribute("id");
     const dbIndex = database_uncategorisedBillIDs.indexOf(deletionID);
     if (dbIndex == -1) {
-        console.log("Not in database")
         item.remove();
         uncategorisedAutoClose();
         return;
