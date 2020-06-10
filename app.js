@@ -352,9 +352,7 @@ function amountNumSorter(alltexts) {
         }
         return null;
     }).filter(numval => (numval != null && numval !== 0));
-
-    /*console.log("-----AMT Sorter");
-    console.log(newlist);*/
+    
     newlist.sort((a, b) => { return b - a });
     return { found: "list", value: newlist }
 }
@@ -909,7 +907,6 @@ async function fetchBillImages({ objList = null, insertkey = null, searchid = ""
         findParams.project = project
     }
     const _obj = [...objList];
-    //console.log(_obj);
     
     let promises = [];
     let prevTimestamp = Date.now();
@@ -933,9 +930,21 @@ async function fetchBillImages({ objList = null, insertkey = null, searchid = ""
 
 }
 
-async function loadUserBills(pskey, agent, email, mode) {
+function attachBillPointer(o, pointer){
+    if(o.user_bills.length > 8){
+        console.log("Pointer:"+pointer) ;           
+        o.user_bills = o.user_bills.splice(pointer,8);
+        if(o.user_bills.length === 8){
+           o.nextPointerAt = pointer+8 ;
+           console.log("Next Remaining Bills Pointer set:"+o.nextPointerAt);
+         }
+    }
+}
+
+async function loadUserBills(pskey, agent, email, mode, billPointer = 0) {
     let userDoc = await Listusers.findOne({ email: email, key: pskey, browser: agent });
     if (!userDoc) { return new Promise((resolve, rej) => rej()) }
+     
     let obj = {};
     obj.account = userDoc.default;
     obj.controls = userDoc.privilege;
@@ -949,7 +958,8 @@ async function loadUserBills(pskey, agent, email, mode) {
                 lastdate: bill.submitdate
             }
         });
-
+        
+        attachBillPointer(obj,billPointer);
         obj.user_bills = await fetchBillImages({ objList: obj.user_bills, insertkey: "img", searchid: "id", email });
         return Promise.resolve({ data: obj });
 
@@ -980,6 +990,8 @@ async function loadUserBills(pskey, agent, email, mode) {
                     });
                 }
             });
+
+            attachBillPointer(obj,billPointer);
             obj.user_bills = await fetchBillImages({
                 objList: obj.user_bills,
                 insertkey: "img",
@@ -988,7 +1000,7 @@ async function loadUserBills(pskey, agent, email, mode) {
                 project: obj.activeProjectID,
                 email
             });
-
+            
             return Promise.resolve({ data: obj });
         }
 
@@ -1040,12 +1052,12 @@ async function findAndGetFromProjects(id, controls, email, roles) {
         }
 
     }
+    
     console.log("All Await completed "+allProjMembers.length);
     return Promise.resolve(allProjMembers);
 }
 
 async function getTeamData(team_doc, team_id) {
-    console.log("Total Bills:"+team_doc.bills.length)
     let projUserbills = team_doc.bills.map(bill => {
         return {
             data: bill.data,
@@ -1058,10 +1070,12 @@ async function getTeamData(team_doc, team_id) {
             role: team_doc.role
         }
     });
+
     if(projUserbills.length==0){
         return Promise.resolve([])
     }
-    
+
+       
     projUserbills = await fetchBillImages({
         objList: projUserbills,
         insertkey: "img",
@@ -1070,9 +1084,15 @@ async function getTeamData(team_doc, team_id) {
         project: team_id,
         email: team_doc.user_email
     }); 
-
-    console.log("completed fetchBills");
     return Promise.resolve(projUserbills)
+}
+
+function loadRemainingUserBills(pskey, agent, email, mode, billPointer) {
+    return loadUserBills(pskey, agent, email, mode, billPointer).then((remaining) => {
+        const obj = {user_bills: remaining.data.user_bills}
+        obj.nextPointerAt = remaining.data.nextPointerAt || null;
+        return Promise.resolve(obj)
+    })
 }
 
 
@@ -1145,8 +1165,6 @@ async function saveUserBill(pskey, agent, email, receipt) {
                     status: "pending",
                     logs: ["Bill Submitted on: " + submDate]
                 });
-                console.log("saved team bill data");
-                console.log("saving raw image...");
                 return tdoc.save().then(() => {
                     const billImgNew = new Categorisedbills({
                         email: email,
@@ -1173,7 +1191,7 @@ async function saveUncategorisedBills(pskey, agent, email, uncategorised) {
     }
     const { accountType, projectID, bills } = uncategorised;
     let promises = [];
-    bills.forEach((unc_bill, i) => {
+    bills.forEach((unc_bill, i) => {        
         const { bill_id, billData, bill } = unc_bill;
         const newbill = new Uncategorisedbills({
             email: email,
@@ -1194,7 +1212,6 @@ async function saveUncategorisedBills(pskey, agent, email, uncategorised) {
 
 
 async function deleteUncategorisedBill(pskey, agent, email, uncategorised) {
-    console.log("Deleting uncategorised...");
     let userDoc = await Listusers.findOne({ email: email, key: pskey, browser: agent });
     if (!userDoc) {
         return new Promise((resolve, rej) => rej());
@@ -1391,7 +1408,6 @@ app.post("/emailreq", async (req, res) => {
                 res.json({ status: "require_pswd", e_mail: email })
             }
         } catch (e) {
-            console.log(e);
             if (e.error == "email") {
                 if (mode == "register") {
                     res.json({ status: "email_exists" })
@@ -1472,9 +1488,24 @@ app.post("/userAuth", (req, res) => {
 });
 
 app.post("/loadBills", (req, res) => {
-    const { em, agent, key_serv, mode, ptype } = req.body;
+    const { em, agent, key_serv, ptype } = req.body;
     loadUserBills(key_serv, agent, getEmail(em), ptype).then(d => {
         res.json({ status: "done", user_data: d.data });
+    }).catch((s) => {
+        if (s.status == "notinteam") {
+            res.json({ status: "notinteam", user_data: s.data });
+        } else {
+            res.json({ status: "invalid" });
+        }
+
+    })
+
+});
+
+app.post("/loadRemainingBills", (req, res) => {
+    const { em, agent, key_serv, ptype, pointer } = req.body;
+    loadRemainingUserBills(key_serv, agent, getEmail(em), ptype, pointer).then(remaningBills => {
+        res.json({ status: "done", remaining: remaningBills });
     }).catch((s) => {
         if (s.status == "notinteam") {
             res.json({ status: "notinteam", user_data: s.data });
@@ -1490,7 +1521,6 @@ app.post("/loadBills", (req, res) => {
 app.post("/loadUncategorised", (req, res) => {
     const { em, agent, key_serv, project, account } = req.body;
     loadUncategorisedBills(key_serv, agent, getEmail(em), project, account).then(uBills => {
-        console.log("loaded");
         res.json({ status: "done", bills: uBills });
     }).catch((s) => {
         res.json({ status: "invalid" });
@@ -1517,11 +1547,8 @@ app.post("/saveBill", (req, res) => {
 app.post("/saveUncategorised", (req, res) => {
     const { em, agent, key_serv, uncategorised } = req.body;
     saveUncategorisedBills(key_serv, agent, getEmail(em), uncategorised).then(() => {
-        console.log("saved uncategorised");
         res.json({ status: "saved" });
     }).catch((s) => {
-        console.log("save failed");
-        console.log(s);
         res.json({ status: "invalid" })
     })
 });
@@ -1530,11 +1557,8 @@ app.post("/saveUncategorised", (req, res) => {
 app.post("/deleteUncategorised", (req, res) => {
     const { em, agent, key_serv, uncategorised } = req.body;
     deleteUncategorisedBill(key_serv, agent, getEmail(em), uncategorised).then(() => {
-        console.log("Deleted uncategorised");
         res.json({ status: "deleted" });
     }).catch((s) => {
-        console.log("Deletion failed");
-        console.log(s);
         res.json({ status: "invalid" })
     })
 });

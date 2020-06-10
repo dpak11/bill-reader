@@ -650,6 +650,7 @@ function fetchBills() {
                     });
 
                     initData(res);
+
                     if (userAcType == "team") {
                         selectedProjectID = res.user_data.activeProjectID || "";
                         projectMemberRole = res.user_data.role || "";
@@ -681,6 +682,10 @@ function fetchBills() {
                     if (userAcType == "personal" || (userAcType == "team" && type == "private")) {
                         loadUncategorisedBills();
                     }
+                    if(res.user_data.nextPointerAt){
+                        console.log("loading remaining at:"+res.user_data.nextPointerAt);
+                        fetchRemainingBills(res.user_data.nextPointerAt, type);
+                    }
                 }
             }).catch(function(e) {
                 showAlertBox("Server Busy!", "OK", null, false);
@@ -692,6 +697,21 @@ function fetchBills() {
 }
 
 
+function fetchRemainingBills(billpointer, type){
+    fetch("../loadRemainingBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type, pointer:billpointer })) })
+    .then(data => data.json())
+    .then(function(res) {
+        if(res.status="done"){ 
+            if(res.remaining.user_bills.length > 0){
+                displayBillThumbnails(res.remaining.user_bills)
+            }  
+            if(res.remaining.nextPointerAt){
+                fetchRemainingBills(res.remaining.nextPointerAt, type)
+            }
+            console.log(res.remaining.nextPointerAt);
+        }
+    });
+}
 
 function loadUncategorisedBills() {
     console.log("loading uncategorised...");
@@ -754,12 +774,17 @@ function displayBillingTable(data) {
     }, 1000);
 }
 
-function displayBillThumbnails() {
+function displayBillThumbnails(pendingBillsList=null) {
     let thumbnails = document.getElementById("billThumbnails");
-    thumbnails.classList.remove("hide");
-    thumbnails.innerHTML = "";
+    thumbnails.classList.remove("hide");    
+    let loadedBillList = allBillsData;
+    if(pendingBillsList){
+        loadedBillList = pendingBillsList;
+    }else{
+        thumbnails.innerHTML = "";
+    }
 
-    allBillsData.forEach(function(bill) {
+    loadedBillList.forEach(function(bill) {
         let billImg = "";
         let billData = "";
         let thumbnailAlign = "centered";
@@ -1061,7 +1086,6 @@ function saveUncategorisedBills() {
     UNCTG.accountType = userAcType;
     UNCTG.projectID = selectedProjectID;
     UNCTG.bills = UNCTG_bills;
-
     fetch("../saveUncategorised/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ uncategorised: UNCTG })) })
         .then(data => data.json())
         .then(function(res) {
