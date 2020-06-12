@@ -2560,8 +2560,9 @@ body.skin9,
 .skin9 #rejectbill.processing-state,
 .skin9 #approvebill.processing-state,
 .skin9 #deletebill.processing-state {
-    color: #5c5c63;
+   color: #5d5d65;
     box-shadow: none;
+    background: none;
 }
 
 

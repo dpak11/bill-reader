@@ -931,6 +931,7 @@ async function fetchBillImages({ objList = null, insertkey = null, searchid = ""
 }
 
 function attachBillPointer(o, pointer){
+    console.log("Bill length:"+ o.user_bills.length);
     if(o.user_bills.length > 8){
         console.log("Pointer:"+pointer) ;           
         o.user_bills = o.user_bills.splice(pointer,8);
@@ -941,7 +942,7 @@ function attachBillPointer(o, pointer){
     }
 }
 
-async function loadUserBills(pskey, agent, email, mode, billPointer = 0) {
+async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloopPoint = 0) {
     let userDoc = await Listusers.findOne({ email: email, key: pskey, browser: agent });
     if (!userDoc) { return new Promise((resolve, rej) => rej()) }
      
@@ -1005,6 +1006,7 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0) {
         }
 
         if (mode == "team") {
+            console.log("qqqqqqqq");
             teamdoc.forEach((tdoc) => {
                 if (tdoc.default == "yes") {
                     obj.activeProjectID = tdoc.teamid;
@@ -1018,8 +1020,10 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0) {
             if (obj.activeProjectID == "") {
                 return Promise.resolve({ data: obj });
             } else {
-                let alldocs = await findAndGetFromProjects(obj.activeProjectID, obj.controls, email, obj.role);
-                obj.allProjMembers = JSON.stringify(alldocs);
+                console.log("33333333333333333");
+                let alldocs = await findAllBillsFromProject(obj.activeProjectID, obj.controls, email, obj.role, billPointer, teamloopPoint);
+                obj.allProj = alldocs;
+                console.log("DONE!!!");
                 return Promise.resolve({ data: obj });
             }
         }
@@ -1027,17 +1031,30 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0) {
     }
 }
 
-async function findAndGetFromProjects(id, controls, email, roles) {
+async function findAllBillsFromProject(id, controls, email, roles, pointer, teamloopPoint) {
+     console.log("***************");
+     console.log("Pointer:"+pointer+"  / loopPoint:"+teamloopPoint)
     let teamdoc = await Listteams.find({ teamid: id });
     let allProjMembers = [];
-    for (let i = 0; i < teamdoc.length; i++) {
+    let loopPoint;
+    let max = (pointer == 0) ? 8 : 16;
+    let tlp = (pointer >= 8) ? teamloopPoint-1 : teamloopPoint; 
+    console.log("Max set to: "+ max);
+    console.log("TLP:"+tlp);
+    for (let i = tlp; i < teamdoc.length; i++) {
         let doc = teamdoc[i];
+        if(allProjMembers.length > max){
+            loopPoint = i-1;
+            break;
+        }
+        console.log("i:"+i);
         if (controls == "all") {
             if (doc.role !== "admin") {
                 console.log("waiting admin A");
                 let billdocs = await getTeamData(doc, id);
                 allProjMembers.push(...billdocs)
             }
+
 
         } else if (roles == "manager") {
             if (doc.approver == email) {
@@ -1052,9 +1069,14 @@ async function findAndGetFromProjects(id, controls, email, roles) {
         }
 
     }
+    const allProjs = {
+        user_bills: allProjMembers,
+        loopPoint
+    };
+    attachBillPointer(allProjs, pointer);
     
-    console.log("All Await completed "+allProjMembers.length);
-    return Promise.resolve(allProjMembers);
+    console.log("All Await completed "+allProjs.user_bills.length);
+    return Promise.resolve(allProjs);
 }
 
 async function getTeamData(team_doc, team_id) {
@@ -1087,10 +1109,18 @@ async function getTeamData(team_doc, team_id) {
     return Promise.resolve(projUserbills)
 }
 
-function loadRemainingUserBills(pskey, agent, email, mode, billPointer) {
-    return loadUserBills(pskey, agent, email, mode, billPointer).then((remaining) => {
-        const obj = {user_bills: remaining.data.user_bills}
-        obj.nextPointerAt = remaining.data.nextPointerAt || null;
+function loadRemainingUserBills(pskey, agent, email, mode, billPointer, loopPoint) {
+    return loadUserBills(pskey, agent, email, mode, billPointer, loopPoint).then((remaining) => {
+        const obj = {}
+        if(remaining.data.allProj){
+           obj.nextPointerAt = remaining.data.allProj.nextPointerAt || null;
+           obj.loopPoint = remaining.data.allProj.loopPoint;
+           obj.user_bills = remaining.data.allProj.user_bills
+        }else{
+           obj.nextPointerAt = remaining.data.nextPointerAt || null;
+           obj.user_bills = remaining.data.user_bills
+        }       
+        
         return Promise.resolve(obj)
     })
 }
@@ -1503,8 +1533,8 @@ app.post("/loadBills", (req, res) => {
 });
 
 app.post("/loadRemainingBills", (req, res) => {
-    const { em, agent, key_serv, ptype, pointer } = req.body;
-    loadRemainingUserBills(key_serv, agent, getEmail(em), ptype, pointer).then(remaningBills => {
+    const { em, agent, key_serv, ptype, pointer, loopPoint } = req.body;
+    loadRemainingUserBills(key_serv, agent, getEmail(em), ptype, pointer, loopPoint).then(remaningBills => {
         res.json({ status: "done", remaining: remaningBills });
     }).catch((s) => {
         if (s.status == "notinteam") {

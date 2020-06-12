@@ -665,7 +665,10 @@ function fetchBills() {
 
                         if (type == "team") {
                             teamOrMyBills.innerText = "Show only My Bills";
-                            allBillsData = JSON.parse(res.user_data.allProjMembers);
+                            allBillsData = res.user_data.allProj.user_bills;
+                            if(res.user_data.allProj.nextPointerAt){
+                                fetchRemainingBills(res.user_data.allProj.nextPointerAt, type, res.user_data.allProj.loopPoint);
+                            }
                         } else {
                             document.getElementById("imageuploader").classList.remove("hide");
                             teamOrMyBills.innerText = (projectMemberRole == "admin") ? "Show Team's Bills" : "Show my reportess Bills";
@@ -697,8 +700,8 @@ function fetchBills() {
 }
 
 
-function fetchRemainingBills(billpointer, type){
-    fetch("../loadRemainingBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type, pointer:billpointer })) })
+function fetchRemainingBills(billpointer, type, loopPoint=0){
+    fetch("../loadRemainingBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type, pointer:billpointer, loopPoint })) })
     .then(data => data.json())
     .then(function(res) {
         if(res.status="done"){ 
@@ -706,7 +709,8 @@ function fetchRemainingBills(billpointer, type){
                 displayBillThumbnails(res.remaining.user_bills)
             }  
             if(res.remaining.nextPointerAt){
-                fetchRemainingBills(res.remaining.nextPointerAt, type)
+                const loop_point = res.remaining.loopPoint || loopPoint;                
+                fetchRemainingBills(res.remaining.nextPointerAt, type, loop_point)
             }
             console.log(res.remaining.nextPointerAt);
         }
@@ -839,6 +843,9 @@ function displayBillThumbnails(pendingBillsList=null) {
             billMode = "update";
             thumbNailClicked(ev.currentTarget);
         });
+        if(pendingBillsList){
+            allBillsData.push(bill)
+        }
     });
 
 }
