@@ -28,7 +28,7 @@ let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
 }));
 
 mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
-    console.log("MongoDB connected");    
+    console.log("MongoDB connected");
 
     Listusers = mongoose.model("Listusers", new mongoose.Schema({
         email: String,
@@ -352,7 +352,7 @@ function amountNumSorter(alltexts) {
         }
         return null;
     }).filter(numval => (numval != null && numval !== 0));
-    
+
     newlist.sort((a, b) => { return b - a });
     return { found: "list", value: newlist }
 }
@@ -901,19 +901,18 @@ async function loadUncategorisedBills(pskey, agent, email, project, account) {
 }
 
 async function fetchBillImages({ objList = null, insertkey = null, searchid = "", project = "", account = "personal", email = "" }) {
-    console.log("New Fetch bills function...");
+    
     const findParams = { account, email };
     if (project !== "" && account == "team") {
         findParams.project = project
     }
     const _obj = [...objList];
-    
+
     let promises = [];
     let prevTimestamp = Date.now();
     _obj.forEach((o, i) => {
         const fParams = { ...findParams };
         fParams.billid = o[searchid];
-        console.log(fParams);
         const startdate = Date.now();
         promises[i] = Categorisedbills.findOne(fParams).exec().then((cb) => {
             _obj[i][insertkey] = cb.billimg;
@@ -924,28 +923,23 @@ async function fetchBillImages({ objList = null, insertkey = null, searchid = ""
 
     });
     let allpromises = await Promise.all(promises);
-    console.log(allpromises);
-    console.log("-----------------------------------");
     return Promise.resolve(_obj);
 
 }
 
-function attachBillPointer(o, pointer){
-    console.log("Bill length:"+ o.user_bills.length);
-    if(o.user_bills.length > 8){
-        console.log("Pointer:"+pointer) ;           
-        o.user_bills = o.user_bills.splice(pointer,8);
-        if(o.user_bills.length === 8){
-           o.nextPointerAt = pointer+8 ;
-           console.log("Next Remaining Bills Pointer set:"+o.nextPointerAt);
-         }
+function attachBillPointer(o, pointer) {
+    if (o.user_bills.length > 6) {
+        o.user_bills = o.user_bills.splice(pointer, 6);
+        if (o.user_bills.length === 6) {
+            o.nextPointerAt = pointer + 6;
+        }
     }
 }
 
 async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloopPoint = 0) {
     let userDoc = await Listusers.findOne({ email: email, key: pskey, browser: agent });
     if (!userDoc) { return new Promise((resolve, rej) => rej()) }
-     
+
     let obj = {};
     obj.account = userDoc.default;
     obj.controls = userDoc.privilege;
@@ -959,8 +953,8 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
                 lastdate: bill.submitdate
             }
         });
-        
-        attachBillPointer(obj,billPointer);
+
+        attachBillPointer(obj, billPointer);
         obj.user_bills = await fetchBillImages({ objList: obj.user_bills, insertkey: "img", searchid: "id", email });
         return Promise.resolve({ data: obj });
 
@@ -970,7 +964,7 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
             return new Promise((resolve, rej) => rej({ status: "notinteam", data: obj }));
         }
         obj.activeProjectID = "";
-        if (mode == "private") {
+        if (mode == "private") {           
             teamdoc.forEach((tdoc) => {
                 if (tdoc.default == "yes") {
                     obj.activeProjectID = tdoc.teamid;
@@ -992,7 +986,7 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
                 }
             });
 
-            attachBillPointer(obj,billPointer);
+            attachBillPointer(obj, billPointer);
             obj.user_bills = await fetchBillImages({
                 objList: obj.user_bills,
                 insertkey: "img",
@@ -1001,12 +995,11 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
                 project: obj.activeProjectID,
                 email
             });
-            
+
             return Promise.resolve({ data: obj });
         }
 
         if (mode == "team") {
-            console.log("qqqqqqqq");
             teamdoc.forEach((tdoc) => {
                 if (tdoc.default == "yes") {
                     obj.activeProjectID = tdoc.teamid;
@@ -1020,10 +1013,8 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
             if (obj.activeProjectID == "") {
                 return Promise.resolve({ data: obj });
             } else {
-                console.log("33333333333333333");
                 let alldocs = await findAllBillsFromProject(obj.activeProjectID, obj.controls, email, obj.role, billPointer, teamloopPoint);
                 obj.allProj = alldocs;
-                console.log("DONE!!!");
                 return Promise.resolve({ data: obj });
             }
         }
@@ -1032,25 +1023,27 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
 }
 
 async function findAllBillsFromProject(id, controls, email, roles, pointer, teamloopPoint) {
-     console.log("***************");
-     console.log("Pointer:"+pointer+"  / loopPoint:"+teamloopPoint)
+   
     let teamdoc = await Listteams.find({ teamid: id });
     let allProjMembers = [];
     let loopPoint;
-    let max = (pointer == 0) ? 8 : 16;
-    let tlp = (pointer >= 8) ? teamloopPoint-1 : teamloopPoint; 
-    console.log("Max set to: "+ max);
-    console.log("TLP:"+tlp);
-    for (let i = tlp; i < teamdoc.length; i++) {
+    let max = (pointer != 0) ? 12 : 6;
+    let loopStartAt = (pointer != 0 && teamloopPoint>0) ? teamloopPoint - 1 : teamloopPoint;
+    let splicePoint = pointer;
+    for (let i = loopStartAt; i < teamdoc.length; i++) {
         let doc = teamdoc[i];
-        if(allProjMembers.length > max){
-            loopPoint = i-1;
+        if (pointer != 0) {
+            loopPoint = i - 1;
+            splicePoint = allProjMembers.findIndex((projbill, j) => {
+                return projbill.id == pointer
+            });            
+        }
+        if (allProjMembers.length > max) {
+            loopPoint = i - 1;
             break;
         }
-        console.log("i:"+i);
         if (controls == "all") {
             if (doc.role !== "admin") {
-                console.log("waiting admin A");
                 let billdocs = await getTeamData(doc, id);
                 allProjMembers.push(...billdocs)
             }
@@ -1058,24 +1051,29 @@ async function findAllBillsFromProject(id, controls, email, roles, pointer, team
 
         } else if (roles == "manager") {
             if (doc.approver == email) {
-                console.log("waiting manager A");
                 let billdocs = await getTeamData(doc, id);
                 allProjMembers.push(...billdocs)
             }
         } else if (doc.user_email == email) {
-            console.log("waiting member A");
             let billdocs = await getTeamData(doc, id);
             allProjMembers.push(...billdocs)
         }
 
     }
+
+    const extracted = allProjMembers.splice(splicePoint, 6);
     const allProjs = {
-        user_bills: allProjMembers,
+        user_bills: extracted,
         loopPoint
     };
-    attachBillPointer(allProjs, pointer);
+
+    if (splicePoint >= 0) {
+        allProjMembers.splice(0, splicePoint);
+    }
     
-    console.log("All Await completed "+allProjs.user_bills.length);
+    if (allProjMembers.length > 0) {
+        allProjs.nextPointerAt = allProjMembers[0].id
+    }
     return Promise.resolve(allProjs);
 }
 
@@ -1093,11 +1091,11 @@ async function getTeamData(team_doc, team_id) {
         }
     });
 
-    if(projUserbills.length==0){
+    if (projUserbills.length == 0) {
         return Promise.resolve([])
     }
 
-       
+
     projUserbills = await fetchBillImages({
         objList: projUserbills,
         insertkey: "img",
@@ -1105,22 +1103,22 @@ async function getTeamData(team_doc, team_id) {
         account: "team",
         project: team_id,
         email: team_doc.user_email
-    }); 
+    });
     return Promise.resolve(projUserbills)
 }
 
 function loadRemainingUserBills(pskey, agent, email, mode, billPointer, loopPoint) {
     return loadUserBills(pskey, agent, email, mode, billPointer, loopPoint).then((remaining) => {
         const obj = {}
-        if(remaining.data.allProj){
-           obj.nextPointerAt = remaining.data.allProj.nextPointerAt || null;
-           obj.loopPoint = remaining.data.allProj.loopPoint;
-           obj.user_bills = remaining.data.allProj.user_bills
-        }else{
-           obj.nextPointerAt = remaining.data.nextPointerAt || null;
-           obj.user_bills = remaining.data.user_bills
-        }       
-        
+        if (remaining.data.allProj) {
+            obj.nextPointerAt = remaining.data.allProj.nextPointerAt || null;
+            obj.loopPoint = remaining.data.allProj.loopPoint;
+            obj.user_bills = remaining.data.allProj.user_bills
+        } else {
+            obj.nextPointerAt = remaining.data.nextPointerAt || null;
+            obj.user_bills = remaining.data.user_bills
+        }
+
         return Promise.resolve(obj)
     })
 }
@@ -1141,13 +1139,13 @@ async function saveUserBill(pskey, agent, email, receipt) {
                 let imgHalf2 = bill.billimg.substr(0, 2000);
                 return (imgHalf1 === imgHalf2)
             })
-            
+
         }
 
-        if(isDuplicates){
+        if (isDuplicates) {
             return new Promise((resolve, rej) => rej("duplicate"));
-        }        
-        
+        }
+
         const newBillID = idRandomise("bill");
         docBills.push({ billid: newBillID, data: receipt.billFields, submitdate: getIndDate() });
         userDoc.personal.bills = docBills;
@@ -1160,7 +1158,7 @@ async function saveUserBill(pskey, agent, email, receipt) {
                 billimg: receipt.bill
             });
             return billImgNew.save().then(() => Promise.resolve());
-        });        
+        });
 
     } else {
         let teamdoc = await Listteams.find({ user_email: email });
@@ -1169,22 +1167,22 @@ async function saveUserBill(pskey, agent, email, receipt) {
         }
         let promisecall = [];
         let half1 = receipt.bill.substr(0, 2000);
-        for(let i=0; i<teamdoc.length; i++){
+        for (let i = 0; i < teamdoc.length; i++) {
             const tdoc = teamdoc[i];
             if (tdoc.default == "yes") {
                 let isDuplicates = false;
-                if(tdoc.bills.length > 0){
-                    let billTeamDocs = await Categorisedbills.find({ email: email, account: "team", project:tdoc.teamid });
-                    isDuplicates = billTeamDocs.some((bill) => {                        
+                if (tdoc.bills.length > 0) {
+                    let billTeamDocs = await Categorisedbills.find({ email: email, account: "team", project: tdoc.teamid });
+                    isDuplicates = billTeamDocs.some((bill) => {
                         let half2 = bill.billimg.substr(0, 2000);
                         return half1 === half2;
                     });
                 }
 
-                if(isDuplicates){
+                if (isDuplicates) {
                     return new Promise((resolve, rej) => rej("duplicate"));
-                }                
-               
+                }
+
                 const submDate = getIndDate();
                 const newBillID = idRandomise("bill");
                 tdoc.lastlogin = submDate;
@@ -1205,7 +1203,7 @@ async function saveUserBill(pskey, agent, email, receipt) {
                     });
                     return billImgNew.save().then(() => Promise.resolve());
                 });
-                
+
             }
         }
 
@@ -1221,7 +1219,7 @@ async function saveUncategorisedBills(pskey, agent, email, uncategorised) {
     }
     const { accountType, projectID, bills } = uncategorised;
     let promises = [];
-    bills.forEach((unc_bill, i) => {        
+    bills.forEach((unc_bill, i) => {
         const { bill_id, billData, bill } = unc_bill;
         const newbill = new Uncategorisedbills({
             email: email,
@@ -1260,7 +1258,7 @@ async function deleteUserBill(pskey, agent, email, bill_id) {
         let deletedBills = userDoc.personal.bills.filter(bill => (bill.billid != bill_id));
         userDoc.personal.bills = deletedBills;
         return userDoc.save().then(() => {
-            return Categorisedbills.deleteOne({email: email, billid:bill_id, account:"personal"}).then(() => Promise.resolve())
+            return Categorisedbills.deleteOne({ email: email, billid: bill_id, account: "personal" }).then(() => Promise.resolve())
         })
     } else {
         let teamdoc = await Listteams.findOne({ user_email: email, default: "yes" });
@@ -1270,7 +1268,7 @@ async function deleteUserBill(pskey, agent, email, bill_id) {
         let deletedBills = teamdoc.bills.filter(bill => (bill.billid != bill_id));
         teamdoc.bills = deletedBills;
         return teamdoc.save().then(() => {
-            return Categorisedbills.deleteOne({email: email, billid:bill_id, account:"team", project:teamdoc.teamid}).then(() => Promise.resolve())
+            return Categorisedbills.deleteOne({ email: email, billid: bill_id, account: "team", project: teamdoc.teamid }).then(() => Promise.resolve())
         });
     }
 }

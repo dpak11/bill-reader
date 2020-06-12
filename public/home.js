@@ -158,7 +158,7 @@ function uncategorisedID() {
 
 
 function createUncategorisedBillItems(databaseItems = []) {
-   
+
     if (uncategorisedBillItems.length > 0 || databaseItems.length > 0) {
         const databaseBills = [...databaseItems];
         const uncategorisedSection = document.querySelector("#uncategorised-bills section");
@@ -176,7 +176,7 @@ function createUncategorisedBillItems(databaseItems = []) {
         const htmlContent = `<p><span class="UN-CTG-view ${preLoadClass}">${isViewPreload}</span><span class="UN-CTG-remove"><img src="images/trashcan.png" alt="" /></span></p><p><span class="UN-CTG-title">${billTitle}</span><span class="UN-CTG-date">${billDate}</span><span class="UN-CTG-amount">${billAmount}</span></p><p><img class="billsnapshot" src="" alt="" /></p>`;
         divElt.innerHTML = htmlContent;
         uncategorisedSection.appendChild(divElt);
-        
+
         const viewElt = document.querySelector(`#${itemID} .UN-CTG-view`);
         const removeElt = document.querySelector(`#${itemID} .UN-CTG-remove`);
         clickToViewUncategorisedItem(viewElt);
@@ -333,9 +333,9 @@ function findUNCTGDuplicates(itemElt) {
     if (hasUncategorisedDuplicate()) {
         console.log("removed duplicate");
         document.querySelector(`${itemElt}`).remove();
-        return {deleted: true}
+        return { deleted: true }
     }
-    return { deleted: false}
+    return { deleted: false }
 }
 
 function readAttachedBill(imgfile, queueItem) {
@@ -357,21 +357,21 @@ function readAttachedBill(imgfile, queueItem) {
                 let byteSize = (4 * srcData.length / 3) / 1024 / 1024;
                 if (byteSize < 3 && orient <= 1) {
                     if (queueItem !== null) {
-                        if (findUNCTGDuplicates(queueItem).deleted) { 
-                        	createUncategorisedBillItems() 
-                        } else { 
-                        	BillDataExtraction(srcData, previewImgStr)
-                    	}
+                        if (findUNCTGDuplicates(queueItem).deleted) {
+                            createUncategorisedBillItems()
+                        } else {
+                            BillDataExtraction(srcData, previewImgStr)
+                        }
                     } else {
                         BillDataExtraction(srcData, previewImgStr);
                     }
                 } else {
                     resetOrientation(srcData, orient, function(newImgData) {
                         if (queueItem !== null) {
-                            if (findUNCTGDuplicates(queueItem).deleted) { 
-                            	createUncategorisedBillItems() 
-                            } else { 
-                            	BillDataExtraction(newImgData, previewImgStr) 
+                            if (findUNCTGDuplicates(queueItem).deleted) {
+                                createUncategorisedBillItems()
+                            } else {
+                                BillDataExtraction(newImgData, previewImgStr)
                             }
                         } else {
                             BillDataExtraction(newImgData, previewImgStr);
@@ -666,7 +666,7 @@ function fetchBills() {
                         if (type == "team") {
                             teamOrMyBills.innerText = "Show only My Bills";
                             allBillsData = res.user_data.allProj.user_bills;
-                            if(res.user_data.allProj.nextPointerAt){
+                            if (res.user_data.allProj.nextPointerAt) {
                                 fetchRemainingBills(res.user_data.allProj.nextPointerAt, type, res.user_data.allProj.loopPoint);
                             }
                         } else {
@@ -685,8 +685,8 @@ function fetchBills() {
                     if (userAcType == "personal" || (userAcType == "team" && type == "private")) {
                         loadUncategorisedBills();
                     }
-                    if(res.user_data.nextPointerAt){
-                        console.log("loading remaining at:"+res.user_data.nextPointerAt);
+                    if (res.user_data.nextPointerAt) {
+                        console.log("loading remaining at:" + res.user_data.nextPointerAt);
                         fetchRemainingBills(res.user_data.nextPointerAt, type);
                     }
                 }
@@ -700,21 +700,21 @@ function fetchBills() {
 }
 
 
-function fetchRemainingBills(billpointer, type, loopPoint=0){
-    fetch("../loadRemainingBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type, pointer:billpointer, loopPoint })) })
-    .then(data => data.json())
-    .then(function(res) {
-        if(res.status="done"){ 
-            if(res.remaining.user_bills.length > 0){
-                displayBillThumbnails(res.remaining.user_bills)
-            }  
-            if(res.remaining.nextPointerAt){
-                const loop_point = res.remaining.loopPoint || loopPoint;                
-                fetchRemainingBills(res.remaining.nextPointerAt, type, loop_point)
+function fetchRemainingBills(billpointer, type, loopPoint = 0) {
+    fetch("../loadRemainingBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type, pointer: billpointer, loopPoint })) })
+        .then(data => data.json())
+        .then(function(res) {
+            if (res.status = "done") {
+                if (res.remaining.user_bills.length > 0) {
+                    displayBillThumbnails(res.remaining.user_bills)
+                }
+                if (res.remaining.nextPointerAt) {
+                    const loop_point = res.remaining.loopPoint || loopPoint;
+                    fetchRemainingBills(res.remaining.nextPointerAt, type, loop_point)
+                }
+                console.log(res.remaining.nextPointerAt);
             }
-            console.log(res.remaining.nextPointerAt);
-        }
-    });
+        });
 }
 
 function loadUncategorisedBills() {
@@ -763,9 +763,11 @@ function displayBillingTable(data) {
         document.getElementById("amount_field").value = "Rs " + totalamount;
     }
 
+    let billTitle = data.title || "";
+    billTitle = (billTitle.length > 30) ? billTitle.substr(0, 30) : billTitle;
     showElements([billTable, previewBillImage]);
+    document.getElementById("merchant_field").value = billTitle;
     document.getElementById("date_field").value = data.date || "";
-    document.getElementById("merchant_field").value = data.title || "";
     document.getElementById("descr_field").value = data.descr || "";
     document.getElementById("billtype").value = data.type || "";
     document.querySelector(".previewimg").style.height = "auto";
@@ -778,13 +780,13 @@ function displayBillingTable(data) {
     }, 1000);
 }
 
-function displayBillThumbnails(pendingBillsList=null) {
+function displayBillThumbnails(pendingBillsList = null) {
     let thumbnails = document.getElementById("billThumbnails");
-    thumbnails.classList.remove("hide");    
+    thumbnails.classList.remove("hide");
     let loadedBillList = allBillsData;
-    if(pendingBillsList){
+    if (pendingBillsList) {
         loadedBillList = pendingBillsList;
-    }else{
+    } else {
         thumbnails.innerHTML = "";
     }
 
@@ -843,7 +845,7 @@ function displayBillThumbnails(pendingBillsList=null) {
             billMode = "update";
             thumbNailClicked(ev.currentTarget);
         });
-        if(pendingBillsList){
+        if (pendingBillsList) {
             allBillsData.push(bill)
         }
     });
