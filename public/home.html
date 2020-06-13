@@ -40,8 +40,8 @@
                         <label for="captureImg">Capture Bill</label>
                     </div>
                     <div>
-                        <input class="input-image" type="file" id="fileImg" accept="application/pdf,image/*" />
-                        <label for="fileImg">Upload Bill</label>
+                        <input class="input-image" type="file" id="billImageFile" multiple="multiple" accept="application/pdf,image/*" />
+                        <label for="billImageFile">Upload Bill</label>
                     </div>
                 </section>
                 <section>
@@ -51,7 +51,7 @@
                 </section>
                 <section id="billTable" class="hide">
                     <div class="table-head">Enter Bill Details: </div>
-                    <input type="text" placeholder="Merchant" id="merchant_field">
+                    <input type="text" placeholder="Merchant" id="merchant_field" maxlength="30">
                     <input type="text" placeholder="Date" readonly id="date_field">
                     <input type="text" placeholder="Amount" id="amount_field">
                     <input type="text" placeholder="Description (optional)" id="descr_field">
