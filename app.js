@@ -879,7 +879,6 @@ function removeProject(pwdkey, useragent, email, project) {
 }
 
 async function loadUncategorisedBills(pskey, agent, email, project, account) {
-    console.log("loading uncategorised...");
     const findParams = { email: email, account: account }
     if (account == "team") {
         findParams.project = project;
@@ -1022,33 +1021,23 @@ async function loadUserBills(pskey, agent, email, mode, billPointer = 0, teamloo
     }
 }
 
+
 async function findAllBillsFromProject(id, controls, email, roles, pointer, teamloopPoint) {
    
     let teamdoc = await Listteams.find({ teamid: id });
     let allProjMembers = [];
     let loopPoint;
-    let max = (pointer != 0) ? 12 : 6;
-    let loopStartAt = (pointer != 0 && teamloopPoint>0) ? teamloopPoint - 1 : teamloopPoint;
+    let max = (pointer != 0) ? 12 : 6; 
+    let loopStartAt = (pointer != 0 && teamloopPoint>0) ? teamloopPoint - 1 : teamloopPoint; 
     let splicePoint = pointer;
+
     for (let i = loopStartAt; i < teamdoc.length; i++) {
-        let doc = teamdoc[i];
-        if (pointer != 0) {
-            loopPoint = i - 1;
-            splicePoint = allProjMembers.findIndex((projbill, j) => {
-                return projbill.id == pointer
-            });            
-        }
-        if (allProjMembers.length > max) {
-            loopPoint = i - 1;
-            break;
-        }
+        let doc = teamdoc[i];     
         if (controls == "all") {
             if (doc.role !== "admin") {
                 let billdocs = await getTeamData(doc, id);
                 allProjMembers.push(...billdocs)
             }
-
-
         } else if (roles == "manager") {
             if (doc.approver == email) {
                 let billdocs = await getTeamData(doc, id);
@@ -1057,6 +1046,17 @@ async function findAllBillsFromProject(id, controls, email, roles, pointer, team
         } else if (doc.user_email == email) {
             let billdocs = await getTeamData(doc, id);
             allProjMembers.push(...billdocs)
+        }
+
+        if (pointer != 0) {
+            loopPoint = i;
+            splicePoint = allProjMembers.findIndex((projbill, j) => {
+                return projbill.id == pointer
+            });   
+        }
+        if (allProjMembers.length > max) {
+            loopPoint = i;
+            break;
         }
 
     }
@@ -1073,6 +1073,11 @@ async function findAllBillsFromProject(id, controls, email, roles, pointer, team
     
     if (allProjMembers.length > 0) {
         allProjs.nextPointerAt = allProjMembers[0].id
+    } 
+    if (allProjMembers.length == 0 && loopPoint < (teamdoc.length-1)) {
+    	let oDoc = await getTeamData(teamdoc[loopPoint+1], id);
+    	allProjs.nextPointerAt = oDoc[0].id;
+    	allProjs.loopPoint = loopPoint+1
     }
     return Promise.resolve(allProjs);
 }

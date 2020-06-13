@@ -666,9 +666,7 @@ function fetchBills() {
                         if (type == "team") {
                             teamOrMyBills.innerText = "Show only My Bills";
                             allBillsData = res.user_data.allProj.user_bills;
-                            if (res.user_data.allProj.nextPointerAt) {
-                                fetchRemainingBills(res.user_data.allProj.nextPointerAt, type, res.user_data.allProj.loopPoint);
-                            }
+                            
                         } else {
                             document.getElementById("imageuploader").classList.remove("hide");
                             teamOrMyBills.innerText = (projectMemberRole == "admin") ? "Show Team's Bills" : "Show my reportess Bills";
@@ -685,9 +683,13 @@ function fetchBills() {
                     if (userAcType == "personal" || (userAcType == "team" && type == "private")) {
                         loadUncategorisedBills();
                     }
-                    if (res.user_data.nextPointerAt) {
-                        console.log("loading remaining at:" + res.user_data.nextPointerAt);
+                    if (res.user_data.nextPointerAt) {                        
                         fetchRemainingBills(res.user_data.nextPointerAt, type);
+                    }
+                    if(userAcType == "team" && type == "team"){
+                        if (res.user_data.allProj.nextPointerAt) {
+                            fetchRemainingBills(res.user_data.allProj.nextPointerAt, type, res.user_data.allProj.loopPoint);
+                        }
                     }
                 }
             }).catch(function(e) {
@@ -701,18 +703,31 @@ function fetchBills() {
 
 
 function fetchRemainingBills(billpointer, type, loopPoint = 0) {
+    
+    let nextThumbPreloader = document.querySelector(".next-thumb-preloader");
+    if(nextThumbPreloader){
+        document.getElementById("billThumbnails").appendChild(nextThumbPreloader)
+    }else{
+        const preLoadDIV = document.createElement("div");
+        preLoadDIV.setAttribute("class","next-thumb-preloader");
+        preLoadDIV.innerHTML = `<div class="loader-circ-path"></div>`;
+        document.getElementById("billThumbnails").appendChild(preLoadDIV)
+    }
+    
     fetch("../loadRemainingBills/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bodyParams({ ptype: type, pointer: billpointer, loopPoint })) })
         .then(data => data.json())
         .then(function(res) {
             if (res.status = "done") {
-                if (res.remaining.user_bills.length > 0) {
-                    displayBillThumbnails(res.remaining.user_bills)
+                if (res.remaining.user_bills.length > 0) {                   
+                    displayBillThumbnails(res.remaining.user_bills);
                 }
                 if (res.remaining.nextPointerAt) {
                     const loop_point = res.remaining.loopPoint || loopPoint;
                     fetchRemainingBills(res.remaining.nextPointerAt, type, loop_point)
+                }else{
+                     document.querySelector(".next-thumb-preloader").remove();
                 }
-                console.log(res.remaining.nextPointerAt);
+
             }
         });
 }

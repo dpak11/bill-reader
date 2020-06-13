@@ -367,6 +367,11 @@ span.UN-CTG-view.CTGloading{
     cursor: default
 }
 
+.next-thumb-preloader{
+    display: flex;
+    align-items: center;
+}
+
 .prev-block,
 #imageuploader,
 #billTable,
