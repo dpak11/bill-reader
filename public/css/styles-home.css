@@ -280,7 +280,7 @@ span.btn.deletemember {
     left: 25%;
     background: #cedfe5;
     box-shadow: 1px 2px 8px 3px rgba(0, 0, 0, 0.52);
-    height: 400px;    
+    height: 75vh;    
     z-index:8;
     overflow-y: scroll;
     transition: transform .8s ease, opacity .8s
@@ -1182,7 +1182,7 @@ div#ui-datepicker-div {
     .topfloater #uncategorised-bills{
         width: 88%;
         left: 4%;
-        top: 20%
+        top: 19%
     }
     .topfloater .uncategorised-item{
         min-width: 90%
