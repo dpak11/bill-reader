@@ -163,7 +163,7 @@ span.btn.deletemember {
     display: inline-block;
     width: 200px;
     padding-bottom: 5px;
-    color: #665f5f;
+    color: #403333;
 }
 
 .profile_info input,
@@ -519,6 +519,7 @@ section.main {
     background: #C2E5F2;
     box-shadow: inset 2px 2px 6px #908a8a;
 }
+
 
 #billTable.teamTable {
     height: 410px;
@@ -1318,6 +1319,7 @@ body.skin1,
 .skin1 #team_img_browse+label,
 .skin1 #team_imgEdit+label {
     background-color: #4d6bd9;
+        color: #c4d2dc;
 }
 
 .skin1 #settingsBlock {
@@ -1755,6 +1757,7 @@ body.skin4,
 .skin4 #team_img_browse+label,
 .skin4 #team_imgEdit+label {
     background-color: #693f22;
+    color: #fa6477;
 }
 
 .skin4 #settingsBlock {
@@ -1914,7 +1917,7 @@ body.skin5,
     color: #3f3a3a;
     background: #e4eee8;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #fffbfb;
+    border-bottom: 2px solid #e9e3e3;
 }
 
 .skin5 #profile_img_browse+label,
@@ -1989,7 +1992,7 @@ body.skin5,
 
 
 .skin5 .member-fields-disable {
-    color: #7f9286 !important;
+    color: #64796c !important;
     background: #b9d0c2 !important;
 }
 
@@ -2068,7 +2071,7 @@ body.skin6,
     color: #3f3a3a;
     background: #d7f1de;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #fffbfb;
+    border-bottom: 2px solid #eee9e9;
 }
 
 .skin6 #profile_img_browse+label,
@@ -2144,8 +2147,8 @@ body.skin6,
 
 
 .skin6 .member-fields-disable {
-    color: #81988a !important;
-    background: #9fceaa !important;
+    color: #607a6a !important;
+    background: #a0c7aa !important;
 }
 
 .skin6 .table-head span {
@@ -2222,13 +2225,14 @@ body.skin7,
     color: #3f3a3a;
     background: #d7f1de;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #fffbfb;
+    border-bottom: 2px solid #ecc1a4;
 }
 
 .skin7 #profile_img_browse+label,
 .skin7 #team_img_browse+label,
 .skin7 #team_imgEdit+label {
     background-color: #995c33;
+    color: #9ecaa9;
 }
 
 .skin7 #settingsBlock {
@@ -2298,7 +2302,7 @@ body.skin7,
 
 
 .skin7 .member-fields-disable {
-    color: #81988a !important;
+    color: #63756a !important;
     background: #9fceaa !important;
 }
 
@@ -2455,7 +2459,7 @@ body.skin8,
 
 
 .skin8 .member-fields-disable {
-    color: #2ca95d !important;
+    color: #208547 !important;
     background: #6fce85 !important;
 }
 
@@ -2688,7 +2692,8 @@ body.skin9,
     color: #665f5f;
 }
 
-.skin9 #team_setting_link, #user_setting_link {
+.skin9 #team_setting_link, 
+.skin9 #user_setting_link {
     color:rgb(93, 119, 162)
 }
 
