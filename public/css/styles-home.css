@@ -2260,7 +2260,7 @@ body.skin7,
 .skin7 #billtype {
     background: #f4cca0;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #e3e0e0;
+    border-bottom: 2px solid #d4cfcf;
     color: #2f2c2c;
 }
 
@@ -2270,6 +2270,9 @@ body.skin7,
     color: #b29898 !important;
     background: #dadecd !important;
 
+}
+.skin7 .table-head {
+    color: #915a1f;
 }
 
 .skin7 .input-image+label {
@@ -2312,7 +2315,7 @@ body.skin7,
 
 .skin7 #team_setting_link,
 .skin7 #user_setting_link {
-    color: #36345a
+    color: #f3d9c8
 }
 
 .skin7 .profile_info label {
@@ -2382,7 +2385,7 @@ body.skin8,
 .skin8 .profile_info input,
 .skin8 .profile_info select {
     color: #3f3a3a;
-    background: #e3bf99;
+    background: #e9cbab;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #e8ccac;
 }
@@ -2550,6 +2553,10 @@ body.skin9,
 
 .skin9 .table-head {
     color: #7e7c7a
+}
+
+.skin9 .previewimg{
+    border-color: #483d3d;
 }
 
 .skin9 #exitbill,
