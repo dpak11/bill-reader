@@ -438,10 +438,10 @@ section.side-nav p {
     box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
-.skin9 section.side-nav p {
+.skin1 section.side-nav p {
     box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.66);
 }
-.skin9 section.side-nav {
+.skin1 section.side-nav {
     background: #151414;
 }
 
@@ -1000,7 +1000,7 @@ div#ui-datepicker-div {
         color: #0e0e0e;
     }
 
-    .skin1 section.side-nav p:not(.nav-selected):hover {
+    .skin9 section.side-nav p:not(.nav-selected):hover {
         background: rgba(71, 82, 111, 0.5);
     }
 
@@ -1012,7 +1012,7 @@ div#ui-datepicker-div {
         background: rgba(241, 239, 185, 0.77);
     }
 
-    .skin9 section.side-nav p:not(.nav-selected):hover {
+    .skin1 section.side-nav p:not(.nav-selected):hover {
         background: rgba(71, 82, 111, 0.2);
     }
 }
@@ -1193,7 +1193,7 @@ div#ui-datepicker-div {
         background: #fff;
     }
 
-    .skin9 .topfloater .nav-selected {
+    .skin1 .topfloater .nav-selected {
         border-top: 2px solid rgba(255, 255, 255, 0.4);
     }
     
@@ -1217,7 +1217,7 @@ div#ui-datepicker-div {
     .thumb-img img {
         width: 220px;
     }
-    .skin9 section.side-nav {
+    .skin1 section.side-nav {
         background: #5f6364;
     }
 }
@@ -1280,149 +1280,271 @@ div#ui-datepicker-div {
 
 /* ----------------SKINS -------------------- */
 
+
 .skin1 header {
-    background: #533a48;
-    border-bottom: solid 2px #816373
+    background: #413c3c;
+    border-bottom: solid 3px #4a4343;
+}
+.skin1 .btn {
+    background: #142da0;
+    color: #92aabb;
 }
 
 body.skin1,
 .skin1 .container {
-    background: #7c5869;
+    background: #211f1f;
 }
 
 .skin1 .profile_info h2 {
-    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
-    color: #4f3951;
+    border-bottom: 2px solid rgb(75, 63, 63);
+    color: #6c8572;
 }
 
 .skin1 .team-sub-setting {
-    background: #959bbe;
+    background: #5a4343;
+}
+.skin1 #modifyProjectMembers h5 {   
+    background: rgba(165, 159, 159, 0.37);
+    color: rgba(0, 0, 0, 0.77);
+}
+
+.skin1 .profile_info label {
+    color: #706767;
+}
+.skin1 .profile_info #modifyProjectMembers label,
+.skin1 .profile_info #teamDetailsSection label{
+    color: #967f7f;
+}
+
+.skin1 .lastapproverlog {
+    color: rgba(0, 0, 0, 0.73);
+}
+
+.skin1 .editRoleLabel {
+    border: 1px solid rgba(0, 0, 0, 0.54);
+    color: rgba(0, 0, 0, 0.72);
+}
+
+.skin1 .team-sub-setting {
+    box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.66);
 }
 
 .skin1 #addUserPanel>p {
-    color: #484d66;
+    color: #1c1717;
 }
+
+.skin1 .table-head {
+    color: #7e7c7a
+}
+
+.skin1 .previewimg{
+    border-color: #483d3d;
+}
+
+.skin1 #exitbill,
+.skin1 #savebill,
+.skin1 #updatebill,
+.skin1 #rejectbill,
+.skin1 #approvebill,
+.skin1 #deletebill {
+    color: #9595ad;
+    background: rgba(101, 100, 93, 0.4);
+    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.71);
+}
+
+.skin1 #exitbill.processing-state,
+.skin1 #savebill.processing-state,
+.skin1 #updatebill.processing-state,
+.skin1 #rejectbill.processing-state,
+.skin1 #approvebill.processing-state,
+.skin1 #deletebill.processing-state {
+   color: #5d5d65;
+    box-shadow: none;
+    background: none;
+}
+
 
 .skin1 .profile_info input,
 .skin1 .profile_info select {
-    background: #c8ebf8;
-    box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #d7c0c0;
-}
-
-
-.skin1 .profile_info label {
-    color: #445662;
+    color: #9a8282;
+    background: #484040;
+    box-shadow: inset 2px 2px 6px #141313;
+    border: 2px solid rgba(0, 0, 0, 0.54);
+    border-bottom: 2px solid #534f4b;
 }
 
 .skin1 #profile_img_browse+label,
 .skin1 #team_img_browse+label,
 .skin1 #team_imgEdit+label {
-    background-color: #4d6bd9;
-        color: #c4d2dc;
+    background-color: #4c3b3b;
 }
 
 .skin1 #settingsBlock {
-    background: #8099aa;
+    background: #2e2828;
 }
 
 .skin1 .content-box,
 .skin1 section.main {
-    background: #7c5869;
-}
-
-.skin1 section.side-nav {
-    background: #9a7197;
+    background: rgb(34, 32, 32);
 }
 
 .skin1 section.side-nav span {
-    color: #2b2b39;
+    color: rgb(137, 128, 128)
+}
+
+
+.skin1 section .nav-selected {
+    background: #9b9494;
+}
+
+.skin1 section .nav-selected span {
+    color: #000;
 }
 
 .skin1 #billTable {
-    background: #aca7c0;
+    background: #302d2d;
+    box-shadow: 1px 1px 8px 1px rgb(11, 10, 10);
+    border-color: #2a2727;
 }
 
 .skin1 #billTable input,
 .skin1 #billtype {
-    background: #aecdd9;
-    box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #d7c0c0;
+    background: #6a5757;
+    box-shadow: inset 2px 2px 6px #060606;
+    border: 2px solid #322f2f;
+    border-bottom: 2px solid #4f4b47;
+    color: #000;
 }
+
 
 .skin1 #billTable.static-table input,
 .skin1 #billTable.static-table select {
-    color: #9a8383;
-
+    color: #776666 !important;
+    background: #322f2f !important;
+    border-bottom: 2px solid #534c4c;
 }
 
-
 .skin1 .input-image+label {
-    color: #cecee3;
-    background-color: #9a7197;
-    border-bottom: 1px solid #1d1d23;
-    border-top: 1px solid #c7adb9;
+    color: #b28888;
+    background-color: #484242;
+    border-bottom: 1px solid #000000;
+    border-top: 1px solid #857c7c;
 }
 .skin1 .input-image:focus+label,
 .skin1 .input-image+label:hover {
-    background-color: #81597d;
+    background-color: #383630;
 }
 
 .skin1 .thumbnail {
-    border: 3px solid rgba(225, 232, 241, 0.61);
-    background: #9d96b8;
+    border: 3px solid #595757;
+    background: #4a4848;
+
 }
 
 .skin1 .thumb-date-bill {
-    color: #3d3737;
+    color: #9d9090;
+}
+
+.skin1 .thumb-date-submit,
+.skin1 .thumb-title-bill {
+    color: #beb3b3;
 }
 
 .skin1 .amount-thumb {
-    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.9);
+    color: #46433e;
+    background: #b5afaf;
 }
 
-.skin1 #saveCloseSetting {
-    border-top: 2px solid rgba(92, 83, 92, 0.3);
-}
+.skin1 #saveCloseSetting {border-top: 2px solid rgb(75, 63, 63);}
 
 
-.skin1 #team_setting_link,
-.skin1 #user_setting_link {
-    color: #dddde6
-}
-
-
-.skin1 .profile_info label {
-    color: #313739;
+.skin1 .member-fields-disable {
+    color: #584e4e !important;
+    background: #2e2828 !important;
+    border-bottom: 2px solid #45413e !important;
 }
 
 .skin1 .table-head span {
-    background: #bbb5d3
+    background: #eac195
 }
 
+.skin1 .table-head span {
+    background: #494848;
+    color: #968484;
+    box-shadow: 2px 1px 3px 0px rgba(0, 0, 0, 0.68);
+}
+.skin1 #userSettingsPage .tip-info {
+    color: #6c6363;
+}
+.skin1 #projectsList label {    
+    color: #665f5f;
+}
+
+.skin1 #team_setting_link, 
+.skin1 #user_setting_link {
+    color:rgb(93, 119, 162)
+}
+
+.skin1 .btn-editproj {    
+    color: rgb(119, 150, 203);
+    background: rgba(25, 20, 20, 0.82);
+}
+
+
+.skin1 .loader-circ-path {
+    color: rgba(81, 77, 77, 0.86)
+}
+
+
+.skin1 #billTable ::-webkit-input-placeholder {
+    /* WebKit, Blink, Edge */
+    color: #383333;
+}
+
+.skin1 #billTable :-moz-placeholder {
+    /* Mozilla Firefox 4 to 18 */
+    color: #383333;
+    opacity: 1;
+}
+
+.skin1 #billTable ::-moz-placeholder {
+    /* Mozilla Firefox 19+ */
+    color: #383333;
+    opacity: 1;
+}
+
+.skin1 #billTable ::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: #383333;
+}
+
+.skin1 #billTable ::placeholder {
+    /* Most modern browsers support this now. */
+    color: #383333;
+}
 .skin1 #uncategorised-bills {
-    border: 8px solid #9a7197;
-    background: #7c5869;
+    border: 8px solid #474444;
+    background: #222020;
 }
 .skin1 #uncategorised-bills > div span {
-    color: #e3b1c9 !important
+    color: #9e7d8d !important
 }
 
 .skin1 #uncategorised-bills > div {
-    background: #6f4d5d;
+    background: #161515;
 }
 
 .skin1 .uncategorised-item {
-    background: rgb(141, 110, 124)
+    background: rgb(75, 57, 57)
 }
 
 .skin1 .uncategorised-item > p:nth-child(2) {
-    color: #1b1c20;
+    color: #878a94;
 }
-
 .skin1 #uncategorised-bills > div svg circle,
 .skin1 #uncategorised-bills > div svg line{
-    stroke: #d2c6cc;
+    stroke: #9e7d8d;
 }
 
 
@@ -1642,7 +1764,7 @@ body.skin3,
 }
 
 .skin3 .input-image+label {
-    color: #dedee7;
+    color: #ebebf6;
     background-color: #d86c65;
     border-bottom: 1px solid #1d1d23;
 }
@@ -1963,7 +2085,7 @@ body.skin5,
 }
 
 .skin5 .input-image+label {
-    color: #e3b8b8;
+    color: #e4d6d6;
     background-color: #9a8282;
     border-bottom: 1px solid #1d1d23;
     border-top: 1px solid #c7adb9;
@@ -2260,7 +2382,7 @@ body.skin7,
 .skin7 #billtype {
     background: #f4cca0;
     box-shadow: inset 2px 2px 6px #423d3d;
-    border-bottom: 2px solid #e3e0e0;
+    border-bottom: 2px solid #d4cfcf;
     color: #2f2c2c;
 }
 
@@ -2270,6 +2392,9 @@ body.skin7,
     color: #b29898 !important;
     background: #dadecd !important;
 
+}
+.skin7 .table-head {
+    color: #915a1f;
 }
 
 .skin7 .input-image+label {
@@ -2312,7 +2437,7 @@ body.skin7,
 
 .skin7 #team_setting_link,
 .skin7 #user_setting_link {
-    color: #36345a
+    color: #f3d9c8
 }
 
 .skin7 .profile_info label {
@@ -2382,7 +2507,7 @@ body.skin8,
 .skin8 .profile_info input,
 .skin8 .profile_info select {
     color: #3f3a3a;
-    background: #e3bf99;
+    background: #e9cbab;
     box-shadow: inset 2px 2px 6px #423d3d;
     border-bottom: 2px solid #e8ccac;
 }
@@ -2496,264 +2621,150 @@ body.skin8,
 
 /*------------------------------------------------------- */
 
+
+
+
 .skin9 header {
-    background: #413c3c;
-    border-bottom: solid 3px #4a4343;
-}
-.skin9 .btn {
-    background: #142da0;
-    color: #92aabb;
+    background: #533a48;
+    border-bottom: solid 2px #816373
 }
 
 body.skin9,
 .skin9 .container {
-    background: #211f1f;
+    background: #7c5869;
 }
 
 .skin9 .profile_info h2 {
-    border-bottom: 2px solid rgb(75, 63, 63);
-    color: #6c8572;
+    border-bottom: 2px solid rgba(92, 83, 92, 0.3);
+    color: #4f3951;
 }
 
 .skin9 .team-sub-setting {
-    background: #5a4343;
-}
-.skin9 #modifyProjectMembers h5 {   
-    background: rgba(165, 159, 159, 0.37);
-    color: rgba(0, 0, 0, 0.77);
-}
-
-.skin9 .profile_info label {
-    color: #706767;
-}
-.skin9 .profile_info #modifyProjectMembers label,
-.skin9 .profile_info #teamDetailsSection label{
-    color: #967f7f;
-}
-
-.skin9 .lastapproverlog {
-    color: rgba(0, 0, 0, 0.73);
-}
-
-.skin9 .editRoleLabel {
-    border: 1px solid rgba(0, 0, 0, 0.54);
-    color: rgba(0, 0, 0, 0.72);
-}
-
-.skin9 .team-sub-setting {
-    box-shadow: 0px 0px 8px 1px rgba(0, 0, 0, 0.66);
+    background: #959bbe;
 }
 
 .skin9 #addUserPanel>p {
-    color: #1c1717;
+    color: #484d66;
 }
-
-.skin9 .table-head {
-    color: #7e7c7a
-}
-
-.skin9 #exitbill,
-.skin9 #savebill,
-.skin9 #updatebill,
-.skin9 #rejectbill,
-.skin9 #approvebill,
-.skin9 #deletebill {
-    color: #9595ad;
-    background: rgba(101, 100, 93, 0.4);
-    box-shadow: 0px 0px 7px 1px rgba(1, 1, 1, 0.71);
-}
-
-.skin9 #exitbill.processing-state,
-.skin9 #savebill.processing-state,
-.skin9 #updatebill.processing-state,
-.skin9 #rejectbill.processing-state,
-.skin9 #approvebill.processing-state,
-.skin9 #deletebill.processing-state {
-   color: #5d5d65;
-    box-shadow: none;
-    background: none;
-}
-
 
 .skin9 .profile_info input,
 .skin9 .profile_info select {
-    color: #9a8282;
-    background: #484040;
-    box-shadow: inset 2px 2px 6px #141313;
-    border: 2px solid rgba(0, 0, 0, 0.54);
-    border-bottom: 2px solid #534f4b;
+    background: #c8ebf8;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #d7c0c0;
+}
+
+
+.skin9 .profile_info label {
+    color: #445662;
 }
 
 .skin9 #profile_img_browse+label,
 .skin9 #team_img_browse+label,
 .skin9 #team_imgEdit+label {
-    background-color: #4c3b3b;
+    background-color: #4d6bd9;
+        color: #c4d2dc;
 }
 
 .skin9 #settingsBlock {
-    background: #2e2828;
+    background: #8099aa;
 }
 
 .skin9 .content-box,
 .skin9 section.main {
-    background: rgb(34, 32, 32);
+    background: #7c5869;
+}
+
+.skin9 section.side-nav {
+    background: #9a7197;
 }
 
 .skin9 section.side-nav span {
-    color: rgb(137, 128, 128)
-}
-
-
-.skin9 section .nav-selected {
-    background: #9b9494;
-}
-
-.skin9 section .nav-selected span {
-    color: #000;
+    color: #2b2b39;
 }
 
 .skin9 #billTable {
-    background: #302d2d;
-    box-shadow: 1px 1px 8px 1px rgb(11, 10, 10);
-    border-color: #2a2727;
+    background: #aca7c0;
 }
 
 .skin9 #billTable input,
 .skin9 #billtype {
-    background: #6a5757;
-    box-shadow: inset 2px 2px 6px #060606;
-    border: 2px solid #322f2f;
-    border-bottom: 2px solid #4f4b47;
-    color: #000;
+    background: #aecdd9;
+    box-shadow: inset 2px 2px 6px #423d3d;
+    border-bottom: 2px solid #d7c0c0;
 }
-
 
 .skin9 #billTable.static-table input,
 .skin9 #billTable.static-table select {
-    color: #776666 !important;
-    background: #322f2f !important;
-    border-bottom: 2px solid #534c4c;
+    color: #9a8383;
+
 }
 
+
 .skin9 .input-image+label {
-    color: #b28888;
-    background-color: #484242;
-    border-bottom: 1px solid #000000;
-    border-top: 1px solid #857c7c;
+    color: #cecee3;
+    background-color: #9a7197;
+    border-bottom: 1px solid #1d1d23;
+    border-top: 1px solid #c7adb9;
 }
 .skin9 .input-image:focus+label,
 .skin9 .input-image+label:hover {
-    background-color: #383630;
+    background-color: #81597d;
 }
 
 .skin9 .thumbnail {
-    border: 3px solid #595757;
-    background: #4a4848;
-
+    border: 3px solid rgba(225, 232, 241, 0.61);
+    background: #9d96b8;
 }
 
 .skin9 .thumb-date-bill {
-    color: #9d9090;
-}
-
-.skin9 .thumb-date-submit,
-.skin9 .thumb-title-bill {
-    color: #beb3b3;
+    color: #3d3737;
 }
 
 .skin9 .amount-thumb {
-    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.9);
-    color: #46433e;
-    background: #b5afaf;
+    box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.98);
 }
 
-.skin9 #saveCloseSetting {border-top: 2px solid rgb(75, 63, 63);}
-
-
-.skin9 .member-fields-disable {
-    color: #584e4e !important;
-    background: #2e2828 !important;
-    border-bottom: 2px solid #45413e !important;
+.skin9 #saveCloseSetting {
+    border-top: 2px solid rgba(92, 83, 92, 0.3);
 }
 
-.skin9 .table-head span {
-    background: #eac195
-}
 
-.skin9 .table-head span {
-    background: #494848;
-    color: #968484;
-    box-shadow: 2px 1px 3px 0px rgba(0, 0, 0, 0.68);
-}
-.skin9 #userSettingsPage .tip-info {
-    color: #6c6363;
-}
-.skin9 #projectsList label {    
-    color: #665f5f;
-}
-
-.skin9 #team_setting_link, 
+.skin9 #team_setting_link,
 .skin9 #user_setting_link {
-    color:rgb(93, 119, 162)
-}
-
-.skin9 .btn-editproj {    
-    color: rgb(119, 150, 203);
-    background: rgba(25, 20, 20, 0.82);
+    color: #dddde6
 }
 
 
-.skin9 .loader-circ-path {
-    color: rgba(81, 77, 77, 0.86)
+.skin9 .profile_info label {
+    color: #313739;
 }
 
-
-.skin9 #billTable ::-webkit-input-placeholder {
-    /* WebKit, Blink, Edge */
-    color: #383333;
+.skin9 .table-head span {
+    background: #bbb5d3
 }
 
-.skin9 #billTable :-moz-placeholder {
-    /* Mozilla Firefox 4 to 18 */
-    color: #383333;
-    opacity: 1;
-}
-
-.skin9 #billTable ::-moz-placeholder {
-    /* Mozilla Firefox 19+ */
-    color: #383333;
-    opacity: 1;
-}
-
-.skin9 #billTable ::-ms-input-placeholder {
-    /* Microsoft Edge */
-    color: #383333;
-}
-
-.skin9 #billTable ::placeholder {
-    /* Most modern browsers support this now. */
-    color: #383333;
-}
 .skin9 #uncategorised-bills {
-    border: 8px solid #474444;
-    background: #222020;
+    border: 8px solid #9a7197;
+    background: #7c5869;
 }
 .skin9 #uncategorised-bills > div span {
-    color: #9e7d8d !important
+    color: #e3b1c9 !important
 }
 
 .skin9 #uncategorised-bills > div {
-    background: #161515;
+    background: #6f4d5d;
 }
 
 .skin9 .uncategorised-item {
-    background: rgb(75, 57, 57)
+    background: rgb(141, 110, 124)
 }
 
 .skin9 .uncategorised-item > p:nth-child(2) {
-    color: #878a94;
+    color: #1b1c20;
 }
+
 .skin9 #uncategorised-bills > div svg circle,
 .skin9 #uncategorised-bills > div svg line{
-    stroke: #9e7d8d;
+    stroke: #d2c6cc;
 }
