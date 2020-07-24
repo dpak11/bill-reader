@@ -989,6 +989,14 @@ div#ui-datepicker-div {
     width: 45%
 }
 
+#version-num{
+    text-align: right;
+    color: #100f0f;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    font-size: .85em;
+}
+
 
 
 @media (min-width: 1024px) {
@@ -1544,6 +1552,10 @@ body.skin1,
     stroke: #9e7d8d;
 }
 
+.skin1 #version-num{
+    color: #a09393;
+}
+
 
 
 
@@ -1682,6 +1694,8 @@ body.skin2,
 .skin2 #uncategorised-bills > div svg line{
     stroke: #6b4848;
 }
+
+
 
 
 
