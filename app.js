@@ -94,6 +94,9 @@ let transporter = nodemailer.createTransport({
     auth: {
         user: KEYS_DATA.email,
         pass: KEYS_DATA.mailerPswd
+    },    
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
