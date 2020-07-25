@@ -1,17 +1,17 @@
+:root{
+    --base-bg: #CEDFE5;
+}
+
 html,
 body {
     width: 100%;
 }
 
-body,
-.container {
-    min-height: 100vh;
-    background: #CEDFE5;
-}
 
 body,
 .container {
-    background: #CEDFE5;
+    min-height: 100vh;
+    background: var(--base-bg);
 }
 
 
@@ -83,10 +83,8 @@ span.btn.deletemember {
 }
 
 .profile_info p {
-
     text-align: left;
     color: black;
-
 }
 
 #projectNameHead {
@@ -119,7 +117,6 @@ span.btn.deletemember {
 }
 
 .team-sub-setting {
-    /* border: 1px solid #697b9c; */
     padding: 20px;
     margin-bottom: 20px;
     background: #d5dbff;
@@ -278,7 +275,7 @@ span.btn.deletemember {
     position: absolute;
     top: 16%;
     left: 25%;
-    background: #cedfe5;
+    background: var(--base-bg);;
     box-shadow: 1px 2px 8px 3px rgba(0, 0, 0, 0.52);
     height: 75vh;    
     z-index:8;
@@ -421,7 +418,7 @@ header img {
     /* font-family: arial; */
     font-family: 'Montserrat', sans-serif;
     min-height: 86vh;
-    background: #CEDFE5;
+    background: var(--base-bg);;
 }
 
 
@@ -470,7 +467,7 @@ section.main {
     display: flex;
     /*! justify-content: center; */
     width: 85%;
-    background: #CEDFE5;
+    background: var(--base-bg);;
     /*  align-items: center; */
     flex-wrap: wrap;
     padding: 20px
@@ -990,6 +987,14 @@ div#ui-datepicker-div {
 
 .edituserGroup {
     width: 45%
+}
+
+#version-num{
+    text-align: right;
+    color: #100f0f;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    font-size: .85em;
 }
 
 
@@ -1547,6 +1552,10 @@ body.skin1,
     stroke: #9e7d8d;
 }
 
+.skin1 #version-num{
+    color: #a09393;
+}
+
 
 
 
@@ -1685,6 +1694,8 @@ body.skin2,
 .skin2 #uncategorised-bills > div svg line{
     stroke: #6b4848;
 }
+
+
 
 
 
