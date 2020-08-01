@@ -4,7 +4,7 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.log('service worker not registered', err));
     alertMissingFeatures();
 } else {
-    alert("Your browser does not support some features. Please upgrade to latest version Chrome/Firefox.\nOr make sure you are not in Incognito/Private Mode")
+    alert("Your browser does not support some features. Please upgrade to latest version Chrome/Firefox.\nMake sure you are not in Incognito/Private Mode")
 }
 // queryselector templatestrings es6array arrow es6object promises es6string filereader fetch atobbtoa atob-btoa classlist rgba no-capture fileinput placeholder canvas todataurljpeg todataurlpng no-todataurlwebp opacity mediaqueries cssvhunit cssanimations borderradius boxshadow flexbox userselect
 
