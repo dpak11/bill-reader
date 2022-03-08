@@ -27,61 +27,63 @@ let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
     date: String
 }));
 
-mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
-    console.log("MongoDB connected");
+try{
+    mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, () => {
+        console.log("MongoDB connected");
 
-    Listusers = mongoose.model("Listusers", new mongoose.Schema({
-        email: String,
-        activation: String,
-        key: String,
-        privilege: String,
-        browser: String,
-        name: String,
-        photo: String,
-        default: String,
-        theme: String,
-        created: String,
-        lastlogin: String,
-        personal: new mongoose.Schema({
-            bills: [{ billid: String, data: String, submitdate: String }]
-        })
-    }));
+        Listusers = mongoose.model("Listusers", new mongoose.Schema({
+            email: String,
+            activation: String,
+            key: String,
+            privilege: String,
+            browser: String,
+            name: String,
+            photo: String,
+            default: String,
+            theme: String,
+            created: String,
+            lastlogin: String,
+            personal: new mongoose.Schema({
+                bills: [{ billid: String, data: String, submitdate: String }]
+            })
+        }));
 
-    Listteams = mongoose.model("Listteams", new mongoose.Schema({
-        teamid: String,
-        logo: String,
-        title: String,
-        user_email: String,
-        role: String,
-        default: String,
-        created: String,
-        lastlogin: String,
-        approver: String,
-        logs: [],
-        bills: [{ billid: String, data: String, submitdate: String, status: String, logs: [] }]
+        Listteams = mongoose.model("Listteams", new mongoose.Schema({
+            teamid: String,
+            logo: String,
+            title: String,
+            user_email: String,
+            role: String,
+            default: String,
+            created: String,
+            lastlogin: String,
+            approver: String,
+            logs: [],
+            bills: [{ billid: String, data: String, submitdate: String, status: String, logs: [] }]
 
-    }));
+        }));
 
-    Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
-        email: String,
-        account: String,
-        project: String,
-        billid: String,
-        billimg: String
-    }));
+        Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
+            email: String,
+            account: String,
+            project: String,
+            billid: String,
+            billimg: String
+        }));
 
-    Uncategorisedbills = mongoose.model("Uncategorisedbills", new mongoose.Schema({
-        email: String,
-        account: String,
-        project: String,
-        billid: String,
-        billimg: String,
-        billdata: String
-    }));
+        Uncategorisedbills = mongoose.model("Uncategorisedbills", new mongoose.Schema({
+            email: String,
+            account: String,
+            project: String,
+            billid: String,
+            billimg: String,
+            billdata: String
+        }));
 
-}).catch((err) => {
-    console.log("MongoDB error");
-});
+    });
+} catch (e){
+    console.log("Error connecting to Mongo DB", e)
+}
 
 
 
@@ -1410,14 +1412,18 @@ function getEmail(email) {
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/login.html");
     if (typeof KEYS_DATA.allowAdminRights == "undefined") {
+       // try{
+       let ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0] : req.connection.remoteAddress;
         let pagevisit = new Pagevisits({
-            date: getIndDate()
+            date: `${getIndDate()} (${ip})`
         });
         pagevisit.save();
+        // } catch (e){
+        //     console.log(e)
+        // }
     }
-
-
 });
+
 app.get("/home", (req, res) => {
     res.sendFile(__dirname + "/public/home.html");
 });
