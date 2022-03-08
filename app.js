@@ -1781,7 +1781,8 @@ const port = process.env.PORT || 3000;
 // });
 
 app.get("/", (req, res) => {
-        res.sendFile(__dirname + "/public/login.html");
+        //res.sendFile(__dirname + "/public/login.html");
+        res.send("Heroku Dyno Setup under progress... Please visit here after sometime.")
         // if (typeof KEYS_DATA.allowAdminRights == "undefined") {
         //    // try{
         //    // let ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0] : req.connection.remoteAddress;
