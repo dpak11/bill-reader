@@ -1410,15 +1410,15 @@ function getEmail(email) {
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/login.html");
     if (typeof KEYS_DATA.allowAdminRights == "undefined") {
-        try{
-        let ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0] : req.connection.remoteAddress;
+       // try{
+       // let ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0] : req.connection.remoteAddress;
         let pagevisit = new Pagevisits({
-            date: `${getIndDate()}  -  (IP: ${ip})`
+            date: getIndDate()
         });
         pagevisit.save();
-        } catch (e){
-            console.log(e)
-        }
+        // } catch (e){
+        //     console.log(e)
+        // }
     }
 
 });
