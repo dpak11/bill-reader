@@ -3,85 +3,84 @@
 const express = require("express");
 
 const bodyParser = require('body-parser');
-//const mongoose = require('mongoose');
-//const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 const app = express();
 
 const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
-// const KEYS_DATA = require("./keys");
+const KEYS_DATA = require("./keys");
 
-// app.use(express.static(__dirname + "/public"));
-// app.use(bodyParser.json({ limit: '5mb' }));
-// app.use(bodyParser.urlencoded({ extended: true }));
-// //process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+app.use(express.static(__dirname + "/public"));
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.urlencoded({ extended: true }))
 
-// mongoose.Promise = global.Promise;
-// const mongoURL = KEYS_DATA.mongodb;
+mongoose.Promise = global.Promise;
+const mongoURL = KEYS_DATA.mongodb;
 
-// let Listusers = null;
-// let Listteams = null;
-// let Categorisedbills = null;
-// let Uncategorisedbills = null;
-// let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
-//     date: String
-// }));
+let Listusers = null;
+let Listteams = null;
+let Categorisedbills = null;
+let Uncategorisedbills = null;
+let Pagevisits = mongoose.model("Pagevisits", new mongoose.Schema({
+    date: String
+}));
 
-// mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
-//     console.log("MongoDB connected");
+mongoose.connect(mongoURL, { useNewUrlParser: true, useUnifiedTopology: true }, function() {
+    console.log("MongoDB connected");
 
-//     Listusers = mongoose.model("Listusers", new mongoose.Schema({
-//         email: String,
-//         activation: String,
-//         key: String,
-//         privilege: String,
-//         browser: String,
-//         name: String,
-//         photo: String,
-//         default: String,
-//         theme: String,
-//         created: String,
-//         lastlogin: String,
-//         personal: new mongoose.Schema({
-//             bills: [{ billid: String, data: String, submitdate: String }]
-//         })
-//     }));
+    Listusers = mongoose.model("Listusers", new mongoose.Schema({
+        email: String,
+        activation: String,
+        key: String,
+        privilege: String,
+        browser: String,
+        name: String,
+        photo: String,
+        default: String,
+        theme: String,
+        created: String,
+        lastlogin: String,
+        personal: new mongoose.Schema({
+            bills: [{ billid: String, data: String, submitdate: String }]
+        })
+    }));
 
-//     Listteams = mongoose.model("Listteams", new mongoose.Schema({
-//         teamid: String,
-//         logo: String,
-//         title: String,
-//         user_email: String,
-//         role: String,
-//         default: String,
-//         created: String,
-//         lastlogin: String,
-//         approver: String,
-//         logs: [],
-//         bills: [{ billid: String, data: String, submitdate: String, status: String, logs: [] }]
+    Listteams = mongoose.model("Listteams", new mongoose.Schema({
+        teamid: String,
+        logo: String,
+        title: String,
+        user_email: String,
+        role: String,
+        default: String,
+        created: String,
+        lastlogin: String,
+        approver: String,
+        logs: [],
+        bills: [{ billid: String, data: String, submitdate: String, status: String, logs: [] }]
 
-//     }));
+    }));
 
-//     Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
-//         email: String,
-//         account: String,
-//         project: String,
-//         billid: String,
-//         billimg: String
-//     }));
+    Categorisedbills = mongoose.model("Categorisedbills", new mongoose.Schema({
+        email: String,
+        account: String,
+        project: String,
+        billid: String,
+        billimg: String
+    }));
 
-//     Uncategorisedbills = mongoose.model("Uncategorisedbills", new mongoose.Schema({
-//         email: String,
-//         account: String,
-//         project: String,
-//         billid: String,
-//         billimg: String,
-//         billdata: String
-//     }));
+    Uncategorisedbills = mongoose.model("Uncategorisedbills", new mongoose.Schema({
+        email: String,
+        account: String,
+        project: String,
+        billid: String,
+        billimg: String,
+        billdata: String
+    }));
 
-// }).catch((err) => {
-//     console.log("MongoDB error");
-// });
+}).catch((err) => {
+    console.log("MongoDB error");
+});
 
 
 
@@ -1775,28 +1774,25 @@ const port = process.env.PORT || 3000;
 //     res.sendFile(__dirname + "/public/about.html");
 // });
 
-// app.get("/*", (req, res) => {
-//     res.redirect("https://" + req.headers.host + "/404.html");
-
-// });
 
 app.get("/", (req, res) => {
-        //res.sendFile(__dirname + "/public/login.html");
-        res.send("Heroku Dyno Setup under progress... Please visit here after sometime.")
-        // if (typeof KEYS_DATA.allowAdminRights == "undefined") {
-        //    // try{
-        //    // let ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0] : req.connection.remoteAddress;
-        //     let pagevisit = new Pagevisits({
-        //         date: getIndDate()
-        //     });
-        //     pagevisit.save();
-        //     // } catch (e){
-        //     //     console.log(e)
-        //     // }
-        // }
-    
-    });
-    
+    res.send("Heroku Dyno Setup under progress... Please visit here after sometime.")
+
+});
+
+app.get("/info", (req, res) => {
+    let ip = req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0] : req.connection.remoteAddress;  
+    res.send(`${ip}  | ${process.env.PORT}  |  ${mongoURL}`)
+
+});
+
+
+app.get("/*", (req, res) => {
+    res.redirect("https://" + req.headers.host + "/404.html");
+
+});
+
+
 
 
 http.listen(port, () => {
